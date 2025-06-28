@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header', {title: 'Главная'}) %>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container">
+        <div class="search-section">
+            <input type="text" id="search-input" placeholder="Поиск книг...">
+            <button id="search-btn">Найти</button>
+        </div>
+
+        <div class="filters">
+            <select id="genre-filter">
+                <option value="">Все жанры</option>
+                <% genres.forEach(genre => { %>
+                    <option value="<%= genre.id %>"><%= genre.name %></option>
+                <% }) %>
+            </select>
+
+            <select id="author-filter">
+                <option value="">Все авторы</option>
+                <% authors.forEach(author => { %>
+                    <option value="<%= author.id %>"><%= author.getFullName() %></option>
+                <% }) %>
+            </select>
+        </div>
+
+        <div class="books-grid" id="books-container">
+            <% books.forEach(book => { %>
+                <div class="book-card" data-id="<%= book.id %>">
+                    <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                    <h3><%= book.title %></h3>
+                    <p><%= book.Author.getFullName() %></p>
+                    <button class="read-btn" data-id="<%= book.id %>">Читать</button>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    <script>
+        // Мобильное меню
+        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('mobile');
+        });
+    </script>
+</body>
+</html>

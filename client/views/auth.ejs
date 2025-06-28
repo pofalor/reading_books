@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header', {title: 'Вход / Регистрация'}) %>
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-tabs">
+            <button class="tab-btn active" data-tab="login">Вход</button>
+            <button class="tab-btn" data-tab="register">Регистрация</button>
+        </div>
+
+        <div class="tab-content active" id="login-tab">
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" required>
+                </div>
+
+                <button type="submit">Войти</button>
+            </form>
+        </div>
+
+        <div class="tab-content" id="register-tab">
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="reg-firstname">Имя</label>
+                    <input type="text" id="reg-firstname" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-lastname">Фамилия</label>
+                    <input type="text" id="reg-lastname" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-password">Пароль</label>
+                    <input type="password" id="reg-password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-confirm">Подтвердите пароль</label>
+                    <input type="password" id="reg-confirm" required>
+                </div>
+
+                <button type="submit">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

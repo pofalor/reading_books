@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header', {title: 'Читалка'}) %>
+    <link rel="stylesheet" href="/css/reader.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="reader-container">
+        <div class="reader-header">
+            <h1 id="book-title"></h1>
+            <p id="book-author"></p>
+            <div class="reader-controls">
+                <button id="prev-page">← Назад</button>
+                <span id="page-indicator">Страница 1 из 10</span>
+                <button id="next-page">Вперед →</button>
+            </div>
+        </div>
+
+        <div class="reader-content" id="book-content">
+            <!-- Контент книги будет загружен через JS -->
+        </div>
+
+        <div class="reader-footer">
+            <input type="range" id="page-slider" min="1" max="100" value="1">
+            <button id="add-to-shelf">Добавить на полку</button>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    <script src="/js/bookReader.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header', {title: 'Покупка книги'}) %>
+    <link rel="stylesheet" href="/css/purchase.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="purchase-container">
+        <div class="book-info">
+            <img id="book-cover" src="" alt="Обложка книги">
+            <div class="book-details">
+                <h1 id="book-title"></h1>
+                <p id="book-author"></p>
+                <p id="book-description"></p>
+                <p class="price" id="book-price"></p>
+            </div>
+        </div>
+
+        <div class="payment-form">
+            <h2>Оформление покупки</h2>
+            <form id="payment-form">
+                <div class="form-group">
+                    <label for="card-number">Номер карты</label>
+                    <input type="text" id="card-number" placeholder="1234 5678 9012 3456">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expiry-date">Срок действия</label>
+                        <input type="text" id="expiry-date" placeholder="MM/YY">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cvv">CVV</label>
+                        <input type="text" id="cvv" placeholder="123">
+                    </div>
+                </div>
+
+                <button type="submit" id="purchase-btn">Купить за <span id="price-amount"></span></button>
+            </form>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    <script src="/js/purchase.js"></script>
+</body>
+</html>

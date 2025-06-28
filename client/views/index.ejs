@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <%- include('partials/header.ejs', { title: 'Книжная полка - Главная' , styles: ['/css/home.css'], scripts:
+        ['https://code.jquery.com/jquery-3.6.0.min.js'] }) %>
+        <link rel="stylesheet" href="/css/home.css">
+</head>
+
+<body>
+    <%- include('partials/navbar', { activeLink: 'home' , authButtons: true }) %>
+
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Добро пожаловать в мир книг</h1>
+                <p>Откройте для себя тысячи произведений различных жанров и авторов</p>
+                <div class="hero-buttons">
+                    <a href="/auth" class="btn primary">
+                        <i class="fas fa-sign-in-alt"></i> Начать чтение
+                    </a>
+                    <a href="/search" class="btn secondary">
+                        <i class="fas fa-search"></i> Найти книгу
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="featured-section">
+            <h2>Популярные книги</h2>
+            <div class="books-grid" id="featured-books">
+                <% if (featuredBooks && featuredBooks.length> 0) { %>
+                    <% featuredBooks.forEach(book=> { %>
+                        <div class="book-card" data-id="<%= book.id %>">
+                            <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                            <h3>
+                                <%= book.title %>
+                            </h3>
+                            <p>
+                                <%= book.Author?.getFullName() || 'Автор неизвестен' %>
+                            </p>
+                            <a href="/book/<%= book.id %>" class="btn small">Подробнее</a>
+                        </div>
+                        <% }) %>
+                            <% } else { %>
+                                <div class="no-books-message">
+                                    <p>Книги скоро появятся!</p>
+                                    <img src="/images/coming-soon.jpg" alt="Скоро появится">
+                                </div>
+                                <% } %>
+            </div>
+        </section>
+
+        <div class="genres-section">
+            <h2>Жанры</h2>
+            <div class="genres-grid">
+                <% genres.slice(0, 6).forEach(genre=> { %>
+                    <a href="/?genre=<%= genre.id %>" class="genre-card">
+                        <h3>
+                            <%= genre.name %>
+                        </h3>
+                        <p>
+                            <%= genre.booksCount %> книг
+                        </p>
+                    </a>
+                    <% }) %>
+            </div>
+        </div>
+
+        <%- include('partials/footer.ejs') %>
+            <script src="/js/home.js"></script>
+</body>
+
+</html>

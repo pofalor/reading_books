@@ -1,0 +1,41 @@
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="logo">КнижнаяПолка</a>
+    <div class="nav-links">
+      <a href="/" class="<%= activeLink === 'home' ? 'active' : '' %>">
+        <i class="fas fa-home"></i> Главная
+      </a>
+      <a href="/shelf" class="<%= activeLink === 'shelf' ? 'active' : '' %> auth-only">
+        <i class="fas fa-bookmark"></i> Мои книги
+      </a>
+      <a href="/search" class="<%= activeLink === 'search' ? 'active' : '' %>">
+        <i class="fas fa-search"></i> Поиск
+      </a>
+      
+      <% if (authButtons) { %>
+        <div class="auth-buttons guest-only">
+          <a href="/auth" class="btn outline">
+            <i class="fas fa-sign-in-alt"></i> Войти
+          </a>
+          <a href="/auth?tab=register" class="btn">
+            <i class="fas fa-user-plus"></i> Регистрация
+          </a>
+        </div>
+        <div class="user-profile auth-only">
+          <img src="/images/user-icon.png" alt="Профиль" class="user-avatar" style="max-width: 30px;">
+          <span class="user-name"></span>
+        </div>
+      <% } %>
+    </div>
+    <button class="mobile-menu-btn">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+</nav>
+
+<script>
+  // Мобильное меню
+  document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+    document.querySelector('.nav-links').classList.toggle('active');
+  });
+</script>
