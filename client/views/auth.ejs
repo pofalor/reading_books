@@ -1,65 +1,101 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <%- include('partials/header', {title: 'Вход / Регистрация'}) %>
-    <link rel="stylesheet" href="/css/auth.css">
+    <%- include('partials/header', { 
+        title: 'Вход / Регистрация',
+        styles: ['/css/auth.css']
+    }) %>
 </head>
 <body>
+    <%- include('partials/navbar', { 
+        activeLink: 'auth',
+        authButtons: false 
+    }) %>
+
     <div class="auth-container">
-        <div class="auth-tabs">
-            <button class="tab-btn active" data-tab="login">Вход</button>
-            <button class="tab-btn" data-tab="register">Регистрация</button>
-        </div>
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <button class="tab-btn <%= tab !== 'register' ? 'active' : '' %>" data-tab="login">Вход</button>
+                <button class="tab-btn <%= tab === 'register' ? 'active' : '' %>" data-tab="register">Регистрация</button>
+            </div>
 
-        <div class="tab-content active" id="login-tab">
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" required>
-                </div>
+            <div class="tab-content <%= tab !== 'register' ? 'active' : '' %>" id="login-tab">
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="login-email" required placeholder="Ваш email">
+                    </div>
 
-                <div class="form-group">
-                    <label for="login-password">Пароль</label>
-                    <input type="password" id="login-password" required>
-                </div>
+                    <div class="form-group">
+                        <label for="login-password"><i class="fas fa-lock"></i> Пароль</label>
+                        <input type="password" id="login-password" required placeholder="Ваш пароль">
+                        <a href="/forgot-password" class="forgot-password">Забыли пароль?</a>
+                    </div>
 
-                <button type="submit">Войти</button>
-            </form>
-        </div>
+                    <button type="submit" class="btn primary">
+                        <i class="fas fa-sign-in-alt"></i> Войти
+                    </button>
 
-        <div class="tab-content" id="register-tab">
-            <form id="register-form">
-                <div class="form-group">
-                    <label for="reg-firstname">Имя</label>
-                    <input type="text" id="reg-firstname" required>
-                </div>
+                    <div class="auth-divider">
+                        <span>или войти через</span>
+                    </div>
 
-                <div class="form-group">
-                    <label for="reg-lastname">Фамилия</label>
-                    <input type="text" id="reg-lastname" required>
-                </div>
+                    <div class="social-auth">
+                        <button type="button" class="social-btn vk">
+                            <i class="fab fa-vk"></i> ВКонтакте
+                        </button>
+                        <button type="button" class="social-btn google">
+                            <i class="fab fa-google"></i> Google
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-                <div class="form-group">
-                    <label for="reg-email">Email</label>
-                    <input type="email" id="reg-email" required>
-                </div>
+            <div class="tab-content <%= tab === 'register' ? 'active' : '' %>" id="register-tab">
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="reg-firstname"><i class="fas fa-user"></i> Имя</label>
+                        <input type="text" id="reg-firstname" required placeholder="Ваше имя">
+                    </div>
 
-                <div class="form-group">
-                    <label for="reg-password">Пароль</label>
-                    <input type="password" id="reg-password" required>
-                </div>
+                    <div class="form-group">
+                        <label for="reg-lastname"><i class="fas fa-user"></i> Фамилия</label>
+                        <input type="text" id="reg-lastname" required placeholder="Ваша фамилия">
+                    </div>
 
-                <div class="form-group">
-                    <label for="reg-confirm">Подтвердите пароль</label>
-                    <input type="password" id="reg-confirm" required>
-                </div>
+                    <div class="form-group">
+                        <label for="reg-email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="reg-email" required placeholder="Ваш email">
+                    </div>
 
-                <button type="submit">Зарегистрироваться</button>
-            </form>
+                    <div class="form-group">
+                        <label for="reg-password"><i class="fas fa-lock"></i> Пароль</label>
+                        <input type="password" id="reg-password" required placeholder="Придумайте пароль">
+                        <div class="password-hint">
+                            Пароль должен содержать не менее 8 символов
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-confirm"><i class="fas fa-lock"></i> Подтвердите пароль</label>
+                        <input type="password" id="reg-confirm" required placeholder="Повторите пароль">
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="reg-agree" required>
+                        <label for="reg-agree">Я согласен с <a href="/terms">условиями использования</a> и <a href="/privacy">политикой конфиденциальности</a></label>
+                    </div>
+
+                    <button type="submit" class="btn primary">
+                        <i class="fas fa-user-plus"></i> Зарегистрироваться
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
     <%- include('partials/footer') %>
+
     <script src="/js/auth.js"></script>
 </body>
 </html>

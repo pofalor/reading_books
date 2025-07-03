@@ -4,11 +4,26 @@ const { Sequelize, DataTypes, Model, Op } = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
+var current_user = null;
 
 // Middleware
 app.use(express.json());;
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        const uploadPath = path.join(__dirname, 'books');
+        require('fs').mkdirSync(uploadPath, { recursive: true });
+        cb(null, uploadPath);
+    },
+    filename: function(req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // Настройка Sequelize
 const sequelize = new Sequelize(
@@ -23,7 +38,6 @@ const sequelize = new Sequelize(
 );
 
 // Модели
-
 // Пользователь
 class User extends Model {
     static async register(email, password, firstName, lastName) {
@@ -32,7 +46,15 @@ class User extends Model {
     }
 
     static async login(email, password) {
-        const user = await this.findOne({ where: { email } });
+        const user = await this.findOne({ 
+            where: { email }, 
+            include: [
+                {
+                    model: Role,
+                    attributes: ['id', 'name',]
+                }
+            ], 
+        });
         if (!user) {
             throw new Error('Invalid email or password');
         }
@@ -42,6 +64,7 @@ class User extends Model {
             throw new Error('Invalid email or password');
         }
         
+        current_user = user;
         return user;
     }
 
@@ -52,8 +75,46 @@ class User extends Model {
     generateAuthToken() {
         return jwt.sign({ id: this.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     }
-}
 
+    static async createAdmin(adminData, currentUserId) {
+        // Проверяем права текущего пользователя
+        const currentUser = await this.findByPk(currentUserId, {
+            include: [Role]
+        });
+        
+        if (!currentUser || !currentUser.Roles.some(r => r.name === 'super_admin')) {
+            throw new Error('Только супер-администратор может создавать администраторов');
+        }
+
+        // Создаем пользователя
+        const admin = await this.create({
+            ...adminData,
+            isActive: true
+        });
+
+        // Назначаем роль администратора
+        const adminRole = await Role.findOne({ where: { name: 'admin' } });
+        if (!adminRole) {
+            throw new Error('Роль администратора не найдена в системе');
+        }
+
+        await admin.addRole(adminRole.id);
+        
+        return admin;
+    }
+
+    static async getAdmins() {
+        const adminRole = await Role.findOne({ where: { name: 'admin' } });
+        if (!adminRole) return [];
+        
+        return this.findAll({
+            include: [{
+                model: Role,
+                where: { id: adminRole.id }
+            }]
+        });
+    }
+}
 User.init({
     id: {
         type: DataTypes.INTEGER,
@@ -240,6 +301,27 @@ class Book extends Model {
         }
         return book.destroy();
     }
+
+    static async getFeatured(limit = 10) {
+        return this.findAll({
+            order: [['createdAt', 'DESC']], // Сортировка по убыванию даты
+            limit: parseInt(limit),
+            include: [
+                {
+                    model: Author,
+                    attributes: ['id', 'firstName', 'secondName', 'surname', 'nickName']
+                },
+                {
+                    model: Genre,
+                    through: { attributes: [] }, // Исключаем промежуточную таблицу
+                    attributes: ['id', 'name']
+                }
+            ],
+            attributes: {
+                exclude: ['updatedAt'] // Исключаем ненужные поля
+            }
+        });
+    }
 }
 
 Book.init({
@@ -297,6 +379,10 @@ class Genre extends Model {
             throw new Error('Genre not found');
         }
         return genre.update(editModel);
+    }
+
+    static async getAll() {
+        return await this.findAll();
     }
 }
 
@@ -639,37 +725,59 @@ const authenticate = async (req, res, next) => {
     }
 };
 
-// Роуты
-
-// Регистрация
-app.post('/register', async (req, res) => {
+app.get('/', async (req, res) => {
     try {
-        const { email, password, firstName, lastName } = req.body;
-        const user = await User.register(email, password, firstName, lastName);
-        const token = user.generateAuthToken();
+        const featuredBooks = await Book.getFeatured(); // Ваш метод получения книг
         
-        res.status(201).send({ user, token });
+        res.render('index', {
+            title: 'Главная',
+            featuredBooks: featuredBooks || [], // Гарантируем что будет массив
+            genres: await Genre.getAll() || [],
+            user: current_user 
+        });
     } catch (error) {
-        res.status(400).send({ error: error.message });
+        console.error(error);
+        res.render('index', {
+            title: 'Главная',
+            featuredBooks: [], // Пустой массив если ошибка
+            genres: [],
+            user: current_user 
+        });
     }
 });
 
 // Логин
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.login(email, password);
         const token = user.generateAuthToken();
         
-        res.send({ user, token });
+        res.json({ token });
     } catch (error) {
-        res.status(400).send({ error: error.message });
+        res.status(400).json({ message: error.message });
+    }
+});
+// Регистрация
+app.post('/api/register', async (req, res) => {
+    try {
+        const { firstName, lastName, email, password } = req.body;
+        const user = await User.register(email, password, firstName, lastName);
+        const token = user.generateAuthToken();
+        
+        res.json({ token });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 });
 
 // Получить профиль
 app.get('/profile', authenticate, async (req, res) => {
     res.send(req.user);
+});
+
+app.get('/auth/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'public', 'auth', 'register.html'));
 });
 
 // Книги
@@ -694,24 +802,160 @@ app.post('/books', authenticate, async (req, res) => {
     }
 });
 
-app.get('/', async (req, res) => {
-    try {
-        const featuredBooks = await Book.getFeatured(); // Ваш метод получения книг
-        
-        res.render('index', {
-            title: 'Главная',
-            featuredBooks: featuredBooks || [], // Гарантируем что будет массив
-            genres: await Genre.getAll() || []
-        });
-    } catch (error) {
-        console.error(error);
-        res.render('index', {
-            title: 'Главная',
-            featuredBooks: [], // Пустой массив если ошибка
-            genres: []
+app.get('/auth/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'public', 'auth', 'login.html'));
+});
+
+// Маршруты для книг
+const bookRouter = express.Router();
+
+// Страница добавления книги
+bookRouter.get('/add', requireAuth, requireRole('moderator'), (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'books', 'add-book.html'));
+});
+
+// Загрузка файла книги
+bookRouter.post('/upload', 
+    requireAuth, 
+    requireRole('moderator'),
+    upload.single('bookFile'), 
+    (req, res) => {
+        // Здесь будет конвертация файла в страницы
+        res.json({ 
+            fileId: req.file.filename,
+            originalName: req.file.originalname
         });
     }
+);
+
+// Добавление новой книги
+bookRouter.post('/', 
+    requireAuth, 
+    requireRole('moderator'),
+    upload.fields([
+        { name: 'bookFile', maxCount: 1 },
+        { name: 'coverFile', maxCount: 1 }
+    ]), 
+    async (req, res) => {
+        try {
+            const { title, description, pagesCount, authorId, genres } = req.body;
+            
+            // Обработка нового автора
+            let author;
+            if (authorId) {
+                author = await Author.findByPk(authorId);
+            } else if (req.body.newAuthor) {
+                author = await Author.create(req.body.newAuthor);
+            } else {
+                throw new Error('Author not specified');
+            }
+            
+            // Обработка нового жанра
+            let genreIds = [];
+            if (genres) {
+                genreIds = genres.split(',');
+            }
+            
+            if (req.body.newGenre) {
+                const newGenre = await Genre.create(req.body.newGenre);
+                genreIds.push(newGenre.id);
+            }
+            
+            // Конвертация файла книги в страницы
+            const bookFile = req.files['bookFile'][0];
+            const pages = await convertBookToPages(bookFile, pagesCount);
+            
+            // Создание книги
+            const book = await Book.create({
+                title,
+                description,
+                pagesCount,
+                authorId: author.id,
+                coverUrl: req.files['coverFile'] ? '/uploads/' + req.files['coverFile'][0].filename : null,
+                pagesDirectory: pages.directory
+            });
+            
+            // Добавление жанров
+            await book.addGenres(genreIds);
+            
+            res.json({ 
+                success: true,
+                bookId: book.id
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ 
+                success: false,
+                message: error.message 
+            });
+        }
+    }
+);
+
+app.use('/api/books', bookRouter);
+
+// Страница добавления администраторов
+app.get('/admin', (req, res) => {
+    res.render('admin', {title: 'Администрирование'});
 });
+
+// Вспомогательная функция для конвертации
+async function convertBookToPages(file, pagesCount) {
+    const outputDir = path.join(__dirname, 'uploads', 'pages', Date.now().toString());
+    require('fs').mkdirSync(outputDir, { recursive: true });
+    
+    // Здесь будет логика конвертации файла в страницы
+    // Это пример - реализация зависит от используемых библиотек
+    
+    return {
+        directory: outputDir,
+        pages: pagesCount
+    };
+}
+
+// Проверка аутентификации
+function requireAuth(req, res, next) {
+    const token = req.cookies.token || req.headers['authorization'];
+    
+    if (!token) {
+        return res.redirect('/auth');
+    }
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.redirect('/auth');
+    }
+}
+
+
+function requireRole(role) {
+    return async (req, res, next) => {
+        const token = req.cookies.token || req.headers['authorization'];
+        
+        if (!token) {
+            return res.status(401).send('Unauthorized');
+        }
+        
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.findByPk(decoded.id, {
+                include: [Role]
+            });
+            
+            if (!user || !user.Roles.some(r => r.name === role)) {
+                return res.status(403).send('Forbidden');
+            }
+            
+            req.user = user;
+            next();
+        } catch (error) {
+            res.status(401).send('Unauthorized');
+        }
+    };
+}
 
 // Запуск сервера
 async function startServer() {

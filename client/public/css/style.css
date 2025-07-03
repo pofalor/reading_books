@@ -270,7 +270,8 @@ a {
   color: var(--accent-color);
 }
 
-.footer-section p, .footer-section ul {
+.footer-section p,
+.footer-section ul {
   opacity: 0.8;
   line-height: 1.8;
 }
@@ -330,3 +331,4 @@ a {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 }
+

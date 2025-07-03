@@ -11,21 +11,26 @@
       <a href="/search" class="<%= activeLink === 'search' ? 'active' : '' %>">
         <i class="fas fa-search"></i> Поиск
       </a>
-      
+
       <% if (authButtons) { %>
         <div class="auth-buttons guest-only">
-          <a href="/auth" class="btn outline">
+          <a href="/auth/login" class="btn outline">
             <i class="fas fa-sign-in-alt"></i> Войти
           </a>
-          <a href="/auth?tab=register" class="btn">
+          <a href="/auth/register" class="btn">
             <i class="fas fa-user-plus"></i> Регистрация
           </a>
         </div>
-        <div class="user-profile auth-only">
-          <img src="/images/user-icon.png" alt="Профиль" class="user-avatar" style="max-width: 30px;">
-          <span class="user-name"></span>
-        </div>
-      <% } %>
+        <% if (!!user && !!user.Roles && user.Roles.some(r=> r.name === 'super_admin')) { %>
+          <a href="/admin" class="<%= activeLink === 'admin' ? 'active' : '' %>">
+            <i class="fas fa-user-shield"></i> Администрирование
+          </a>
+          <% } %>
+            <div class="user-profile auth-only">
+              <img src="/images/user-icon.png" alt="Профиль" class="user-avatar" style="max-width: 30px;">
+              <span class="user-name"></span>
+            </div>
+            <% } %>
     </div>
     <button class="mobile-menu-btn">
       <i class="fas fa-bars"></i>
@@ -35,7 +40,7 @@
 
 <script>
   // Мобильное меню
-  document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+  document.querySelector('.mobile-menu-btn').addEventListener('click', function () {
     document.querySelector('.nav-links').classList.toggle('active');
   });
 </script>

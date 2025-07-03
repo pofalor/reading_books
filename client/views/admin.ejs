@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <%- include('partials/header', { title: 'Управление администраторами', styles: ['/css/admin.css'] }) %>
+</head>
+
+<body>
+    <%- include('partials/navbar', { activeLink: 'admin' , authButtons: false }) %>
+
+        <div class="admin-container">
+            <h1>Управление администраторами</h1>
+
+            <div class="admin-actions">
+                <button id="add-admin-btn" class="btn primary">Добавить администратора</button>
+            </div>
+
+            <div class="admin-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Дата добавления</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admins-table-body">
+                        <!-- Список будет загружен через JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Модальное окно добавления -->
+            <div id="add-admin-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Добавить администратора</h2>
+                    <form id="add-admin-form">
+                        <div class="form-group">
+                            <label for="admin-email">Email*</label>
+                            <input type="email" id="admin-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-firstname">Имя*</label>
+                            <input type="text" id="admin-firstname" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-lastname">Фамилия*</label>
+                            <input type="text" id="admin-lastname" required>
+                        </div>
+                        <button type="submit" class="btn primary">Создать</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <%- include('partials/footer') %>
+            <script src="/js/admin.js"></script>
+</body>
+
+</html>

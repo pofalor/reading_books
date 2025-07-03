@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить книгу | Книжная полка</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css">
+    <link rel="stylesheet" href="/css/add-book.css">
+</head>
+<body>
+    <%- include('../partials/navbar', { activeLink: 'add-book' }) %>
+
+    <div class="container">
+        <h1>Добавить новую книгу</h1>
+        
+        <form id="add-book-form" class="book-form">
+            <div class="form-section">
+                <h2>Основная информация</h2>
+                
+                <div class="form-group">
+                    <label for="title">Название книги*</label>
+                    <input type="text" id="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Описание</label>
+                    <textarea id="description" rows="4"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pages-count">Количество страниц*</label>
+                    <input type="number" id="pages-count" min="1" required>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Автор</h2>
+                
+                <div class="form-group">
+                    <label for="author-select">Выберите автора</label>
+                    <select id="author-select">
+                        <option value="">-- Выберите автора --</option>
+                        <!-- Авторы будут загружены через JS -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Или создайте нового автора</label>
+                    <div class="author-create-fields">
+                        <input type="text" id="author-first-name" placeholder="Имя">
+                        <input type="text" id="author-last-name" placeholder="Фамилия">
+                        <input type="text" id="author-middle-name" placeholder="Отчество (если есть)">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Жанры</h2>
+                
+                <div class="form-group">
+                    <label for="genre-select">Выберите жанры</label>
+                    <select id="genre-select" multiple>
+                        <!-- Жанры будут загружены через JS -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new-genre">Или создайте новый жанр</label>
+                    <div class="genre-create-fields">
+                        <input type="text" id="new-genre" placeholder="Название жанра">
+                        <input type="text" id="new-genre-description" placeholder="Описание жанра">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Обложка книги</h2>
+                <div class="form-group">
+                    <div id="cover-preview" class="cover-preview">
+                        <img id="cover-image" src="/images/default-cover.png" alt="Превью обложки">
+                    </div>
+                    <input type="file" id="cover-upload" accept="image/*">
+                    <label for="cover-upload" class="upload-btn">Выбрать обложку</label>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2>Файл книги</h2>
+                <div class="form-group">
+                    <div id="book-dropzone" class="dropzone">
+                        <div class="dz-message">
+                            Перетащите сюда файл книги (PDF, DOCX, TXT)<br>
+                            или нажмите для выбора файла
+                        </div>
+                    </div>
+                    <div id="file-info" class="file-info"></div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn primary">Добавить книгу</button>
+                <button type="reset" class="btn outline">Очистить форму</button>
+            </div>
+        </form>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+    <script src="/js/add-book.js"></script>
+</body>
+</html>
