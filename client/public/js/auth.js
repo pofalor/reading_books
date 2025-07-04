@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.token) {
                     localStorage.setItem('bookAppToken', data.token);
+                    setTimeout(() => {
+                        localStorage.removeItem('bookAppToken');
+                    }, 3600000);
                     window.location.href = '/';
                 }
                 if(data.message){
@@ -83,7 +86,10 @@ if (registerForm) {
             .then(data => {
                 if (data.token) {
                     localStorage.setItem('bookAppToken', data.token);
-                    window.location.href = '/';
+                    setTimeout(() => {
+                        localStorage.removeItem('bookAppToken');
+                    }, 3600000);
+                    window.location.href = '/    ';
                 }
             });
 

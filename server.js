@@ -5,20 +5,21 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const multer = require('multer');
+const cookieParser = require('cookie-parser')
 
 const app = express();
-var current_user = null;
 
 // Middleware
-app.use(express.json());;
+app.use(express.json());
+app.use(cookieParser());
 
 const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         const uploadPath = path.join(__dirname, 'books');
         require('fs').mkdirSync(uploadPath, { recursive: true });
         cb(null, uploadPath);
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname);
     }
 });
@@ -46,25 +47,24 @@ class User extends Model {
     }
 
     static async login(email, password) {
-        const user = await this.findOne({ 
-            where: { email }, 
+        const user = await this.findOne({
+            where: { email },
             include: [
                 {
                     model: Role,
                     attributes: ['id', 'name',]
                 }
-            ], 
+            ],
         });
         if (!user) {
             throw new Error('Invalid email or password');
         }
-        
+
         const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
         if (!isPasswordValid) {
             throw new Error('Invalid email or password');
         }
-        
-        current_user = user;
+
         return user;
     }
 
@@ -81,7 +81,7 @@ class User extends Model {
         const currentUser = await this.findByPk(currentUserId, {
             include: [Role]
         });
-        
+
         if (!currentUser || !currentUser.Roles.some(r => r.name === 'super_admin')) {
             throw new Error('Только супер-администратор может создавать администраторов');
         }
@@ -99,14 +99,14 @@ class User extends Model {
         }
 
         await admin.addRole(adminRole.id);
-        
+
         return admin;
     }
 
     static async getAdmins() {
         const adminRole = await Role.findOne({ where: { name: 'admin' } });
         if (!adminRole) return [];
-        
+
         return this.findAll({
             include: [{
                 model: Role,
@@ -427,7 +427,7 @@ class BookGenre extends Model {
     }
 
     static async getBookGenres(bookId) {
-        return this.findAll({ 
+        return this.findAll({
             where: { bookId },
             include: [Genre]
         });
@@ -485,7 +485,7 @@ class UserBook extends Model {
     }
 
     static async getFavoriteBooks(userId) {
-        return this.findAll({ 
+        return this.findAll({
             where: { userId },
             include: [Book]
         });
@@ -705,6 +705,37 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'client', 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(attachUserToRequest);
+
+//Middleware для проверки авторизации
+async function attachUserToRequest(req, res, next) {
+    try {
+        const token = req?.cookies?.token || req?.headers?.authorization?.split(' ')[1];
+
+        if (token) {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+            const user = await User.findByPk(
+                decoded.id, {
+                include: [Role],
+                attributes: { exclude: ['passwordHash'] }
+            });
+            if (user) {
+                res.locals.user = {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    roles: user.Roles.map(role => role.name)
+                };
+            }
+        }
+    }
+    catch (error) {
+        console.error('Error in auth middleware: ', error);
+    }
+    next();
+}
 
 // Аутентификация
 const authenticate = async (req, res, next) => {
@@ -712,11 +743,11 @@ const authenticate = async (req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ', '');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findByPk(decoded.id);
-        
+
         if (!user) {
             throw new Error();
         }
-        
+
         req.user = user;
         req.token = token;
         next();
@@ -728,20 +759,18 @@ const authenticate = async (req, res, next) => {
 app.get('/', async (req, res) => {
     try {
         const featuredBooks = await Book.getFeatured(); // Ваш метод получения книг
-        
         res.render('index', {
             title: 'Главная',
             featuredBooks: featuredBooks || [], // Гарантируем что будет массив
-            genres: await Genre.getAll() || [],
-            user: current_user 
+            genres: await Genre.getAll() || []
         });
+        
     } catch (error) {
         console.error(error);
         res.render('index', {
             title: 'Главная',
             featuredBooks: [], // Пустой массив если ошибка
             genres: [],
-            user: current_user 
         });
     }
 });
@@ -752,7 +781,14 @@ app.post('/api/login', async (req, res) => {
         const { email, password } = req.body;
         const user = await User.login(email, password);
         const token = user.generateAuthToken();
-        
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 60 * 60 * 1000 //1 час
+        });
+
         res.json({ token });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -764,7 +800,14 @@ app.post('/api/register', async (req, res) => {
         const { firstName, lastName, email, password } = req.body;
         const user = await User.register(email, password, firstName, lastName);
         const token = user.generateAuthToken();
-        
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 60 * 60 * 1000 //1 час
+        });
+
         res.json({ token });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -815,13 +858,13 @@ bookRouter.get('/add', requireAuth, requireRole('moderator'), (req, res) => {
 });
 
 // Загрузка файла книги
-bookRouter.post('/upload', 
-    requireAuth, 
+bookRouter.post('/upload',
+    requireAuth,
     requireRole('moderator'),
-    upload.single('bookFile'), 
+    upload.single('bookFile'),
     (req, res) => {
         // Здесь будет конвертация файла в страницы
-        res.json({ 
+        res.json({
             fileId: req.file.filename,
             originalName: req.file.originalname
         });
@@ -829,17 +872,17 @@ bookRouter.post('/upload',
 );
 
 // Добавление новой книги
-bookRouter.post('/', 
-    requireAuth, 
+bookRouter.post('/',
+    requireAuth,
     requireRole('moderator'),
     upload.fields([
         { name: 'bookFile', maxCount: 1 },
         { name: 'coverFile', maxCount: 1 }
-    ]), 
+    ]),
     async (req, res) => {
         try {
             const { title, description, pagesCount, authorId, genres } = req.body;
-            
+
             // Обработка нового автора
             let author;
             if (authorId) {
@@ -849,22 +892,22 @@ bookRouter.post('/',
             } else {
                 throw new Error('Author not specified');
             }
-            
+
             // Обработка нового жанра
             let genreIds = [];
             if (genres) {
                 genreIds = genres.split(',');
             }
-            
+
             if (req.body.newGenre) {
                 const newGenre = await Genre.create(req.body.newGenre);
                 genreIds.push(newGenre.id);
             }
-            
+
             // Конвертация файла книги в страницы
             const bookFile = req.files['bookFile'][0];
             const pages = await convertBookToPages(bookFile, pagesCount);
-            
+
             // Создание книги
             const book = await Book.create({
                 title,
@@ -874,19 +917,19 @@ bookRouter.post('/',
                 coverUrl: req.files['coverFile'] ? '/uploads/' + req.files['coverFile'][0].filename : null,
                 pagesDirectory: pages.directory
             });
-            
+
             // Добавление жанров
             await book.addGenres(genreIds);
-            
-            res.json({ 
+
+            res.json({
                 success: true,
                 bookId: book.id
             });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ 
+            res.status(500).json({
                 success: false,
-                message: error.message 
+                message: error.message
             });
         }
     }
@@ -896,17 +939,17 @@ app.use('/api/books', bookRouter);
 
 // Страница добавления администраторов
 app.get('/admin', (req, res) => {
-    res.render('admin', {title: 'Администрирование'});
+    res.render('admin', { title: 'Администрирование' });
 });
 
 // Вспомогательная функция для конвертации
 async function convertBookToPages(file, pagesCount) {
     const outputDir = path.join(__dirname, 'uploads', 'pages', Date.now().toString());
     require('fs').mkdirSync(outputDir, { recursive: true });
-    
+
     // Здесь будет логика конвертации файла в страницы
     // Это пример - реализация зависит от используемых библиотек
-    
+
     return {
         directory: outputDir,
         pages: pagesCount
@@ -916,11 +959,11 @@ async function convertBookToPages(file, pagesCount) {
 // Проверка аутентификации
 function requireAuth(req, res, next) {
     const token = req.cookies.token || req.headers['authorization'];
-    
+
     if (!token) {
         return res.redirect('/auth');
     }
-    
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
@@ -934,21 +977,21 @@ function requireAuth(req, res, next) {
 function requireRole(role) {
     return async (req, res, next) => {
         const token = req.cookies.token || req.headers['authorization'];
-        
+
         if (!token) {
             return res.status(401).send('Unauthorized');
         }
-        
+
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const user = await User.findByPk(decoded.id, {
                 include: [Role]
             });
-            
+
             if (!user || !user.Roles.some(r => r.name === role)) {
                 return res.status(403).send('Forbidden');
             }
-            
+
             req.user = user;
             next();
         } catch (error) {

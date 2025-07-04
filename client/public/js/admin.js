@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const admins = await response.json();
             renderAdmins(admins);
         } catch (error) {
-            Toast.error(error.message);
+            alert(error.message);
         }
     }
     
