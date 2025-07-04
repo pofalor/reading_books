@@ -775,6 +775,11 @@ app.get('/', async (req, res) => {
     }
 });
 
+app.get('/isAuthorized', (req, res) => {
+    const token = req?.cookies?.token || req?.headers?.authorization?.split(' ')[1];
+    res.send(!!token);
+});
+
 // Логин
 app.post('/api/login', async (req, res) => {
     try {

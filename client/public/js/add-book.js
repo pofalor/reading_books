@@ -120,10 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Отправка данных
         fetch('/api/books', {
             method: 'POST',
-            body: fd,
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('bookAppToken')
-            }
+            body: fd
         })
         .then(response => response.json())
         .then(data => {

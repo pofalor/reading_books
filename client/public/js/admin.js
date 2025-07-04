@@ -2,11 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загрузка списка администраторов
     async function loadAdmins() {
         try {
-            const response = await fetch('/api/admin/admins', {
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('bookAppToken')
-                }
-            });
+            const response = await fetch('/api/admin/admins');
             
             if (!response.ok) throw new Error('Ошибка загрузки');
             
@@ -59,7 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('bookAppToken')
                 },
                 body: JSON.stringify(adminData)
             });

@@ -23,7 +23,6 @@ function addToShelf(bookId) {
         url: '/api/user/books',
         method: 'POST',
         data: { bookId },
-        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bookAppToken') },
         success: function(response) {
             showToast('Книга добавлена на вашу полку');
             setTimeout(() => location.reload(), 1000);
@@ -38,7 +37,6 @@ function manageBookOnShelf(bookId) {
     $.ajax({
         url: `/api/user/books/${bookId}`,
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bookAppToken') },
         success: function(response) {
             showToast('Статус книги обновлен');
             setTimeout(() => location.reload(), 1000);
