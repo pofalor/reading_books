@@ -10,7 +10,7 @@ function initApp() {
 }
 
 function checkAuthStatus() {
-    fetch('/isAuthorized', {
+    fetch('/api/auth/isAuthorized', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
