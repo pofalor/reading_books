@@ -54,27 +54,29 @@ const attachUserToRequest = async (req, res, next) => {
     next();
 };
 
-const requireRole = async (req, res, next, role) => {
-    const token = req.cookies.token || req.headers['authorization'];
+const requireRole = function (role) {
+    return async (req, res, next) => {
+        const token = req.cookies.token || req.headers['authorization'];
 
-    if (!token) {
-        return res.status(401).send('Unauthorized');
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findByPk(decoded.id, {
-            include: [Role]
-        });
-
-        if (!user || !user.Roles.some(r => r.name === role)) {
-            return res.status(403).send('Forbidden');
+        if (!token) {
+            return res.status(401).send('Unauthorized');
         }
 
-        req.user = user;
-        next();
-    } catch (error) {
-        res.status(401).send('Unauthorized');
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.findByPk(decoded.id, {
+                include: [Role]
+            });
+
+            if (!user || !user.Roles.some(r => r.name === role)) {
+                return res.status(403).send('Forbidden');
+            }
+
+            req.user = user;
+            next();
+        } catch (error) {
+            res.status(401).send('Unauthorized');
+        }
     }
 };
 

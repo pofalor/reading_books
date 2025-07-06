@@ -23,7 +23,7 @@
         </div>
         <% } %>
           <% if (!!user && user.roles.some(role=> role === 'super_admin')) { %>
-            <a href="/api/admin" class="<%= activeLink === 'admin' ? 'active' : '' %>">
+            <a href="/admin" class="<%= activeLink === 'admin' ? 'active' : '' %>">
               <i class="fas fa-user-shield"></i> Администрирование
             </a>
             <% } %>

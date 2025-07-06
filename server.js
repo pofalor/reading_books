@@ -13,25 +13,22 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(attachUserToRequest);
 
+// Путь к статическим файлам (CSS, JS, изображения)
+app.use(express.static(path.join(__dirname, 'client', 'public')));
+
 // Путь к EJS шаблонам (рендерятся сервером)
 app.set('views', path.join(__dirname, 'client', 'views'));
 app.set('view engine', 'ejs');
 
-// Путь к статическим файлам (CSS, JS, изображения)
-app.use(express.static(path.join(__dirname, 'client', 'public')));
-
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/books', require('./routes/book.routes'));
-app.use('/api/admin', require('./routes/admin.routes'));
-app.use('/', require('./routes/app.routes'));
+app.use(require('./routes'));
 
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).send('Internal server error.');
 });
 
 // Запуск сервера

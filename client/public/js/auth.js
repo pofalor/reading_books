@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch('/api/login', {
+        fetch('/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -71,7 +71,7 @@ if (registerForm) {
         // Эмуляция отправки данных
         console.log('Отправка данных регистрации:', formData);
 
-        fetch('/api/register', {
+        fetch('/api/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

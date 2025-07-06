@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const bookController = require('../controllers/book.controller');
-const { authenticate, requireRole } = require('../middleware/auth.middleware');
-const { bookUpload, coverUpload } = require('../config/multer.config');
+const bookController = require('../../controllers/book.controller');
+const { authenticate, requireRole } = require('../../middleware/auth.middleware');
+const { bookUpload, coverUpload } = require('../../config/multer.config');
 
 // Публичные маршруты
 router.get('/featured', bookController.getFeaturedBooks);
@@ -13,14 +13,14 @@ router.get('/:id', bookController.getBookById);
 router.post(
   '/',
   authenticate,
-  requireRole,
+  requireRole('moderator'),
   bookController.createBook
 );
 
 router.post(
   '/upload',
   authenticate,
-  requireRole,
+  requireRole('moderator'),
   bookUpload.single('bookFile'),
   bookController.uploadBookFile
 );
@@ -28,14 +28,14 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  requireRole,
+  requireRole('moderator'),
   bookController.updateBook
 );
 
 router.delete(
   '/:id',
   authenticate,
-  requireRole,
+  requireRole('moderator'),
   bookController.deleteBook
 );
 

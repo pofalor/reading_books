@@ -3,7 +3,7 @@ describe('Auth Module', function() {
     describe('Login', function() {
         it('should return token for valid credentials', function(done) {
             $.ajax({
-                url: '/api/auth/login',
+                url: '/auth/login',
                 method: 'POST',
                 data: {
                     email: 'test@example.com',

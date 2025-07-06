@@ -1,6 +1,8 @@
-const { User, Book, Genre } = require('../models');
+const express = require('express');
+const router = express.Router();
+const { Book, Genre } = require('../../models');
 
-exports.getMainPage = async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const featuredBooks = await Book.getFeatured(); // Ваш метод получения книг
         res.render('index', {
@@ -16,4 +18,6 @@ exports.getMainPage = async (req, res) => {
             genres: [],
         });
     }
-};
+});
+
+module.exports = router;
