@@ -2,18 +2,15 @@
 <html lang="ru">
 
 <head>
-    <%- include('partials/header', { title: 'Управление администраторами', styles: ['/css/admin.css'] }) %>
+    <%- include('partials/header', { title: 'Управление пользователями' }) %>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 
 <body>
     <%- include('partials/navbar', { activeLink: 'admin' , authButtons: false }) %>
 
         <div class="admin-container">
-            <h1>Управление администраторами</h1>
-
-            <div class="admin-actions">
-                <button id="add-admin-btn" class="btn primary">Добавить администратора</button>
-            </div>
+            <h1>Управление пользователями</h1>
 
             <div class="admin-list">
                 <table>

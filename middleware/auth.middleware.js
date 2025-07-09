@@ -54,10 +54,9 @@ const attachUserToRequest = async (req, res, next) => {
     next();
 };
 
-const requireRole = function (role) {
+const requireRole = function (...role) {
     return async (req, res, next) => {
         const token = req.cookies.token || req.headers['authorization'];
-
         if (!token) {
             return res.status(401).send('Unauthorized');
         }
@@ -68,7 +67,7 @@ const requireRole = function (role) {
                 include: [Role]
             });
 
-            if (!user || !user.Roles.some(r => r.name === role)) {
+            if (!user || !user.Roles.some(r => role.includes(r.name))) {
                 return res.status(403).send('Forbidden');
             }
 

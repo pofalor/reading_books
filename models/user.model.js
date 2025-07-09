@@ -68,7 +68,7 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
         }
 
         static async getAdmins() {
-            const adminRole = await Role.findOne({ where: { name: 'admin' } });
+            const adminRole = await sequelize.models.Role.findOne({ where: { name: 'admin' } });
             if (!adminRole) return [];
 
             return this.findAll({
@@ -76,6 +76,18 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
                     model: sequelize.models.Role,
                     where: { id: adminRole.id }
                 }]
+            });
+        }
+
+        static async getUsers(search) {
+            return this.findAll({
+                where: sequelize.or(
+                    { name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), 'LIKE', '%' + search + '%') },
+                    { firstName: sequelize.where(sequelize.fn('LOWER', sequelize.col('firstName')), 'LIKE', '%' + search + '%') },
+                    { lastName: sequelize.where(sequelize.fn('LOWER', sequelize.col('lastName')), 'LIKE', '%' + search + '%') }
+                ),
+                include: [sequelize.models.Role],
+                attributes: { exclude: ['passwordHash'] }
             });
         }
     }

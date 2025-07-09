@@ -4,6 +4,7 @@ const router = express.Router();
 // API routes
 router.use('/api/auth', require('./api/auth.routes'));
 router.use('/api/books', require('./api/book.routes'));
+router.use('/api/admin', require('./api/admin.routes'));
 
 // Web routes
 router.use('/', require('./web/app.routes'));
