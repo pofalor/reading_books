@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     let currentUser = null;
     let allRoles = [];
-    
+
     // Проверяем роль текущего пользователя
     try {
         const response = await fetch('/api/auth/profile');
@@ -69,9 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <i class="action-icon add" data-userid="${user.id}" title="Добавить роль">➕</i>
                         <i class="action-icon remove" data-userid="${user.id}" title="Удалить роль">➖</i>
                     ` : ''}
-                    ${currentUser && currentUser.Roles.some(r => r.name === 'super_admin') ? `
-                        <button class="btn small danger" data-id="${user.id}">Удалить</button>
-                    ` : ''}
                 </td>
             </tr>
         `).join('');
@@ -113,9 +110,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function openAddUserRoleModal(userId) {
         document.getElementById('target-user-id').value = userId;
         const select = document.getElementById('user-role-select');
-        select.innerHTML = allRoles.map(role => 
-            `<option value="${role.id}">${role.name}</option>`
-        ).join('');
+        select.innerHTML = allRoles
+            .map(role =>
+                `<option value="${role.id}">${role.name}</option>`
+            ).join('');
         addUserRoleModal.style.display = 'block';
     }
 
@@ -123,13 +121,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function openDeleteUserRoleModal(userId) {
         document.getElementById('delete-target-user-id').value = userId;
         const select = document.getElementById('delete-user-role-select');
-        
+
         // Получаем роли пользователя
         try {
             const response = await fetch(`/api/admin/getUserRoles?userId=${userId}`);
             if (response.ok) {
                 const userRoles = await response.json();
-                select.innerHTML = userRoles.map(role => 
+                select.innerHTML = userRoles.map(role =>
                     `<option value="${role.id}">${role.name}</option>`
                 ).join('');
                 deleteUserRoleModal.style.display = 'block';
@@ -142,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обработка формы добавления роли
     document.getElementById('add-role-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const roleData = {
             name: document.getElementById('role-name').value,
             description: document.getElementById('role-description').value
@@ -174,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обработка формы удаления роли
     document.getElementById('delete-role-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const roleName = document.getElementById('delete-role-name').value;
 
         try {
@@ -203,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обработка формы добавления роли пользователю
     document.getElementById('add-user-role-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const userId = document.getElementById('target-user-id').value;
         const roleId = document.getElementById('user-role-select').value;
 
@@ -233,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обработка формы удаления роли пользователя
     document.getElementById('delete-user-role-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const userId = document.getElementById('delete-target-user-id').value;
         const roleId = document.getElementById('delete-user-role-select').value;
 

@@ -22,7 +22,7 @@
           </a>
         </div>
         <% } %>
-          <% if (!!user && user.roles.some(role=> role === 'super_admin')) { %>
+          <% if (!!user && user.roles.some(role=> role === 'super_admin' || role === 'admin')) { %>
             <a href="/admin" class="<%= activeLink === 'admin' ? 'active' : '' %>">
               <i class="fas fa-user-shield"></i> Администрирование
             </a>

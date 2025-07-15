@@ -44,11 +44,6 @@
     color: white;
 }
 
-.btn.small {
-    padding: 5px 10px;
-    font-size: 12px;
-}
-
 .role-badge {
     display: inline-block;
     background-color: #e0e0e0;

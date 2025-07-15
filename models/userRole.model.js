@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         static async assignToUser(userId, roleId) {
             const exists = await this.hasUserRole(userId, roleId);
             if (exists) {
-                throw new Error('Role already assigned to user');
+                throw new Error('У пользователя уже есть эта роль');
             }
             return this.create({ userId, roleId });
         }
