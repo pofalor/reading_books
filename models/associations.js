@@ -28,4 +28,7 @@ module.exports = function(models) {
   
   Book.hasMany(ActionHistory, { foreignKey: 'bookId' });
   ActionHistory.belongsTo(Book, { foreignKey: 'bookId' });
+
+  User.hasMany(Book, { foreignKey: 'creatorId' });
+  Book.belongsTo(User, { foreignKey: 'creatorId' });
 };

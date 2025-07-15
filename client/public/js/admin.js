@@ -368,7 +368,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadRoles();
     await loadUsers();
 });
-
-function generateTempPassword() {
-    return Math.random().toString(36).slice(-8);
-}

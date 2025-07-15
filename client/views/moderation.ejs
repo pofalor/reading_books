@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <%- include('partials/header', { title: 'Модерация' }) %>
+  <link rel="stylesheet" href="/css/moderation.css">
+</head>
+
+<body>
+  <%- include('partials/navbar', { activeLink: 'moderation', authButtons: false }) %>
+
+  <div class="moderation-container">
+    <h1>Модерация</h1>
+    
+    <div class="moderation-tabs">
+      <a href="/moderation?tab=books" class="tab <%= activeTab === 'books' ? 'active' : '' %>">
+        <i class="fas fa-book"></i> Книги
+      </a>
+      <a href="/moderation?tab=authors" class="tab <%= activeTab === 'authors' ? 'active' : '' %>">
+        <i class="fas fa-user-edit"></i> Авторы
+      </a>
+      <a href="/moderation?tab=genres" class="tab <%= activeTab === 'genres' ? 'active' : '' %>">
+        <i class="fas fa-tags"></i> Жанры
+      </a>
+    </div>
+    
+    <% if (activeTab === 'books') { %>
+      <div class="tab-content">
+        <button id="add-book-btn" class="btn primary">
+          <i class="fas fa-plus"></i> Добавить книгу
+        </button>
+        
+        <h2>Книги на модерации</h2>
+        <div id="pending-books-table" class="moderation-table">
+          <!-- Загрузится через JS -->
+        </div>
+        
+        <h2>Все книги</h2>
+        <div class="search-container">
+          <input type="text" id="book-search" placeholder="Поиск по книгам...">
+          <button id="search-books-btn" class="btn primary">Поиск</button>
+        </div>
+        <div id="all-books-table" class="moderation-table">
+          <!-- Загрузится через JS -->
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <%- include('partials/footer') %>
+  <script src="/js/moderation.js"></script>
+</body>
+</html>

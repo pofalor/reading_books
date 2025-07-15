@@ -61,12 +61,34 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false
         },
+        path: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
         authorId: {
             type: DataTypes.INTEGER,
             references: {
                 model: 'authors',
                 key: 'id'
-            }
+            },
+            allowNull: false
+        },
+        price: {
+            type: DataTypes.FLOAT,
+            allowNull: true
+        },
+        guestAvailable: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true
+        },
+        creatorId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'users',
+                key: 'id'
+            },
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,

@@ -1,0 +1,67 @@
+.moderation-container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+.moderation-tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.moderation-tabs .tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  margin-right: 5px;
+  border-radius: 4px 4px 0 0;
+}
+
+.moderation-tabs .tab:hover {
+  background-color: #f5f5f5;
+}
+
+.moderation-tabs .tab.active {
+  border-color: #ddd;
+  border-bottom-color: white;
+  background-color: white;
+  font-weight: 500;
+}
+
+.moderation-table {
+  margin-bottom: 30px;
+}
+
+.moderation-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.moderation-table th, .moderation-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.moderation-table th {
+  background-color: #f5f7fa;
+  font-weight: 500;
+}
+
+.action-btn {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.approve-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+}

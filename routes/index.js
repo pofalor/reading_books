@@ -10,6 +10,7 @@ router.use('/api/admin', require('./api/admin.routes'));
 router.use('/', require('./web/app.routes'));
 router.use('/auth', require('./web/auth.routes'));
 router.use('/admin', require('./web/admin.routes'));
+router.use('/moderation', require('./web/moderation.routes'));
 
 // 404 для web-страниц
 router.use((req, res) => {
