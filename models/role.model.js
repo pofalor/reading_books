@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         static async addRole(name, description, currentUserId) {
+            const existRole = await this.findOne({ where: { name } });
+            if (existRole) throw new Error('Роль с таким именем уже существует');
+
             const role = await this.create({ name, description });
 
             // Логируем действие

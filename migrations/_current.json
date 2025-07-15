@@ -1,0 +1,468 @@
+{
+    "tables": {
+        "users": {
+            "tableName": "users",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "firstName": {
+                    "allowNull": false,
+                    "field": "firstName",
+                    "seqType": "Sequelize.STRING"
+                },
+                "lastName": {
+                    "allowNull": false,
+                    "field": "lastName",
+                    "seqType": "Sequelize.STRING"
+                },
+                "email": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "email",
+                    "seqType": "Sequelize.STRING"
+                },
+                "passwordHash": {
+                    "allowNull": false,
+                    "field": "passwordHash",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "roles": {
+            "tableName": "roles",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "name": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "description": {
+                    "field": "description",
+                    "seqType": "Sequelize.STRING"
+                }
+            },
+            "indexes": []
+        },
+        "user_roles": {
+            "tableName": "user_roles",
+            "schema": {
+                "userId": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "users",
+                        "key": "id"
+                    },
+                    "field": "userId",
+                    "unique": "user_roles_roleId_userId_unique",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "roleId": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "roles",
+                        "key": "id"
+                    },
+                    "field": "roleId",
+                    "unique": "user_roles_roleId_userId_unique",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "authors": {
+            "tableName": "authors",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "firstName": {
+                    "allowNull": false,
+                    "field": "firstName",
+                    "seqType": "Sequelize.STRING"
+                },
+                "secondName": {
+                    "field": "secondName",
+                    "seqType": "Sequelize.STRING"
+                },
+                "surname": {
+                    "field": "surname",
+                    "seqType": "Sequelize.STRING"
+                },
+                "nickName": {
+                    "field": "nickName",
+                    "seqType": "Sequelize.STRING"
+                },
+                "birthDate": {
+                    "field": "birthDate",
+                    "seqType": "Sequelize.DATEONLY"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "books": {
+            "tableName": "books",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "title": {
+                    "allowNull": false,
+                    "field": "title",
+                    "seqType": "Sequelize.STRING"
+                },
+                "isConfirmed": {
+                    "defaultValue": {
+                        "value": false
+                    },
+                    "field": "isConfirmed",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "publicationDate": {
+                    "field": "publicationDate",
+                    "seqType": "Sequelize.DATEONLY"
+                },
+                "description": {
+                    "field": "description",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "pagesCount": {
+                    "allowNull": false,
+                    "field": "pagesCount",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "authorId": {
+                    "references": {
+                        "model": "authors",
+                        "key": "id"
+                    },
+                    "field": "authorId",
+                    "allowNull": true,
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "genres": {
+            "tableName": "genres",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "name": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "description": {
+                    "field": "description",
+                    "seqType": "Sequelize.TEXT"
+                }
+            },
+            "indexes": []
+        },
+        "book_genres": {
+            "tableName": "book_genres",
+            "schema": {
+                "bookId": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "books",
+                        "key": "id"
+                    },
+                    "field": "bookId",
+                    "unique": "book_genres_genreId_bookId_unique",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "genreId": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "genres",
+                        "key": "id"
+                    },
+                    "field": "genreId",
+                    "unique": "book_genres_genreId_bookId_unique",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "user_books": {
+            "tableName": "user_books",
+            "schema": {
+                "userId": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "users",
+                        "key": "id"
+                    },
+                    "field": "userId",
+                    "unique": "user_books_bookId_userId_unique",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "bookId": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "books",
+                        "key": "id"
+                    },
+                    "field": "bookId",
+                    "unique": "user_books_bookId_userId_unique",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "status": {
+                    "defaultValue": {
+                        "value": "OnShelf"
+                    },
+                    "field": "status",
+                    "seqType": "Sequelize.ENUM('OnShelf', 'InProgress', 'Deleted')"
+                },
+                "addedAt": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "addedAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "lastUpdated": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "lastUpdated",
+                    "seqType": "Sequelize.DATE"
+                },
+                "lastPage": {
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "lastPage",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "transactions": {
+            "tableName": "transactions",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "userId": {
+                    "references": {
+                        "model": "users",
+                        "key": "id"
+                    },
+                    "field": "userId",
+                    "allowNull": true,
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "bookId": {
+                    "references": {
+                        "model": "books",
+                        "key": "id"
+                    },
+                    "field": "bookId",
+                    "allowNull": true,
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "type": {
+                    "defaultValue": {
+                        "value": "PURCHASE"
+                    },
+                    "field": "type",
+                    "seqType": "Sequelize.ENUM('PURCHASE')"
+                },
+                "amount": {
+                    "allowNull": false,
+                    "field": "amount",
+                    "seqType": "Sequelize.FLOAT"
+                },
+                "date": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "date",
+                    "seqType": "Sequelize.DATE"
+                },
+                "status": {
+                    "defaultValue": {
+                        "value": "PENDING"
+                    },
+                    "field": "status",
+                    "seqType": "Sequelize.ENUM('COMPLETED', 'FAILED', 'PENDING')"
+                }
+            },
+            "indexes": []
+        },
+        "action_history": {
+            "tableName": "action_history",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "actionType": {
+                    "allowNull": false,
+                    "field": "actionType",
+                    "seqType": "Sequelize.ENUM('AddAuthor', 'AddBook', 'DeleteAuthor', 'DeleteBook', 'AddRole', 'DeleteRole', 'AddRoleToUser', 'RemoveRoleFromUser')"
+                },
+                "description": {
+                    "allowNull": false,
+                    "field": "description",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "timestamp": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.NOW"
+                    },
+                    "field": "timestamp",
+                    "seqType": "Sequelize.DATE"
+                },
+                "actorId": {
+                    "references": {
+                        "model": "users",
+                        "key": "id"
+                    },
+                    "allowNull": false,
+                    "field": "actorId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "userId": {
+                    "references": {
+                        "model": "users",
+                        "key": "id"
+                    },
+                    "allowNull": true,
+                    "field": "userId",
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "authorId": {
+                    "references": {
+                        "model": "authors",
+                        "key": "id"
+                    },
+                    "allowNull": true,
+                    "field": "authorId",
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "bookId": {
+                    "references": {
+                        "model": "books",
+                        "key": "id"
+                    },
+                    "allowNull": true,
+                    "field": "bookId",
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        }
+    },
+    "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
+    "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
+    "exists": false,
+    "revision": 1
+}
