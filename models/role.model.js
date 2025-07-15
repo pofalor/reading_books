@@ -51,6 +51,10 @@ module.exports = (sequelize, DataTypes) => {
 
             return true;
         }
+
+        static async getRoleById(roleId) {
+            return this.findByPk(roleId);
+        }
     }
 
     Role.init({

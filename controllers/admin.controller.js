@@ -84,3 +84,14 @@ exports.removeUserRole = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+exports.getRoleById = async (req, res) => {
+    try {
+        const { roleId } = req.query;
+        const role = await Role.getRoleById(roleId);
+        if (!role) throw new Error('Role not found');
+        res.json(role);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
