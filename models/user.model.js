@@ -40,33 +40,6 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
             return jwt.sign({ id: this.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         }
 
-        static async createAdmin(adminData, currentUserId) {
-            // Проверяем права текущего пользователя
-            const currentUser = await this.findByPk(currentUserId, {
-                include: [sequelize.models.Role]
-            });
-
-            if (!currentUser || !currentUser.Roles.some(r => r.name === 'super_admin')) {
-                throw new Error('Только супер-администратор может создавать администраторов');
-            }
-
-            // Создаем пользователя
-            const admin = await this.create({
-                ...adminData,
-                isActive: true
-            });
-
-            // Назначаем роль администратора
-            const adminRole = await Role.findOne({ where: { name: 'admin' } });
-            if (!adminRole) {
-                throw new Error('Роль администратора не найдена в системе');
-            }
-
-            await admin.addRole(adminRole.id);
-
-            return admin;
-        }
-
         static async getAdmins() {
             const adminRole = await sequelize.models.Role.findOne({ where: { name: 'admin' } });
             if (!adminRole) return [];
@@ -89,6 +62,82 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
                 include: [sequelize.models.Role],
                 attributes: { exclude: ['passwordHash'] }
             });
+        }
+
+        static async addRoleToUser(userId, roleId, currentUserId) {
+            const user = await this.findByPk(userId, { include: [sequelize.models.Role] });
+            if (!user) throw new Error('User not found');
+
+            const role = await sequelize.models.Role.findByPk(roleId);
+            if (!role) throw new Error('Role not found');
+
+            // Проверяем права текущего пользователя
+            const currentUser = await this.findByPk(currentUserId, { include: [sequelize.models.Role] });
+            if (!currentUser) throw new Error('Current user not found');
+
+            const isSuperAdmin = currentUser.Roles.some(r => r.name === 'super_admin');
+            const isAdmin = currentUser.Roles.some(r => r.name === 'admin');
+
+            // Супер-админ может назначать любые роли
+            // Админ может назначать только модераторов
+            if (!isSuperAdmin && (isAdmin && role.name !== 'moderator')) {
+                throw new Error('Недостаточно прав для назначения этой роли');
+            }
+
+            await sequelize.models.UserRole.assignToUser(userId, roleId);
+
+            // Логируем действие
+            await sequelize.models.ActionHistory.logAction(
+                currentUserId,
+                'AddRoleToUser',
+                `Пользователю ${user.email} назначена роль ${role.name}`,
+                userId
+            );
+
+            return user;
+        }
+
+        static async removeRoleFromUser(userId, roleId, currentUserId) {
+            const user = await this.findByPk(userId, { include: [sequelize.models.Role] });
+            if (!user) throw new Error('User not found');
+
+            const role = await sequelize.models.Role.findByPk(roleId);
+            if (!role) throw new Error('Role not found');
+
+            // Проверяем права текущего пользователя
+            const currentUser = await this.findByPk(currentUserId, { include: [sequelize.models.Role] });
+            if (!currentUser) throw new Error('Current user not found');
+
+            const isSuperAdmin = currentUser.Roles.some(r => r.name === 'super_admin');
+            const isAdmin = currentUser.Roles.some(r => r.name === 'admin');
+
+            // Супер-админ может удалять любые роли
+            // Админ может удалять только модераторов
+            if (!isSuperAdmin && (isAdmin && role.name !== 'moderator')) {
+                throw new Error('Недостаточно прав для удаления этой роли');
+            }
+
+            await sequelize.models.UserRole.removeFromUser(userId, roleId);
+
+            // Логируем действие
+            await sequelize.models.ActionHistory.logAction(
+                currentUserId,
+                'RemoveRoleFromUser',
+                `У пользователя ${user.email} удалена роль ${role.name}`,
+                userId
+            );
+
+            return user;
+        }
+
+        static async getUserRoles(userId) {
+            const user = await this.findByPk(userId, {
+                include: [sequelize.models.Role]
+            });
+
+            if (!user) throw new Error('User not found');
+
+            return user.Roles;
         }
     }
 

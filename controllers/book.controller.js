@@ -82,6 +82,7 @@ exports.createBook = async (req, res) => {
                 'AddBook',
                 `Added book "${book.title}"`,
                 null,
+                null,
                 book.id
             );
         }

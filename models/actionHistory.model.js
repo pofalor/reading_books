@@ -2,10 +2,11 @@ const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
     class ActionHistory extends Model {
-        static async logAction(userId, actionType, description, authorId = null, bookId = null) {
+        static async logAction(actorId, actionType, description, userId = null, authorId = null, bookId = null) {
             return this.create({
                 actionType,
                 description,
+                actorId,
                 userId,
                 authorId,
                 bookId
@@ -24,7 +25,14 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
         },
         actionType: {
-            type: DataTypes.ENUM('AddAuthor', 'AddBook', 'DeleteAuthor', 'DeleteBook'),
+            type: DataTypes.ENUM('AddAuthor', 
+                'AddBook', 
+                'DeleteAuthor', 
+                'DeleteBook', 
+                'AddRole',
+                'DeleteRole',
+                'AddRoleToUser',
+                'RemoveRoleFromUser',),
             allowNull: false
         },
         description: {
@@ -35,6 +43,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW
+        },
+        actorId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'users',
+                key: 'id'
+            },
+            allowNull: false
         },
         userId: {
             type: DataTypes.INTEGER,

@@ -6,7 +6,10 @@ const authenticate = async (req, res, next) => {
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies?.token;
         if (!token) {
-            return res.status(401).send({ error: 'Please authenticate.' });
+            return res.status(401).render('error-401', {
+                title: 'Ошибка 401',
+                message: 'Доступ запрещен'
+            });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -23,7 +26,10 @@ const authenticate = async (req, res, next) => {
         req.token = token;
         next();
     } catch (error) {
-        res.status(401).send({ error: 'Please authenticate.' });
+        res.status(401).render('error-401', {
+            title: 'Ошибка 401',
+            message: 'Доступ запрещен'
+        });
     }
 };
 

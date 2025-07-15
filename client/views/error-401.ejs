@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <%- include('partials/header.ejs', { title: 'Доступ запрещен - Книжная полка' }) %>
+    <style>
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .error-message {
+            font-size: 1.2rem;
+            color: var(--gray-color);
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        .error-image {
+            max-width: 300px;
+            margin-bottom: 40px;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            
+            .error-title {
+                font-size: 1.8rem;
+            }
+            
+            .error-message {
+                font-size: 1rem;
+            }
+            
+            .error-image {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/navbar', { activeLink: 'home', authButtons: !locals.user, user: locals.user }) %>
+
+    <div class="container">
+        <div class="error-container">
+            <img src="/images/401-error.svg" alt="Доступ запрещен" class="error-image">
+            <h1 class="error-title">Доступ запрещен</h1>
+            <p class="error-message">
+                Для просмотра этой страницы необходимо авторизоваться. 
+                Пожалуйста, войдите в систему или зарегистрируйтесь.
+            </p>
+            <div class="error-actions">
+                <a href="/auth/login" class="btn primary">
+                    <i class="fas fa-sign-in-alt"></i> Войти
+                </a>
+                <a href="/auth/register" class="btn secondary">
+                    <i class="fas fa-user-plus"></i> Регистрация
+                </a>
+                <a href="/" class="btn outline">
+                    <i class="fas fa-home"></i> На главную
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer.ejs') %>
+</body>
+
+</html>

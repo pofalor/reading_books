@@ -1,33 +1,56 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Загрузка списка администраторов
-    async function loadUsers() {
-        try {
-            const search = "";
+    let currentUser = null;
+    let allRoles = [];
+    
+    // Проверяем роль текущего пользователя
+    try {
+        const response = await fetch('/api/auth/profile');
+        if (response.ok) {
+            currentUser = await response.json();
+            if (currentUser && currentUser.Roles.some(r => r.name === 'super_admin')) {
+                document.getElementById('super-admin-buttons').style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching current user:', error);
+    }
 
-            fetch('/api/admin/getUsers', {
+    // Загрузка списка ролей
+    async function loadRoles() {
+        try {
+            const response = await fetch('/api/admin/getRoles');
+            if (response.ok) {
+                allRoles = await response.json();
+            }
+        } catch (error) {
+            console.error('Error loading roles:', error);
+        }
+    }
+
+    // Загрузка списка пользователей
+    async function loadUsers(search = "") {
+        try {
+            const response = await fetch('/api/admin/getUsers', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ search })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data) {
-                        renderUsers(data);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Произошла ошибка при получении данных');
-                });
+            });
 
+            if (response.ok) {
+                const data = await response.json();
+                renderUsers(data);
+            } else {
+                console.error('Error loading users');
+            }
         } catch (error) {
-            alert(error.message);
+            console.error('Error:', error);
+            alert('Произошла ошибка при получении данных');
         }
     }
 
-    // Рендер списка
+    // Рендер списка пользователей
     function renderUsers(users) {
         const tbody = document.getElementById('admins-table-body');
         tbody.innerHTML = users.map(user => `
@@ -35,52 +58,226 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${user.id}</td>
                 <td>${user.firstName} ${user.lastName}</td>
                 <td>${user.email}</td>
+                <td>
+                    ${user.Roles ? user.Roles.map(role => `
+                        <span class="role-badge">${role.name}</span>
+                    `).join('') : ''}
+                </td>
                 <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                 <td>
-                    <button class="btn small danger" data-id="${user.id}">Удалить</button>
+                    ${currentUser && currentUser.Roles.some(r => r.name === 'super_admin' || r.name === 'admin') ? `
+                        <i class="action-icon add" data-userid="${user.id}" title="Добавить роль">➕</i>
+                        <i class="action-icon remove" data-userid="${user.id}" title="Удалить роль">➖</i>
+                    ` : ''}
+                    ${currentUser && currentUser.Roles.some(r => r.name === 'super_admin') ? `
+                        <button class="btn small danger" data-id="${user.id}">Удалить</button>
+                    ` : ''}
                 </td>
             </tr>
         `).join('');
+
+        // Добавляем обработчики для иконок действий
+        document.querySelectorAll('.action-icon.add').forEach(icon => {
+            icon.addEventListener('click', () => openAddUserRoleModal(icon.dataset.userid));
+        });
+
+        document.querySelectorAll('.action-icon.remove').forEach(icon => {
+            icon.addEventListener('click', () => openDeleteUserRoleModal(icon.dataset.userid));
+        });
     }
 
-    // Управление модальным окном
-    const modal = document.getElementById('add-admin-modal');
-    document.querySelector('.close').addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+    // Управление модальными окнами
+    function setupModal(modalId, closeSelector) {
+        const modal = document.getElementById(modalId);
+        const close = modal.querySelector(closeSelector);
 
-    // Обработка формы
-    document.getElementById('add-admin-form').addEventListener('submit', async (e) => {
+        close.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        return modal;
+    }
+
+    const addRoleModal = setupModal('add-role-modal', '.close');
+    const deleteRoleModal = setupModal('delete-role-modal', '.close');
+    const addUserRoleModal = setupModal('add-user-role-modal', '.close');
+    const deleteUserRoleModal = setupModal('delete-user-role-modal', '.close');
+
+    // Открытие модального окна добавления роли пользователю
+    async function openAddUserRoleModal(userId) {
+        document.getElementById('target-user-id').value = userId;
+        const select = document.getElementById('user-role-select');
+        select.innerHTML = allRoles.map(role => 
+            `<option value="${role.id}">${role.name}</option>`
+        ).join('');
+        addUserRoleModal.style.display = 'block';
+    }
+
+    // Открытие модального окна удаления роли пользователя
+    async function openDeleteUserRoleModal(userId) {
+        document.getElementById('delete-target-user-id').value = userId;
+        const select = document.getElementById('delete-user-role-select');
+        
+        // Получаем роли пользователя
+        try {
+            const response = await fetch(`/api/admin/getUserRoles?userId=${userId}`);
+            if (response.ok) {
+                const userRoles = await response.json();
+                select.innerHTML = userRoles.map(role => 
+                    `<option value="${role.id}">${role.name}</option>`
+                ).join('');
+                deleteUserRoleModal.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error loading user roles:', error);
+        }
+    }
+
+    // Обработка формы добавления роли
+    document.getElementById('add-role-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const adminData = {
-            email: document.getElementById('admin-email').value,
-            firstName: document.getElementById('admin-firstname').value,
-            lastName: document.getElementById('admin-lastname').value,
-            password: generateTempPassword() // Генерация временного пароля
+        
+        const roleData = {
+            name: document.getElementById('role-name').value,
+            description: document.getElementById('role-description').value
         };
 
         try {
-            const response = await fetch('/api/admin/getAdmins', {
+            const response = await fetch('/api/admin/addRole', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(adminData)
+                body: JSON.stringify(roleData)
             });
 
-            if (!response.ok) throw new Error('Ошибка создания');
-
-            Toast.success('Администратор успешно добавлен');
-            modal.style.display = 'none';
-            loadUsers();
+            if (response.ok) {
+                alert('Роль успешно добавлена');
+                addRoleModal.style.display = 'none';
+                await loadRoles();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Ошибка добавления роли');
+            }
         } catch (error) {
-            Toast.error(error.message);
+            console.error('Error:', error);
+            alert('Произошла ошибка при добавлении роли');
         }
     });
 
+    // Обработка формы удаления роли
+    document.getElementById('delete-role-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const roleName = document.getElementById('delete-role-name').value;
+
+        try {
+            const response = await fetch('/api/admin/deleteRole', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: roleName })
+            });
+
+            if (response.ok) {
+                alert('Роль успешно удалена');
+                deleteRoleModal.style.display = 'none';
+                await loadRoles();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Ошибка удаления роли');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении роли');
+        }
+    });
+
+    // Обработка формы добавления роли пользователю
+    document.getElementById('add-user-role-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const userId = document.getElementById('target-user-id').value;
+        const roleId = document.getElementById('user-role-select').value;
+
+        try {
+            const response = await fetch('/api/admin/addUserRole', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, roleId })
+            });
+
+            if (response.ok) {
+                alert('Роль пользователю успешно добавлена');
+                addUserRoleModal.style.display = 'none';
+                await loadUsers();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Ошибка добавления роли пользователю');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при добавлении роли пользователю');
+        }
+    });
+
+    // Обработка формы удаления роли пользователя
+    document.getElementById('delete-user-role-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const userId = document.getElementById('delete-target-user-id').value;
+        const roleId = document.getElementById('delete-user-role-select').value;
+
+        try {
+            const response = await fetch('/api/admin/removeUserRole', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, roleId })
+            });
+
+            if (response.ok) {
+                alert('Роль пользователя успешно удалена');
+                deleteUserRoleModal.style.display = 'none';
+                await loadUsers();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Ошибка удаления роли пользователя');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении роли пользователя');
+        }
+    });
+
+    // Обработка кнопки поиска
+    document.getElementById('search-button').addEventListener('click', () => {
+        const search = document.getElementById('user-search').value;
+        loadUsers(search);
+    });
+
+    // Обработка кнопок для супер-админа
+    document.getElementById('add-role-btn').addEventListener('click', () => {
+        addRoleModal.style.display = 'block';
+    });
+
+    document.getElementById('delete-role-btn').addEventListener('click', () => {
+        deleteRoleModal.style.display = 'block';
+    });
+
     // Инициализация
-    loadUsers();
+    await loadRoles();
+    await loadUsers();
 });
 
 function generateTempPassword() {

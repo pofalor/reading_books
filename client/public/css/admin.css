@@ -4,6 +4,25 @@
     padding: 20px;
 }
 
+.search-container {
+    display: flex;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.search-container input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 .admin-list table {
     width: 100%;
     border-collapse: collapse;
@@ -23,6 +42,35 @@
 .btn.danger {
     background-color: #ff4d4d;
     color: white;
+}
+
+.btn.small {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.role-badge {
+    display: inline-block;
+    background-color: #e0e0e0;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.action-icon {
+    cursor: pointer;
+    margin: 0 5px;
+    font-size: 16px;
+}
+
+.action-icon.add {
+    color: #4CAF50;
+}
+
+.action-icon.remove {
+    color: #f44336;
 }
 
 /* Модальное окно */
@@ -51,4 +99,28 @@
     float: right;
     font-size: 28px;
     cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
 }
