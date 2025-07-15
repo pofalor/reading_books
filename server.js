@@ -17,7 +17,7 @@ app.use(attachUserToRequest);
 app.use(express.static(path.join(__dirname, 'client', 'public')));
 
 // Путь к EJS шаблонам (рендерятся сервером)
-app.set('views', path.join(__dirname, 'client', 'views'));
+app.set('views', [path.join(__dirname, 'client', 'views'), path.join(__dirname, 'client', 'views', 'errors')]);
 app.set('view engine', 'ejs');
 
 app.use(express.urlencoded({ extended: true }));

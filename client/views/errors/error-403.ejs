@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <%- include('partials/header.ejs', { title: 'Доступ запрещен - Книжная полка' }) %>
+    <style>
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .error-message {
+            font-size: 1.2rem;
+            color: var(--gray-color);
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .error-detail {
+            font-size: 1rem;
+            color: var(--gray-color);
+            background: rgba(0,0,0,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .error-image {
+            max-width: 300px;
+            margin-bottom: 40px;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            
+            .error-title {
+                font-size: 1.8rem;
+            }
+            
+            .error-message,
+            .error-detail {
+                font-size: 1rem;
+            }
+            
+            .error-image {
+                max-width: 200px;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .error-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/navbar', { activeLink: 'home', authButtons: !locals.user, user: locals.user }) %>
+
+    <div class="container">
+        <div class="error-container">
+            <img src="/images/401-error.svg" alt="Доступ запрещен" class="error-image">
+            <h1 class="error-title">Доступ ограничен</h1>
+            
+            <p class="error-message">
+                У вас нет необходимых прав для просмотра этой страницы.
+            </p>
+            
+            <% if (locals.user) { %>
+                <div class="error-detail">
+                    Вы вошли как: <strong><%= user.email %></strong><br>
+                    Требуемые права: <strong><%= requiredRole || 'Администратор' %></strong>
+                </div>
+            <% } %>
+            
+            <div class="error-actions">
+                <% if (!locals.user) { %>
+                    <a href="/auth/login" class="btn primary">
+                        <i class="fas fa-sign-in-alt"></i> Войти
+                    </a>
+                    <a href="/auth/register" class="btn secondary">
+                        <i class="fas fa-user-plus"></i> Регистрация
+                    </a>
+                <% } %>
+                
+                <a href="/" class="btn outline">
+                    <i class="fas fa-home"></i> На главную
+                </a>
+                
+                <% if (locals.user && !!user.roles && user.roles.includes('admin')) { %>
+                    <a href="/admin" class="btn">
+                        <i class="fas fa-lock-open"></i> Панель администратора
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer.ejs') %>
+</body>
+
+</html>

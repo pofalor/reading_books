@@ -74,13 +74,19 @@ const requireRole = function (...role) {
             });
 
             if (!user || !user.Roles.some(r => role.includes(r.name))) {
-                return res.status(403).send('Forbidden');
+                return res.status(403).render('error-403', {
+                    user: req.user,
+                    requiredRole: role.toString()
+                });
             }
 
             req.user = user;
             next();
         } catch (error) {
-            res.status(401).send('Unauthorized');
+            res.status(401).render('error-401', {
+                title: 'Ошибка 401',
+                message: 'Доступ запрещен'
+            });
         }
     }
 };
