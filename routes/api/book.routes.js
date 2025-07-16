@@ -6,6 +6,8 @@ const { bookUpload, coverUpload } = require('../../config/multer.config');
 
 // Публичные маршруты
 router.get('/featured', bookController.getFeaturedBooks);
+router.get('/pending', authenticate, requireRole('moderator'), bookController.getPendingBooks);
+router.post('/approve', authenticate, requireRole('moderator'), bookController.approveBook);
 router.get('/', bookController.getAllBooks);
 router.get('/:id', bookController.getBookById);
 

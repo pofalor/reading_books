@@ -2,14 +2,15 @@ const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
     class ActionHistory extends Model {
-        static async logAction(actorId, actionType, description, userId = null, authorId = null, bookId = null) {
+        static async logAction(actorId, actionType, description, userId = null, authorId = null, bookId = null, genreId = null) {
             return this.create({
                 actionType,
                 description,
                 actorId,
                 userId,
                 authorId,
-                bookId
+                bookId,
+                genreId
             });
         }
 
@@ -32,7 +33,11 @@ module.exports = (sequelize, DataTypes) => {
                 'AddRole',
                 'DeleteRole',
                 'AddRoleToUser',
-                'RemoveRoleFromUser',),
+                'RemoveRoleFromUser',
+                'ApproveBook',
+                'ApproveAuthor',
+                'AddGenre',
+                'DeleteGenre'),
             allowNull: false
         },
         description: {
@@ -72,6 +77,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             references: {
                 model: 'books',
+                key: 'id'
+            },
+            allowNull: true
+        },
+        genreId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'genres',
                 key: 'id'
             },
             allowNull: true

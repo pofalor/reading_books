@@ -50,7 +50,15 @@ module.exports = (sequelize, DataTypes) => {
         isConfirmed: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
-        }
+        },
+        creatorId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'users',
+                key: 'id'
+            },
+            allowNull: false
+        },
     }, {
         sequelize,
         modelName: 'Author',

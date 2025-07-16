@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 const { Book, Author, Genre, BookGenre, ActionHistory } = require('../models');
 const { cleanUpFiles } = require('../config/multer.config');
 
@@ -171,5 +170,53 @@ exports.uploadBookFile = async (req, res) => {
     } catch (error) {
         cleanUpFiles({ bookFile: [req.file] });
         res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getPendingBooks = async (req, res) => {
+    try {
+        console.info("getPendingBooks start.")
+        const books = await Book.findAll({
+            where: { isConfirmed: false },
+            include: [ Author, Genre],
+            limit: 100
+        });
+        console.info("books received: " + books);
+
+        if (books.length === 0) {
+            return res.json({ hidden: true });
+        }
+
+        res.json(books);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.approveBook = async (req, res) => {
+    try {
+        const { bookId } = req.body;
+        const book = await Book.findByPk(bookId);
+
+        if (!book) throw new Error('Книга не найдена');
+        if (book.creatorId === req.user.id) {
+            throw new Error('Нельзя подтверждать свои собственные книги');
+        }
+
+        book.isConfirmed = true;
+        await book.save();
+
+        await ActionHistory.logAction(
+            req.user.id,
+            'ApproveBook',
+            `Книга "${book.title}" подтверждена`,
+            book.creatorId,
+            book.authorId,
+            book.id
+        );
+
+        res.json(book);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };

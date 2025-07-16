@@ -29,6 +29,12 @@ module.exports = function(models) {
   Book.hasMany(ActionHistory, { foreignKey: 'bookId' });
   ActionHistory.belongsTo(Book, { foreignKey: 'bookId' });
 
+  Genre.hasMany(ActionHistory, { foreignKey: 'genreId' });
+  ActionHistory.belongsTo(Genre, { foreignKey: 'genreId' });
+
   User.hasMany(Book, { foreignKey: 'creatorId' });
   Book.belongsTo(User, { foreignKey: 'creatorId' });
+  
+  User.hasMany(Author, { foreignKey: 'creatorId' });
+  Author.belongsTo(User, { foreignKey: 'creatorId' });
 };

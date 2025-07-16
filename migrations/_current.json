@@ -157,6 +157,17 @@
                     },
                     "field": "isConfirmed",
                     "seqType": "Sequelize.BOOLEAN"
+                },
+                "creatorId": {
+                    "references": {
+                        "model": "users",
+                        "key": "id"
+                    },
+                    "allowNull": false,
+                    "field": "creatorId",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
                 }
             },
             "indexes": []
@@ -435,7 +446,7 @@
                 "actionType": {
                     "allowNull": false,
                     "field": "actionType",
-                    "seqType": "Sequelize.ENUM('AddAuthor', 'AddBook', 'DeleteAuthor', 'DeleteBook', 'AddRole', 'DeleteRole', 'AddRoleToUser', 'RemoveRoleFromUser')"
+                    "seqType": "Sequelize.ENUM('AddAuthor', 'AddBook', 'DeleteAuthor', 'DeleteBook', 'AddRole', 'DeleteRole', 'AddRoleToUser', 'RemoveRoleFromUser', 'ApproveBook', 'ApproveAuthor', 'AddGenre', 'DeleteGenre')"
                 },
                 "description": {
                     "allowNull": false,
@@ -492,6 +503,17 @@
                     "onDelete": "SET NULL",
                     "onUpdate": "CASCADE",
                     "seqType": "Sequelize.INTEGER"
+                },
+                "genreId": {
+                    "references": {
+                        "model": "genres",
+                        "key": "id"
+                    },
+                    "allowNull": true,
+                    "field": "genreId",
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
                 }
             },
             "indexes": []
@@ -500,5 +522,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 2
+    "revision": 3
 }

@@ -150,6 +150,13 @@
                     },
                     "field": "createdAt",
                     "seqType": "Sequelize.DATE"
+                },
+                "isConfirmed": {
+                    "defaultValue": {
+                        "value": false
+                    },
+                    "field": "isConfirmed",
+                    "seqType": "Sequelize.BOOLEAN"
                 }
             },
             "indexes": []
@@ -188,13 +195,42 @@
                     "field": "pagesCount",
                     "seqType": "Sequelize.INTEGER"
                 },
+                "path": {
+                    "allowNull": false,
+                    "field": "path",
+                    "seqType": "Sequelize.STRING"
+                },
                 "authorId": {
                     "references": {
                         "model": "authors",
                         "key": "id"
                     },
+                    "allowNull": false,
                     "field": "authorId",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "price": {
                     "allowNull": true,
+                    "field": "price",
+                    "seqType": "Sequelize.FLOAT"
+                },
+                "guestAvailable": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "value": true
+                    },
+                    "field": "guestAvailable",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "creatorId": {
+                    "references": {
+                        "model": "users",
+                        "key": "id"
+                    },
+                    "allowNull": false,
+                    "field": "creatorId",
                     "onDelete": "CASCADE",
                     "onUpdate": "CASCADE",
                     "seqType": "Sequelize.INTEGER"
@@ -463,6 +499,6 @@
     },
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
-    "exists": false,
-    "revision": 1
+    "exists": true,
+    "revision": 2
 }
