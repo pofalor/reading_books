@@ -1,81 +1,265 @@
+/* Основные стили страницы */
 .moderation-container {
   max-width: 1200px;
-  margin: 30px auto;
-  padding: 20px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #2c3e50;
 }
 
+/* Заголовок */
+.moderation-container h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #1a1a1a;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.moderation-container h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #3498db;
+  border-radius: 3px;
+}
+
+/* Вкладки */
 .moderation-tabs {
   display: flex;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 20px;
+  gap: 5px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 1px;
 }
 
 .moderation-tabs .tab {
-  padding: 10px 20px;
+  padding: 12px 24px;
   cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  background: #f5f7fa;
+  color: #64748b;
+  font-weight: 500;
+  transition: all 0.3s ease;
   border: 1px solid transparent;
-  margin-right: 5px;
-  border-radius: 4px 4px 0 0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.moderation-tabs .tab i {
+  font-size: 16px;
 }
 
 .moderation-tabs .tab:hover {
-  background-color: #f5f5f5;
+  background: #e2e8f0;
+  color: #475569;
 }
 
 .moderation-tabs .tab.active {
-  border-color: #ddd;
+  background: white;
+  color: #3498db;
+  border-color: #e0e0e0;
   border-bottom-color: white;
-  background-color: white;
+  position: relative;
+  bottom: -1px;
+  z-index: 1;
+}
+
+/* Контент вкладок */
+.tab-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+/* Заголовки таблиц */
+.tab-content h2 {
+  font-size: 20px;
   font-weight: 500;
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.moderation-table table {
+.tab-content h2 i {
+  color: #64748b;
+  font-size: 18px;
+}
+
+/* Таблицы */
+.moderation-table {
   width: 100%;
-  border-collapse: collapse;
-}
-
-.moderation-table th, .moderation-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 30px;
 }
 
 .moderation-table th {
-  background-color: #f5f7fa;
+  background: #f8fafc;
+  color: #64748b;
   font-weight: 500;
+  text-align: left;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.action-btn {
-  padding: 5px 10px;
-  margin-right: 5px;
-  border-radius: 4px;
-  cursor: pointer;
+.moderation-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
 }
 
-.approve-btn {
-  background-color: #4CAF50;
-  color: white;
+.moderation-table tr:last-child td {
+  border-bottom: none;
 }
 
-.reject-btn {
-  background-color: #f44336;
-  color: white;
+.moderation-table tr:hover td {
+  background: #f8fafc;
 }
 
+/* Сообщение об отсутствии данных */
 .no-data-message {
   text-align: center;
-  padding: 20px;
-  background-color: #f5f5f5;
+  padding: 40px 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 15px;
+  margin: 20px 0;
+}
+
+.no-data-message i {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #cbd5e1;
+}
+
+/* Поиск */
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-container input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.search-container input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  outline: none;
+}
+
+/* Действия */
+.action-btn {
+  padding: 6px 12px;
   border-radius: 4px;
-  color: #666;
-  font-style: italic;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.moderation-table {
-  margin-bottom: 30px;
-  display: none; /* По умолчанию скрываем таблицы */
+.action-btn.approve {
+  background: #e6f7ee;
+  color: #10b981;
 }
 
-.moderation-table.active {
-  display: block; /* Показываем при наличии данных */
+.action-btn.approve:hover {
+  background: #d1fae5;
+}
+
+.action-btn.reject {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.action-btn.reject:hover {
+  background: #fecaca;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .moderation-tabs {
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .moderation-tabs .tab {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  .tab-content {
+    padding: 15px;
+  }
+
+  .moderation-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Специфичные стили для формы автора */
+#add-author-form .form-group {
+  margin-bottom: 20px;
+}
+
+#author-bio {
+  min-height: 120px;
+}
+
+/* Адаптивность формы */
+@media (max-width: 576px) {
+  #add-author-form .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-footer .btn {
+    width: 100%;
+  }
 }

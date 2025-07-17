@@ -14,11 +14,13 @@ exports.getFeaturedBooks = async (req, res) => {
 
 exports.getAllBooks = async (req, res) => {
     try {
+        const limit = parseInt(req.query.limit) || 10;
         const books = await Book.findAll({
             include: [
                 { model: Author },
                 { model: Genre, through: { attributes: [] } }
             ],
+            limit: limit,
             order: [['createdAt', 'DESC']]
         });
         res.json(books);

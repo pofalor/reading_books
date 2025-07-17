@@ -10,7 +10,7 @@
   <%- include('partials/navbar', { activeLink: 'moderation' , authButtons: false }) %>
 
     <div class="moderation-container">
-      <h1>Модерация</h1>
+      <h1>Модерация контента</h1>
 
       <div class="moderation-tabs">
         <a href="/moderation?tab=books" class="tab <%= activeTab === 'books' ? 'active' : '' %>">
@@ -30,31 +30,57 @@
             <i class="fas fa-plus"></i> Добавить книгу
           </button>
 
-          <h2>Книги на модерации</h2>
+          <h2><i class="fas fa-clock"></i> Ожидают модерации</h2>
           <div id="pending-books-container">
-            <div id="pending-books-table" class="moderation-table">
-              <!-- Загрузится через JS -->
+            <div id="pending-books-table" class="moderation-table"></div>
+            <div id="no-pending-books" class="no-data-message">
+              <i class="fas fa-check-circle"></i>
+              <p>Нет книг, ожидающих модерации</p>
             </div>
-            <p id="no-pending-books" class="no-data-message" style="display: none;">
-              Нет книг, ожидающих модерации
-            </p>
           </div>
 
-          <h2>Все книги</h2>
+          <h2><i class="fas fa-list"></i> Все книги</h2>
           <div class="search-container">
-            <input type="text" id="book-search" placeholder="Поиск по книгам...">
+            <input type="text" id="book-search" placeholder="Поиск по названию, автору или описанию...">
             <button id="search-books-btn" class="btn primary">Поиск</button>
           </div>
           <div id="all-books-container">
-            <div id="all-books-table" class="moderation-table">
-              <!-- Загрузится через JS -->
+            <div id="all-books-table" class="moderation-table"></div>
+            <div id="no-all-books" class="no-data-message">
+              <i class="fas fa-book-open"></i>
+              <p>Книги не найдены</p>
             </div>
-            <p id="no-all-books" class="no-data-message" style="display: none;">
-              Книги не найдены
-            </p>
           </div>
         </div>
         <% } %>
+          <% if (activeTab==='authors' ) { %>
+            <div class="tab-content">
+              <button id="add-author-btn" class="btn primary">
+                <i class="fas fa-user-plus"></i> Добавить автора
+              </button>
+
+              <h2><i class="fas fa-clock"></i> Ожидают модерации</h2>
+              <div id="pending-authors-container">
+                <div id="pending-authors-table" class="moderation-table"></div>
+                <div id="no-pending-authors" class="no-data-message">
+                  <i class="fas fa-check-circle"></i>
+                  <p>Нет авторов, ожидающих модерации</p>
+                </div>
+              </div>
+
+              <h2><i class="fas fa-list"></i> Все авторы</h2>
+              <div id="all-authors-container">
+                <div id="all-authors-table" class="moderation-table"></div>
+                <div id="no-all-authors" class="no-data-message">
+                  <i class="fas fa-book-open"></i>
+                  <p>Авторы не найдены</p>
+                </div>
+              </div>
+            </div>
+            <% } %>
+
+    </div>
+    <!-- Аналогичные блоки для authors и genres -->
     </div>
 
     <!-- Модальное окно добавления книги -->
@@ -121,6 +147,57 @@
 
           <button type="submit" class="btn primary">Добавить книгу</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Модальное окно добавления автора -->
+    <div id="add-author-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-user-plus"></i> Добавить автора</h2>
+
+        <div class="modal-form-container">
+          <form id="add-author-form">
+            <div class="form-group">
+              <label for="author-first-name">Имя*</label>
+              <input type="text" id="author-first-name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="author-second-name">Отчество</label>
+              <input type="text" id="author-second-name">
+            </div>
+
+            <div class="form-group">
+              <label for="author-surname">Фамилия*</label>
+              <input type="text" id="author-surname" required>
+            </div>
+
+            <div class="form-group">
+              <label for="author-nickname">Псевдоним</label>
+              <input type="text" id="author-nickname">
+            </div>
+
+            <div class="form-group">
+              <label for="author-birth-date">Дата рождения</label>
+              <input type="date" id="author-birth-date">
+            </div>
+
+            <div class="form-group">
+              <label for="author-bio">Биография</label>
+              <textarea id="author-bio" rows="4"></textarea>
+            </div>
+          </form>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn outline" id="cancel-author-btn">
+            <i class="fas fa-times"></i> Отмена
+          </button>
+          <button type="submit" form="add-author-form" class="btn primary">
+            <i class="fas fa-check"></i> Сохранить
+          </button>
+        </div>
       </div>
     </div>
 

@@ -18,8 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     setupModalHandlers();
   } catch (error) {
-    console.error('Initialization error:', error);
-    showToast('Ошибка инициализации страницы', 'error');
+    console.error('Initialization error: ', error);
   }
 
   // Функции
@@ -52,11 +51,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadPendingBooks() {
     try {
       const response = await fetch('/api/books/pending');
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      state.books.pending = data.hidden ? [] : data;
+      if (response.ok) {
+        const data = await response.json();
+        state.books.pending = data.hidden ? [] : data;
+      }
     } catch (error) {
-      console.error('Error loading pending books:', error);
       throw error;
     }
   }
@@ -64,11 +63,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadAllBooks() {
     try {
       const response = await fetch('/api/books?limit=100');
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      state.books.all = data.hidden ? [] : data;
+      if (response.ok) {
+        const data = await response.json();
+        state.books.all = data.hidden ? [] : data;
+      }
     } catch (error) {
-      console.error('Error loading all books:', error);
       throw error;
     }
   }
@@ -76,23 +75,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadPendingAuthors() {
     try {
       const response = await fetch('/api/authors/pending');
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      state.authors.pending = data.hidden ? [] : data;
+      if (response.ok) {
+        const data = await response.json();
+        state.authors.pending = data.hidden ? [] : data;
+      }
     } catch (error) {
-      console.error('Error loading pending authors:', error);
       throw error;
     }
   }
 
   async function loadAllAuthors() {
     try {
-      const response = await fetch('/api/authors?limit=100');
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      state.authors.all = data.hidden ? [] : data;
+      const response = await fetch('/api/authors/getAll?limit=100');
+      if (response.ok) {
+        const data = await response.json();
+        state.authors.all = data.hidden ? [] : data;
+      }
     } catch (error) {
-      console.error('Error loading all authors:', error);
       throw error;
     }
   }
@@ -262,6 +261,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fileName = e.target.files[0]?.name || 'Файл не выбран';
         document.getElementById('file-name').textContent = fileName;
       });
+
+      // Поиск авторов
+      setupSearch('author-search', 'search-authors-btn', '/api/authors/search', 'authors');
     }
 
     // Обработчики для авторов
@@ -272,9 +274,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           await approveAuthor(authorId);
         }
       });
-
-      // Поиск авторов
-      setupSearch('author-search', 'search-authors-btn', '/api/authors/search', 'authors');
     }
   }
 
@@ -306,48 +305,119 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function setupModalHandlers() {
-    // Модальное окно добавления книги
-    const addBookModal = document.getElementById('add-book-modal');
-    const addBookBtn = document.getElementById('add-book-btn');
-    const closeBookModal = addBookModal.querySelector('.close');
+    if (state.activeTab === 'books') {
+      // Обработчики событий
+      document.getElementById('add-book-btn').addEventListener('click', showAddBookModal);
+      document.querySelector('#add-book-modal .close').addEventListener('click', closeAddBookModal);
 
-    if (addBookBtn && addBookModal) {
-      addBookBtn.addEventListener('click', () => {
-        addBookModal.style.display = 'block';
-      });
-
-      closeBookModal.addEventListener('click', () => {
-        addBookModal.style.display = 'none';
-      });
-
+      // Закрытие по клику вне модалки
       window.addEventListener('click', (e) => {
-        if (e.target === addBookModal) {
-          addBookModal.style.display = 'none';
+        if (e.target === document.getElementById('add-book-modal')) {
+          closeAddBookModal();
         }
       });
     }
-
-    // Модальное окно добавления автора
-    const addAuthorModal = document.getElementById('add-author-modal');
-    const addAuthorBtn = document.getElementById('add-author-btn');
-
-    if (addAuthorBtn && addAuthorModal) {
-      const closeAuthorModal = addAuthorModal.querySelector('.close');
-
-      addAuthorBtn.addEventListener('click', () => {
-        addAuthorModal.style.display = 'block';
-      });
-
-      closeAuthorModal.addEventListener('click', () => {
-        addAuthorModal.style.display = 'none';
-      });
-
-      window.addEventListener('click', (e) => {
-        if (e.target === addAuthorModal) {
-          addAuthorModal.style.display = 'none';
-        }
-      });
+    if (state.activeTab === 'authors') {
+      setupAuthorModal();
     }
+  }
+
+  // Показ модального окна
+  function showAddBookModal() {
+    const modal = document.getElementById('add-book-modal');
+    modal.style.display = 'flex'; // Используем flex для центрирования
+    document.body.style.overflow = 'hidden'; // Блокируем скролл страницы
+
+    // Анимация появления
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+    }, 10);
+  }
+
+  // Закрытие модального окна
+  function closeAddBookModal() {
+    const modal = document.getElementById('add-book-modal');
+    modal.style.opacity = '0';
+    modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
+
+    setTimeout(() => {
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }, 300);
+  }
+
+  function setupAuthorModal() {
+    const modal = document.getElementById('add-author-modal');
+    const openBtn = document.getElementById('add-author-btn');
+    const closeBtn = document.getElementById('cancel-author-btn');
+    const form = document.getElementById('add-author-form');
+
+    if (!modal || !openBtn) return;
+
+    // Открытие модалки
+    openBtn.addEventListener('click', () => {
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden'; // Блокируем скролл страницы
+      document.getElementById('author-first-name').focus();
+    });
+
+    // Закрытие модалки
+    const closeModal = () => {
+      modal.style.display = 'none';
+      form.reset();
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.querySelector('.close').addEventListener('click', closeModal);
+
+    // Закрытие по клику вне модалки
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Обработка отправки формы
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const authorData = {
+        firstName: document.getElementById('author-first-name').value.trim(),
+        secondName: document.getElementById('author-second-name').value.trim(),
+        surname: document.getElementById('author-surname').value.trim(),
+        nickName: document.getElementById('author-nickname').value.trim() || null,
+        birthDate: document.getElementById('author-birth-date').value || null,
+        bio: document.getElementById('author-bio').value.trim() || null
+      };
+
+      try {
+        const response = await fetch('/api/authors', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(authorData)
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const newAuthor = await response.json();
+        showToast('Автор успешно добавлен', 'success');
+        closeModal();
+
+        // Обновляем список авторов если мы на вкладке авторов
+        if (state.activeTab === 'authors') {
+          await loadAllAuthors();
+          await loadPendingAuthors();
+          updateAuthorsUI();
+        }
+
+      } catch (error) {
+        console.error('Error adding author:', error);
+        showToast(error.message || 'Ошибка при добавлении автора', 'error');
+      }
+    });
   }
 
   // Вспомогательные функции

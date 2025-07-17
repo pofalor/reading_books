@@ -9,7 +9,6 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px);
-    overflow-y: auto;
 }
 
 .modal-content {
@@ -21,6 +20,13 @@
     max-width: 90%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     animation: modalFadeIn 0.3s ease-out;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.modal-content::-webkit-scrollbar {
+    display: none;
 }
 
 @keyframes modalFadeIn {
@@ -110,41 +116,7 @@
     transform: scale(1.2);
 }
 
-/* Стили для кнопок */
-#add-book-form button[type="submit"] {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 14px 20px;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-}
-
-#add-book-form button[type="submit"]:hover {
-    background-color: #2980b9;
-}
-
-.btn.outline {
-    background-color: transparent;
-    border: 1px solid #3498db;
-    color: #3498db;
-    padding: 10px 15px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;
-}
-
-.btn.outline:hover {
-    background-color: #3498db;
-    color: white;
-}
-
-/* Стили для поиска авторов и жанров */
+/* Стили для поиска */
 .search-select-container {
     position: relative;
     margin-bottom: 10px;

@@ -1,4 +1,4 @@
-const { Author, ActionHistory } = require('../models');
+const { Author, ActionHistory, Genre } = require('../models');
 
 exports.getPendingAuthors = async (req, res) => {
     try {
@@ -42,5 +42,23 @@ exports.approveAuthor = async (req, res) => {
         res.json(author);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+exports.getAllAuthors = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const authors = await Author.findAll({
+            limit: limit,
+            order: [['createdAt', 'DESC']]
+        });
+        
+        if (authors.length === 0) {
+            return res.json({ hidden: true });
+        }
+
+        res.json(authors);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
