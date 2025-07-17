@@ -175,13 +175,11 @@ exports.uploadBookFile = async (req, res) => {
 
 exports.getPendingBooks = async (req, res) => {
     try {
-        console.info("getPendingBooks start.")
         const books = await Book.findAll({
             where: { isConfirmed: false },
             include: [ Author, Genre],
             limit: 100
         });
-        console.info("books received: " + books);
 
         if (books.length === 0) {
             return res.json({ hidden: true });
