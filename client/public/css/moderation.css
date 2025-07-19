@@ -1,6 +1,6 @@
 /* Основные стили страницы */
 .moderation-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -168,38 +168,6 @@
   outline: none;
 }
 
-/* Действия */
-.action-btn {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.action-btn.approve {
-  background: #e6f7ee;
-  color: #10b981;
-}
-
-.action-btn.approve:hover {
-  background: #d1fae5;
-}
-
-.action-btn.reject {
-  background: #fee2e2;
-  color: #ef4444;
-}
-
-.action-btn.reject:hover {
-  background: #fecaca;
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
   .moderation-tabs {
@@ -239,6 +207,13 @@
   animation: fadeIn 0.3s ease-out;
 }
 
+#bio-content {
+  margin-top: 20px;
+  line-height: 1.6;
+  /* сохраняет переносы строк */
+  white-space: pre-line;
+}
+
 /* Специфичные стили для формы автора */
 #add-author-form .form-group {
   margin-bottom: 20px;
@@ -248,7 +223,7 @@
   min-height: 120px;
 }
 
-.moderation-add-button{
+.moderation-add-button {
   margin-bottom: 20px;
 }
 

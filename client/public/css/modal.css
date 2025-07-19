@@ -10,6 +10,8 @@
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px);
     overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .modal-content {
@@ -26,7 +28,7 @@
     scrollbar-width: none;
 }
 
-.modal-content::-webkit-scrollbar {
+.modal-content::-webkit-scrollbar, .modal::-webkit-scrollbar {
     display: none;
 }
 

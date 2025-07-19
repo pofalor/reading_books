@@ -59,15 +59,6 @@
                 <i class="fas fa-user-plus"></i> Добавить автора
               </button>
 
-              <h2><i class="fas fa-clock"></i> Ожидают модерации</h2>
-              <div id="pending-authors-container">
-                <div id="pending-authors-table" class="moderation-table"></div>
-                <div id="no-pending-authors" class="no-data-message">
-                  <i class="fas fa-check-circle"></i>
-                  <p>Нет авторов, ожидающих модерации</p>
-                </div>
-              </div>
-
               <h2><i class="fas fa-list"></i> Все авторы</h2>
               <div class="search-container">
                 <input type="text" id="author-search" placeholder="Поиск по имени, фамилии, отчеству, псевдониму...">
@@ -202,6 +193,15 @@
             <i class="fas fa-check"></i> Сохранить
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Модальное окно подробной биографии автора -->
+    <div id="bio-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Биография автора</h2>
+        <div id="bio-content"></div>
       </div>
     </div>
 

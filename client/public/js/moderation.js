@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       all: []
     },
     authors: {
-      pending: [],
       all: []
     }
   };
@@ -37,7 +36,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         break;
       case 'authors':
         await Promise.all([
-          loadPendingAuthors(),
           loadAllAuthors()
         ]);
         break;
@@ -72,21 +70,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  async function loadPendingAuthors() {
+  async function loadAllAuthors(search = "") {
     try {
-      const response = await fetch('/api/authors/pending');
-      if (response.ok) {
-        const data = await response.json();
-        state.authors.pending = data.hidden ? [] : data;
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async function loadAllAuthors() {
-    try {
-      const response = await fetch('/api/authors/getAll?limit=100');
+      const body = { search, limit: 100 };
+      const response = await fetch('/api/authors/getAll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ body })
+      });
       if (response.ok) {
         const data = await response.json();
         state.authors.all = data.hidden ? [] : data;
@@ -115,7 +108,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateAuthorsUI() {
-    updateTable('pending-authors', state.authors.pending, generatePendingAuthorsRow);
     updateTable('all-authors', state.authors.all, generateAllAuthorsRow);
   }
 
@@ -163,19 +155,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <th>Статус</th>
                     <th>Дата создания</th>
                 `;
-      case 'pending-authors':
-        return `
-                    <th>Имя</th>
-                    <th>Псевдоним</th>
-                    <th>Дата рождения</th>
-                    <th>Действия</th>
-                `;
       case 'all-authors':
         return `
                     <th>Имя</th>
                     <th>Псевдоним</th>
                     <th>Статус</th>
+                    <th>Дата рождения</th>
                     <th>Дата регистрации</th>
+                    <th>Биография</th>
+                    <th>Действия</th>
                 `;
       default:
         return '';
@@ -208,28 +196,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
   }
 
-  function generatePendingAuthorsRow(author) {
-    return `
-            <tr>
-                <td>${escapeHtml(getAuthorFullName(author))}</td>
-                <td>${escapeHtml(author.nickName || '—')}</td>
-                <td>${author.birthDate ? new Date(author.birthDate).toLocaleDateString() : '—'}</td>
-                <td>
-                    <button class="action-btn approve-btn" data-id="${author.id}">
-                        Подтвердить
-                    </button>
-                </td>
-            </tr>
-        `;
-  }
-
   function generateAllAuthorsRow(author) {
     return `
             <tr>
                 <td>${escapeHtml(getAuthorFullName(author))}</td>
                 <td>${escapeHtml(author.nickName || '—')}</td>
-                <td>${author.isConfirmed ? 'Подтвержден' : 'На модерации'}</td>
+                <td style="color: ${author.isConfirmed ? "green" : "blue"}">${author.isConfirmed ? 'Подтвержден' : 'На модерации'}</td>
+                <td>${author.birthDate ? new Date(author.birthDate).toLocaleDateString() : '—'}</td>
                 <td>${new Date(author.createdAt).toLocaleDateString()}</td>
+                <td>
+                  <button id="author-bio-button" class="btn primary" data-bio="${escapeHtml(author.bio || 'Биография отсутствует')}">
+                      Биография
+                  </button>
+                </td>
+                <td>
+                    <button class="btn primary" id="approve-author-btn" data-id="${author.id}">
+                        Подтвердить
+                    </button>
+                </td>
             </tr>
         `;
   }
@@ -265,15 +249,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обработчики для авторов
     if (state.activeTab === 'authors') {
-      document.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('approve-btn')) {
-          const authorId = parseInt(e.target.dataset.id);
-          await approveAuthor(authorId);
-        }
+      const button = document.getElementById("approve-author-btn");
+      button.addEventListener('click', async (e) => {
+        const authorId = parseInt(e.target.dataset.id);
+        await approveAuthor(authorId);
       });
 
       // Поиск авторов
-      setupSearch('author-search', 'search-authors-btn', '/api/authors/search', 'authors');
+      setupSearch('author-search', 'search-authors-btn', '/api/authors/getAll', 'authors');
     }
   }
 
@@ -282,11 +265,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const button = document.getElementById(buttonId);
 
     const performSearch = async () => {
-      const searchTerm = input.value.trim();
-      if (searchTerm.length < 2) return;
-
+      const limit = 100;
+      const search = input.value.trim();
+      
       try {
-        const response = await fetch(`${endpoint}?q=${encodeURIComponent(searchTerm)}`);
+        const body = { search, limit };
+        const response = await fetch(`${endpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ body })
+        });
         if (!response.ok) throw new Error('Search failed');
 
         const data = await response.json();
@@ -294,7 +284,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateUI();
       } catch (error) {
         console.error('Search error:', error);
-        showToast(`Ошибка поиска ${dataType === 'books' ? 'книг' : 'авторов'}`, 'error');
+        alert(`Ошибка поиска ${dataType === 'books' ? 'книг' : 'авторов'}`);
       }
     };
 
@@ -319,6 +309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (state.activeTab === 'authors') {
       setupAuthorModal();
+      setupAuthorBioModal();
     }
   }
 
@@ -416,7 +407,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           alert('Автор успешно добавлен');
           // Закрываем модальное окно
           closeModal();
-          await loadPendingAuthors();
           await loadAllAuthors();
           updateAuthorsUI();
         } else {
@@ -432,6 +422,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         submitBtn.disabled = false;
       }
     });
+  }
+
+  function setupAuthorBioModal() {
+    // Открытие модального окна с биографией
+
+    const openBtn = document.getElementById('author-bio-button');
+
+    if (!openBtn) return;
+
+    // Открытие модалки
+    openBtn.addEventListener('click', () => {
+      const bio = openBtn.getAttribute('data-bio');
+      const modal = document.getElementById('bio-modal');
+      const bioContent = document.getElementById('bio-content');
+
+      bioContent.textContent = bio; // или bioContent.innerHTML = bio, если поддерживается HTML
+      modal.style.display = 'block';
+    });
+
+    // Закрытие модального окна
+    document.querySelector('.close').addEventListener('click', function () {
+      document.getElementById('bio-modal').style.display = 'none';
+    });
+
+    // Закрытие при клике вне модалки
+    window.addEventListener('click', function (e) {
+      const modal = document.getElementById('bio-modal');
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
+
+  async function approveAuthor(authorId) {
+    try {
+      const response = await fetch('/api/authors/approve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ authorId })
+      });
+
+      if (response.ok) {
+        alert('Автор успешно подтверждён');
+
+        // Обновляем данные
+        await loadAllAuthors();
+        updateAuthorsUI();
+      }
+      else {
+        const error = await response.json();
+        alert(error.message || 'Ошибка подтверждения автора');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert(error.message || 'Ошибка при подтверждении автора');
+    }
   }
 
   // Вспомогательные функции

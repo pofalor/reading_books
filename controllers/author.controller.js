@@ -1,21 +1,4 @@
-const { Author, ActionHistory } = require('../models');
-
-exports.getPendingAuthors = async (req, res) => {
-    try {
-        const authors = await Author.findAll({
-            where: { isConfirmed: false },
-            limit: 100
-        });
-
-        if (authors.length === 0) {
-            return res.json({ hidden: true });
-        }
-
-        res.json(authors);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+const { Author, ActionHistory, sequelize } = require('../models');
 
 exports.approveAuthor = async (req, res) => {
     try {
@@ -23,7 +6,7 @@ exports.approveAuthor = async (req, res) => {
         const author = await Author.findByPk(authorId);
 
         if (!author) throw new Error('Автор не найден');
-        if (book.authorId === req.user.id) {
+        if (author.id === req.user.id) {
             throw new Error('Нельзя подтверждать своих собственных авторов');
         }
 
@@ -35,8 +18,7 @@ exports.approveAuthor = async (req, res) => {
             'ApproveAuthor',
             `Автор "${author.getFullName()}" подтвержден`,
             author.creatorId,
-            author.id,
-            null
+            author.id
         );
 
         res.json(author);
@@ -47,10 +29,18 @@ exports.approveAuthor = async (req, res) => {
 
 exports.getAllAuthors = async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 10;
+        const { body } = req.body;
+        const limit = parseInt(body.limit) || 100;
+        const search = body.search.toString().toLowerCase();
         const authors = await Author.findAll({
+            where: sequelize.or(
+                    { firstName: sequelize.where(sequelize.fn('LOWER', sequelize.col('firstName')), 'LIKE', '%' + search + '%') },
+                    { secondName: sequelize.where(sequelize.fn('LOWER', sequelize.col('secondName')), 'LIKE', '%' + search + '%') },
+                    { surname: sequelize.where(sequelize.fn('LOWER', sequelize.col('surname')), 'LIKE', '%' + search + '%') },
+                    { nickName: sequelize.where(sequelize.fn('LOWER', sequelize.col('nickName')), 'LIKE', '%' + search + '%') },
+                ),
             limit: limit,
-            order: [['createdAt', 'DESC']]
+            order: [['isConfirmed', 'ASC'], ['createdAt', 'DESC']]
         });
         
         if (authors.length === 0) {
