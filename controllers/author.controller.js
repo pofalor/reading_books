@@ -1,4 +1,4 @@
-const { Author, ActionHistory, Genre } = require('../models');
+const { Author, ActionHistory } = require('../models');
 
 exports.getPendingAuthors = async (req, res) => {
     try {
@@ -58,6 +58,17 @@ exports.getAllAuthors = async (req, res) => {
         }
 
         res.json(authors);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.createNew = async (req, res) => {
+    try {
+        const model = req.body;
+        model.creatorId = req.user.id;
+        const author = await Author.createNew(model);
+        res.json(author);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

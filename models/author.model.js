@@ -4,6 +4,10 @@ module.exports = (sequelize, DataTypes) => {
     // Автор
     class Author extends Model {
         static async createNew(authorData) {
+            if (!authorData.nickName) {
+                throw new Error('Заполните никнейм');
+            }
+
             return this.create(authorData);
         }
 
@@ -27,8 +31,7 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
         },
         firstName: {
-            type: DataTypes.STRING,
-            allowNull: false
+            type: DataTypes.STRING
         },
         secondName: {
             type: DataTypes.STRING
@@ -37,7 +40,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
         },
         nickName: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
         },
         birthDate: {
             type: DataTypes.DATEONLY
@@ -50,6 +55,9 @@ module.exports = (sequelize, DataTypes) => {
         isConfirmed: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
+        },
+        bio: {
+            type: DataTypes.TEXT
         },
         creatorId: {
             type: DataTypes.INTEGER,

@@ -248,6 +248,10 @@
   min-height: 120px;
 }
 
+.moderation-add-button{
+  margin-bottom: 20px;
+}
+
 /* Адаптивность формы */
 @media (max-width: 576px) {
   #add-author-form .form-group {

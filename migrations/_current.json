@@ -122,7 +122,6 @@
                     "seqType": "Sequelize.INTEGER"
                 },
                 "firstName": {
-                    "allowNull": false,
                     "field": "firstName",
                     "seqType": "Sequelize.STRING"
                 },
@@ -135,6 +134,8 @@
                     "seqType": "Sequelize.STRING"
                 },
                 "nickName": {
+                    "allowNull": false,
+                    "unique": true,
                     "field": "nickName",
                     "seqType": "Sequelize.STRING"
                 },
@@ -157,6 +158,10 @@
                     },
                     "field": "isConfirmed",
                     "seqType": "Sequelize.BOOLEAN"
+                },
+                "bio": {
+                    "field": "bio",
+                    "seqType": "Sequelize.TEXT"
                 },
                 "creatorId": {
                     "references": {
@@ -522,5 +527,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 3
+    "revision": 4
 }

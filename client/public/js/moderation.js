@@ -261,9 +261,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fileName = e.target.files[0]?.name || 'Файл не выбран';
         document.getElementById('file-name').textContent = fileName;
       });
-
-      // Поиск авторов
-      setupSearch('author-search', 'search-authors-btn', '/api/authors/search', 'authors');
     }
 
     // Обработчики для авторов
@@ -274,6 +271,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           await approveAuthor(authorId);
         }
       });
+
+      // Поиск авторов
+      setupSearch('author-search', 'search-authors-btn', '/api/authors/search', 'authors');
     }
   }
 
@@ -363,59 +363,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Закрытие модалки
-    const closeModal = () => {
+    const closeModal = (needReset) => {
       modal.style.display = 'none';
-      form.reset();
+      if (needReset) form.reset();
     };
 
-    closeBtn.addEventListener('click', closeModal);
-    modal.querySelector('.close').addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal, false);
+    modal.querySelector('.close').addEventListener('click', closeModal, false);
 
     // Закрытие по клику вне модалки
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
+      if (e.target === modal) closeModal(false);
     });
 
     // Обработка отправки формы
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const authorData = {
-        firstName: document.getElementById('author-first-name').value.trim(),
-        secondName: document.getElementById('author-second-name').value.trim(),
-        surname: document.getElementById('author-surname').value.trim(),
-        nickName: document.getElementById('author-nickname').value.trim() || null,
-        birthDate: document.getElementById('author-birth-date').value || null,
+      const payload = {
+        nickName: document.getElementById('author-nickname').value.trim(),
+        firstName: document.getElementById('author-first-name').value.trim() || null,
+        secondName: document.getElementById('author-second-name').value.trim() || null,
+        surname: document.getElementById('author-surname').value.trim() || null,
+        birthDate: document.getElementById('author-birth-date').value.trim() || null,
         bio: document.getElementById('author-bio').value.trim() || null
-      };
+      }
+
+      // Валидация обязательных полей
+      if (!payload.nickName) {
+        alert('Псевдоним обязателен для заполнения');
+        return;
+      }
+
+      // Показываем индикатор загрузки
+      const submitBtn = document.querySelector("button[form='add-author-form'][type='submit']");
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+      submitBtn.disabled = true;
 
       try {
+        // Отправка на сервер
         const response = await fetch('/api/authors', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(authorData)
+          body: JSON.stringify(payload)
         });
 
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-
-        const newAuthor = await response.json();
-        showToast('Автор успешно добавлен', 'success');
-        closeModal();
-
-        // Обновляем список авторов если мы на вкладке авторов
-        if (state.activeTab === 'authors') {
-          await loadAllAuthors();
+        // Обработка ответа
+        if (response.ok) {
+          alert('Автор успешно добавлен');
+          // Закрываем модальное окно
+          closeModal();
           await loadPendingAuthors();
+          await loadAllAuthors();
           updateAuthorsUI();
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Ошибка добавления автора');
         }
-
       } catch (error) {
-        console.error('Error adding author:', error);
-        showToast(error.message || 'Ошибка при добавлении автора', 'error');
+        console.error('Error:', error);
+        alert('Произошла ошибка при добавлении автора');
+      } finally {
+        // Восстанавливаем кнопку
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
       }
     });
   }
