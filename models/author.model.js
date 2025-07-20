@@ -7,8 +7,17 @@ module.exports = (sequelize, DataTypes) => {
             if (!authorData.nickName) {
                 throw new Error('Заполните никнейм');
             }
+            let author = await this.create(authorData);
 
-            return this.create(authorData);
+            await sequelize.models.ActionHistory.logAction(
+                authorData.creatorId,
+                'AddAuthor',
+                `Создан новый автор: ${authorData.nickName}`,
+                null,
+                author.id
+            );
+
+            return author;
         }
 
         static async deleteAuthor(authorId) {

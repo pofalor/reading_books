@@ -32,6 +32,7 @@ exports.getAllAuthors = async (req, res) => {
         const { body } = req.body;
         const limit = parseInt(body.limit) || 100;
         const search = body.search.toString().toLowerCase();
+        const currentUserId = req.user.id; // Получаем ID текущего пользователя
         const authors = await Author.findAll({
             where: sequelize.or(
                     { firstName: sequelize.where(sequelize.fn('LOWER', sequelize.col('firstName')), 'LIKE', '%' + search + '%') },
@@ -40,7 +41,10 @@ exports.getAllAuthors = async (req, res) => {
                     { nickName: sequelize.where(sequelize.fn('LOWER', sequelize.col('nickName')), 'LIKE', '%' + search + '%') },
                 ),
             limit: limit,
-            order: [['isConfirmed', 'ASC'], ['createdAt', 'DESC']]
+            order: [
+                [sequelize.literal(`CASE WHEN "creatorId" != '${currentUserId}' THEN 0 ELSE 1 END`), 'ASC'],
+                ['isConfirmed', 'ASC'], 
+                ['createdAt', 'DESC']]
         });
         
         if (authors.length === 0) {

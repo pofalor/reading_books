@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       all: []
     }
   };
+  let currentUser = null;
 
   // Инициализация страницы
   try {
@@ -42,6 +43,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       case 'genres':
         await loadAllGenres();
         break;
+    }
+    // Получаем текущего пользователя
+    try {
+      const response = await fetch('/api/auth/profile');
+      if (response.ok) {
+        currentUser = await response.json();
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
     }
     updateUI();
   }
@@ -109,6 +119,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updateAuthorsUI() {
     updateTable('all-authors', state.authors.all, generateAllAuthorsRow);
+
+    const button = document.getElementById("approve-author-btn");
+    button.addEventListener('click', async (e) => {
+      const authorId = parseInt(e.target.dataset.id);
+      await approveAuthor(authorId);
+    });
+
+    setupAuthorBioModal();
   }
 
   function updateTable(tableId, data, rowGenerator) {
@@ -197,6 +215,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function generateAllAuthorsRow(author) {
+    const isCurrentUserCreator = currentUser.id === author.creatorId;
+    const approveButtonDisabled = isCurrentUserCreator ? 'disabled' : '';
+    const approveButtonClass = isCurrentUserCreator ? 'btn secondary' : 'btn primary';
     return `
             <tr>
                 <td>${escapeHtml(getAuthorFullName(author))}</td>
@@ -210,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   </button>
                 </td>
                 <td>
-                    <button class="btn primary" id="approve-author-btn" data-id="${author.id}">
+                    <button class="${approveButtonClass}" id="approve-author-btn" data-id="${author.id}" ${approveButtonDisabled}>
                         Подтвердить
                     </button>
                 </td>
@@ -249,12 +270,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обработчики для авторов
     if (state.activeTab === 'authors') {
-      const button = document.getElementById("approve-author-btn");
-      button.addEventListener('click', async (e) => {
-        const authorId = parseInt(e.target.dataset.id);
-        await approveAuthor(authorId);
-      });
-
       // Поиск авторов
       setupSearch('author-search', 'search-authors-btn', '/api/authors/getAll', 'authors');
     }
@@ -267,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const performSearch = async () => {
       const limit = 100;
       const search = input.value.trim();
-      
+
       try {
         const body = { search, limit };
         const response = await fetch(`${endpoint}`, {
@@ -309,7 +324,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (state.activeTab === 'authors') {
       setupAuthorModal();
-      setupAuthorBioModal();
     }
   }
 
