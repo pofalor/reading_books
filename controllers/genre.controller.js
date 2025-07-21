@@ -1,4 +1,4 @@
-const { Genre, ActionHistory } = require('../models');
+const { Genre, ActionHistory, BookGenre, sequelize } = require('../models');
 
 exports.getAllGenres = async (req, res) => {
     try {
@@ -10,7 +10,7 @@ exports.getAllGenres = async (req, res) => {
             where: sequelize.or(
                 { name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), 'LIKE', '%' + search + '%') },
                 { description: sequelize.where(sequelize.fn('LOWER', sequelize.col('description')), 'LIKE', '%' + search + '%') }
-            ), 
+            ),
             limit: limit
         });
 
@@ -27,6 +27,10 @@ exports.getAllGenres = async (req, res) => {
 exports.createGenre = async (req, res) => {
     try {
         const { name, description } = req.body;
+
+        const existGenre = await Genre.findOne({ where: { name } });
+        if (existGenre) throw new Error('Жанр с таким названием уже существует');
+
         const genre = await Genre.create({ name, description });
 
         await ActionHistory.logAction(
@@ -47,22 +51,23 @@ exports.createGenre = async (req, res) => {
 
 exports.deleteGenre = async (req, res) => {
     try {
-        const { genreId } = req.body;
+        const { genreId } = req.query;
         const genre = await Genre.findByPk(genreId);
 
         if (!genre) throw new Error('Жанр не найден');
-
-        await genre.destroy();
+        // Проверяем, что автор не используется
+        const count = await BookGenre.count({ where: { genreId: genreId } });
+        if (count > 0) {
+            throw new Error('Жанр используется и не может быть удалён');
+        }
 
         await ActionHistory.logAction(
             req.user.id,
             'DeleteGenre',
-            `Жанр "${genre.name}" удален`,
-            null,
-            null,
-            null,
-            genreId
+            `Жанр "${genre.name}" удален`
         );
+
+        await genre.destroy();
 
         res.json({ success: true });
     } catch (error) {

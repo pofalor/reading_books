@@ -32,13 +32,15 @@ module.exports = (sequelize, DataTypes) => {
                 throw new Error('Автор используется и не может быть удалён');
             }
 
+            let result = await author.destroy();
+
             await sequelize.models.ActionHistory.logAction(
                 userId,
                 'DeleteAuthor',
                 `Удалён автор: ${author.nickName}`
             );
 
-            return author.destroy();
+            return result;
         }
 
         getFullName() {

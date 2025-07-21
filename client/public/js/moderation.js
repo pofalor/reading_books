@@ -2,13 +2,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Состояние приложения
   const state = {
     activeTab: getActiveTab(),
-    books: {
-      pending: [],
-      all: []
-    },
-    authors: {
-      all: []
-    },
+    books: [],
+    authors: [],
     genres: []
   };
   let currentUser = null;
@@ -72,11 +67,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await fetch('/api/books?limit=100');
       if (response.ok) {
         const data = await response.json();
-        state.books.all = data.hidden ? [] : data;
+        state.books = data.hidden ? [] : data;
       }
     } catch (error) {
       console.error('Error loading all books: ', error);
-      state.books.all = [];
+      state.books = [];
     }
   }
 
@@ -92,18 +87,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (response.ok) {
         const data = await response.json();
-        state.authors.all = data.hidden ? [] : data;
+        state.authors = data.hidden ? [] : data;
       }
     } catch (error) {
       console.error('Error loading all authors: ', error);
-      state.authors.all = [];
+      state.authors = [];
     }
   }
 
   async function loadAllGenres(search = "") {
     try {
       const body = { search, limit: 100 };
-      const response = await fetch('/api/genres/', {
+      const response = await fetch('/api/genres/getAll', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -125,17 +120,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateBooksUI();
     } else if (state.activeTab === 'authors') {
       updateAuthorsUI();
+    } else if (state.activeTab === 'genres') {
+      updateGenresUI();
     }
-    // Можно добавить обработку жанров
   }
 
   function updateBooksUI() {
     updateTable('pending-books', state.books.pending, generatePendingBooksRow);
-    updateTable('all-books', state.books.all, generateAllBooksRow);
+    updateTable('all-books', state.books, generateAllBooksRow);
   }
 
   function updateAuthorsUI() {
-    updateTable('all-authors', state.authors.all, generateAllAuthorsRow);
+    updateTable('all-authors', state.authors, generateAllAuthorsRow);
 
     document.querySelectorAll('.approve-author-btn').forEach(btn => {
       btn.addEventListener('click', () => approveAuthor(btn.dataset.id));
@@ -146,6 +142,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     setupAuthorBioModal();
+  }
+
+  function updateGenresUI() {
+    updateTable('genres', state.genres, generateAllGenresRow);
+
+    document.querySelectorAll('.delete-genre-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteGenre(btn.dataset.id));
+    });
   }
 
   function updateTable(tableId, data, rowGenerator) {
@@ -201,6 +205,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <th>Дата регистрации</th>
                     <th>Биография</th>
                     <th>Действия</th>
+                `;
+      case 'genres':
+        return `
+                    <th style="width: 20%">Название</th>
+                    <th style="width: 60%">Описание</th>
+                    <th style="width: 20%">Действия</th>
                 `;
       default:
         return '';
@@ -259,11 +269,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td class="d-flex">
                     ${approveButton}
                     <button class="btn danger delete-author-btn" data-id="${author.id}">
-                        Удалить
+                        <i class="fas fa-trash"></i> Удалить
                     </button>
                 </td>
             </tr>
         `;
+  }
+
+  function generateAllGenresRow(genre) {
+    return `
+      <tr>
+        <td>${escapeHtml(genre.name)}</td>
+        <td>${escapeHtml(genre.description || '—')}</td>
+        <td>
+            <button class="btn danger delete-genre-btn" data-id="${genre.id}">
+                <i class="fas fa-trash"></i> Удалить
+            </button>
+        </td>
+      </tr>
+    `;
   }
 
   function setupEventListeners() {
@@ -300,6 +324,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Поиск авторов
       setupSearch('author-search', 'search-authors-btn', '/api/authors/getAll', 'authors');
     }
+
+    // Обработчики для жанров
+    if (state.activeTab === 'genres') {
+      // Поиск авторов
+      setupSearch('genre-search', 'search-genres-btn', '/api/genres/getAll', 'genres');
+    }
   }
 
   function setupSearch(inputId, buttonId, endpoint, dataType) {
@@ -322,7 +352,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error('Search failed');
 
         const data = await response.json();
-        state[dataType].all = data.hidden ? [] : data;
+        state[dataType] = data.hidden ? [] : data;
         updateUI();
       } catch (error) {
         console.error('Search error:', error);
@@ -351,6 +381,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (state.activeTab === 'authors') {
       setupAuthorModal();
+    }
+    // Обработчики для авторов
+    if (state.activeTab === 'genres') {
+      setupGenreModal();
     }
   }
 
@@ -521,6 +555,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function deleteAuthor(authorId) {
     try {
+      if (!confirm('Вы уверены, что хотите удалить этого автора?')) return;
+
       const response = await fetch(`/api/authors/delete?authorId=${authorId}`);
 
       if (response.ok) {
@@ -537,6 +573,108 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
       console.error('Ошибка:', error);
       alert(error.message || 'Ошибка при удалении автора');
+    }
+  }
+
+  // Управление модалкой жанра
+  function setupGenreModal() {
+    const modal = document.getElementById('add-genre-modal');
+    const openBtn = document.getElementById('add-genre-btn');
+    const closeBtn = document.getElementById('cancel-genre-btn');
+    const form = document.getElementById('add-genre-form');
+
+    if (!modal || !openBtn) return;
+
+    // Открытие модалки
+    openBtn.addEventListener('click', () => {
+      modal.style.display = 'block';
+      document.getElementById('genre-name').focus();
+    });
+
+    // Закрытие модалки
+    const closeModal = (needReset) => {
+      modal.style.display = 'none';
+      if (needReset) form.reset();
+    };
+
+    closeBtn.addEventListener('click', closeModal, false);
+    modal.querySelector('.close').addEventListener('click', closeModal, false);
+
+    // Закрытие по клику вне модалки
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal(false);
+    });
+
+    // Обработка отправки формы
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        name: document.getElementById('genre-name').value.trim(),
+        description: document.getElementById('genre-description').value.trim() || null
+      }
+
+      // Валидация обязательных полей
+      if (!payload.name) {
+        alert('Название обязательно для заполнения');
+        return;
+      }
+
+      const submitBtn = document.querySelector('button[form="add-genre-form"][type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/genres', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+
+        // Обработка ответа
+        if (response.ok) {
+          alert('Жанр успешно добавлен');
+          closeModal();
+          await loadAllGenres();
+          updateGenresUI();
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Ошибка добавления жанра');
+        }
+      } catch (error) {
+        console.error('Ошибка: ', error);
+        alert(error.message || 'Ошибка при добавлении жанра');
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  // Удаление жанра
+  async function deleteGenre(genreId) {
+    if (!confirm('Вы уверены, что хотите удалить этот жанр?')) return;
+
+    try {
+      const response = await fetch(`/api/genres?genreId=${genreId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Жанр успешно удалён');
+        await loadAllGenres();
+        updateGenresUI();
+      }
+      else {
+        const error = await response.json();
+        alert(error.message || 'Ошибка удаления жанра');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert(error.message || 'Ошибка при удалении жанра');
     }
   }
 

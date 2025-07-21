@@ -73,6 +73,27 @@
               </div>
             </div>
             <% } %>
+              <% if (activeTab==='genres' ) { %>
+                <div class="tab-content">
+                  <button id="add-genre-btn" class="btn primary moderation-add-button">
+                    <i class="fas fa-plus"></i> Добавить жанр
+                  </button>
+
+                  <h2><i class="fas fa-tags"></i> Все жанры</h2>
+                  <div class="search-container">
+                    <input type="text" id="genre-search" placeholder="Поиск по названию или описанию...">
+                    <button id="search-genres-btn" class="btn primary">Поиск</button>
+                  </div>
+
+                  <div id="genres-container">
+                    <div id="genres-table" class="moderation-table"></div>
+                    <div id="no-genres" class="no-data-message">
+                      <i class="fas fa-tag"></i>
+                      <p>Жанры не найдены</p>
+                    </div>
+                  </div>
+                </div>
+                <% } %>
 
     </div>
     <!-- Аналогичные блоки для authors и genres -->
@@ -202,6 +223,37 @@
         <span class="close">&times;</span>
         <h2>Биография автора</h2>
         <div id="bio-content"></div>
+      </div>
+    </div>
+
+    <!-- Модальное окно добавления жанра -->
+    <div id="add-genre-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-tag"></i> Добавить жанр</h2>
+
+        <div class="modal-form-container">
+          <form id="add-genre-form">
+            <div class="form-group">
+              <label for="genre-name">Название*</label>
+              <input type="text" id="genre-name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="genre-description">Описание</label>
+              <textarea id="genre-description" rows="4"></textarea>
+            </div>
+          </form>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn outline" id="cancel-genre-btn">
+            <i class="fas fa-times"></i> Отмена
+          </button>
+          <button type="submit" form="add-genre-form" class="btn primary">
+            <i class="fas fa-check"></i> Сохранить
+          </button>
+        </div>
       </div>
     </div>
 

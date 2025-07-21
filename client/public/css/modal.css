@@ -26,6 +26,7 @@
     overflow-y: auto;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    transform: translateY(0px);
 }
 
 .modal-content::-webkit-scrollbar, .modal::-webkit-scrollbar {
