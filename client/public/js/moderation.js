@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
     authors: {
       all: []
-    }
+    },
+    genres: []
   };
   let currentUser = null;
 
@@ -36,9 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ]);
         break;
       case 'authors':
-        await Promise.all([
-          loadAllAuthors()
-        ]);
+        await loadAllAuthors();
         break;
       case 'genres':
         await loadAllGenres();
@@ -76,7 +75,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.books.all = data.hidden ? [] : data;
       }
     } catch (error) {
-      throw error;
+      console.error('Error loading all books: ', error);
+      state.books.all = [];
     }
   }
 
@@ -95,12 +95,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.authors.all = data.hidden ? [] : data;
       }
     } catch (error) {
-      throw error;
+      console.error('Error loading all authors: ', error);
+      state.authors.all = [];
     }
   }
 
-  async function loadAllGenres() {
-    // Реализация загрузки жанров
+  async function loadAllGenres(search = "") {
+    try {
+      const body = { search, limit: 100 };
+      const response = await fetch('/api/genres/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ body })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        state.genres = data.hidden ? [] : data;
+      }
+    } catch (error) {
+      state.genres = [];
+      console.error('Error loading all genres: ', error);
+    }
   }
 
   function updateUI() {
@@ -120,10 +137,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateAuthorsUI() {
     updateTable('all-authors', state.authors.all, generateAllAuthorsRow);
 
-    const button = document.getElementById("approve-author-btn");
-    button.addEventListener('click', async (e) => {
-      const authorId = parseInt(e.target.dataset.id);
-      await approveAuthor(authorId);
+    document.querySelectorAll('.approve-author-btn').forEach(btn => {
+      btn.addEventListener('click', () => approveAuthor(btn.dataset.id));
+    });
+
+    document.querySelectorAll('.delete-author-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteAuthor(btn.dataset.id));
     });
 
     setupAuthorBioModal();
@@ -215,9 +234,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function generateAllAuthorsRow(author) {
-    const isCurrentUserCreator = currentUser.id === author.creatorId;
-    const approveButtonDisabled = isCurrentUserCreator ? 'disabled' : '';
-    const approveButtonClass = isCurrentUserCreator ? 'btn secondary' : 'btn primary';
+    let approveButton = "";
+    if (!author.isConfirmed) {
+      const isCurrentUserCreator = currentUser.id === author.creatorId;
+      const approveButtonDisabled = isCurrentUserCreator ? 'disabled' : '';
+      const approveButtonClass = isCurrentUserCreator ? 'btn secondary' : 'btn primary';
+      approveButton = `<button class="${approveButtonClass} approve-author-btn" data-id="${author.id}" ${approveButtonDisabled}>
+                        Подтвердить
+                      </button>`
+    }
+
     return `
             <tr>
                 <td>${escapeHtml(getAuthorFullName(author))}</td>
@@ -226,13 +252,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${author.birthDate ? new Date(author.birthDate).toLocaleDateString() : '—'}</td>
                 <td>${new Date(author.createdAt).toLocaleDateString()}</td>
                 <td>
-                  <button id="author-bio-button" class="btn primary" data-bio="${escapeHtml(author.bio || 'Биография отсутствует')}">
+                  <button class="btn primary author-bio-button" data-bio="${escapeHtml(author.bio || 'Биография отсутствует')}">
                       Биография
                   </button>
                 </td>
-                <td>
-                    <button class="${approveButtonClass}" id="approve-author-btn" data-id="${author.id}" ${approveButtonDisabled}>
-                        Подтвердить
+                <td class="d-flex">
+                    ${approveButton}
+                    <button class="btn danger delete-author-btn" data-id="${author.id}">
+                        Удалить
                     </button>
                 </td>
             </tr>
@@ -440,19 +467,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function setupAuthorBioModal() {
     // Открытие модального окна с биографией
+    document.querySelectorAll('.author-bio-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bio = btn.dataset.bio;
+        const modal = document.getElementById('bio-modal');
+        const bioContent = document.getElementById('bio-content');
 
-    const openBtn = document.getElementById('author-bio-button');
-
-    if (!openBtn) return;
-
-    // Открытие модалки
-    openBtn.addEventListener('click', () => {
-      const bio = openBtn.getAttribute('data-bio');
-      const modal = document.getElementById('bio-modal');
-      const bioContent = document.getElementById('bio-content');
-
-      bioContent.textContent = bio; // или bioContent.innerHTML = bio, если поддерживается HTML
-      modal.style.display = 'block';
+        bioContent.textContent = bio; // или bioContent.innerHTML = bio, если поддерживается HTML
+        modal.style.display = 'block';
+      });
     });
 
     // Закрытие модального окна
@@ -493,6 +516,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
       console.error('Ошибка:', error);
       alert(error.message || 'Ошибка при подтверждении автора');
+    }
+  }
+
+  async function deleteAuthor(authorId) {
+    try {
+      const response = await fetch(`/api/authors/delete?authorId=${authorId}`);
+
+      if (response.ok) {
+        alert('Автор успешно удалён');
+
+        // Обновляем данные
+        await loadAllAuthors();
+        updateAuthorsUI();
+      }
+      else {
+        const error = await response.json();
+        alert(error.message || 'Ошибка удаления автора');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert(error.message || 'Ошибка при удалении автора');
     }
   }
 

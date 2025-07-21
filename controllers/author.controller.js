@@ -35,18 +35,18 @@ exports.getAllAuthors = async (req, res) => {
         const currentUserId = req.user.id; // Получаем ID текущего пользователя
         const authors = await Author.findAll({
             where: sequelize.or(
-                    { firstName: sequelize.where(sequelize.fn('LOWER', sequelize.col('firstName')), 'LIKE', '%' + search + '%') },
-                    { secondName: sequelize.where(sequelize.fn('LOWER', sequelize.col('secondName')), 'LIKE', '%' + search + '%') },
-                    { surname: sequelize.where(sequelize.fn('LOWER', sequelize.col('surname')), 'LIKE', '%' + search + '%') },
-                    { nickName: sequelize.where(sequelize.fn('LOWER', sequelize.col('nickName')), 'LIKE', '%' + search + '%') },
-                ),
+                { firstName: sequelize.where(sequelize.fn('LOWER', sequelize.col('firstName')), 'LIKE', '%' + search + '%') },
+                { secondName: sequelize.where(sequelize.fn('LOWER', sequelize.col('secondName')), 'LIKE', '%' + search + '%') },
+                { surname: sequelize.where(sequelize.fn('LOWER', sequelize.col('surname')), 'LIKE', '%' + search + '%') },
+                { nickName: sequelize.where(sequelize.fn('LOWER', sequelize.col('nickName')), 'LIKE', '%' + search + '%') },
+            ),
             limit: limit,
             order: [
                 [sequelize.literal(`CASE WHEN "creatorId" != '${currentUserId}' THEN 0 ELSE 1 END`), 'ASC'],
-                ['isConfirmed', 'ASC'], 
+                ['isConfirmed', 'ASC'],
                 ['createdAt', 'DESC']]
         });
-        
+
         if (authors.length === 0) {
             return res.json({ hidden: true });
         }
@@ -62,6 +62,17 @@ exports.createNew = async (req, res) => {
         const model = req.body;
         model.creatorId = req.user.id;
         const author = await Author.createNew(model);
+        res.json(author);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.delete = async (req, res) => {
+    try {
+        const { authorId } = req.query;
+        const userId = req.user.id;
+        const author = await Author.deleteAuthor(authorId, userId);
         res.json(author);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -20,11 +20,24 @@ module.exports = (sequelize, DataTypes) => {
             return author;
         }
 
-        static async deleteAuthor(authorId) {
+        static async deleteAuthor(authorId, userId) {
             const author = await this.findByPk(authorId);
             if (!author) {
-                throw new Error('Author not found');
+                throw new Error('Автор не найден');
             }
+
+            // Проверяем, что автор не используется
+            const count = await sequelize.models.Book.count({ where: { authorId: authorId } });
+            if (count > 0) {
+                throw new Error('Автор используется и не может быть удалён');
+            }
+
+            await sequelize.models.ActionHistory.logAction(
+                userId,
+                'DeleteAuthor',
+                `Удалён автор: ${author.nickName}`
+            );
+
             return author.destroy();
         }
 

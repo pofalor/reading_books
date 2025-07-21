@@ -60,6 +60,11 @@ a {
   background: transparent;
 }
 
+.btn.danger {
+  background-color: #ff4d4d;
+  color: white;
+}
+
 /* Header & Navbar */
 .navbar {
   background-color: white;
@@ -311,6 +316,10 @@ a {
   }
 
   .nav-links.active {
+    display: flex;
+  }
+
+  .d-flex{
     display: flex;
   }
 

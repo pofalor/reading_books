@@ -1,6 +1,6 @@
 /* Основные стили страницы */
 .moderation-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -227,6 +227,10 @@
   margin-bottom: 20px;
 }
 
+.approve-author-btn {
+  margin-right: 15px;
+}
+
 /* Адаптивность формы */
 @media (max-width: 576px) {
   #add-author-form .form-group {
@@ -241,4 +245,5 @@
   .form-footer .btn {
     width: 100%;
   }
+
 }
