@@ -14,8 +14,13 @@ exports.getFeaturedBooks = async (req, res) => {
 
 exports.getAllBooks = async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 10;
+         const { body } = req.body;
+        const limit = parseInt(body.limit) || 10;
+        const search = body.search.toString().toLowerCase();
         const books = await Book.findAll({
+            where: sequelize.or(
+                { title: sequelize.where(sequelize.fn('LOWER', sequelize.col('title')), 'LIKE', '%' + search + '%') }
+            ),
             include: [
                 { model: Author },
                 { model: Genre, through: { attributes: [] } }
@@ -171,24 +176,6 @@ exports.uploadBookFile = async (req, res) => {
         });
     } catch (error) {
         cleanUpFiles({ bookFile: [req.file] });
-        res.status(500).json({ message: error.message });
-    }
-};
-
-exports.getPendingBooks = async (req, res) => {
-    try {
-        const books = await Book.findAll({
-            where: { isConfirmed: false },
-            include: [ Author, Genre],
-            limit: 100
-        });
-
-        if (books.length === 0) {
-            return res.json({ hidden: true });
-        }
-
-        res.json(books);
-    } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };

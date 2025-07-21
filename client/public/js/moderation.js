@@ -26,10 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadDataForCurrentTab() {
     switch (state.activeTab) {
       case 'books':
-        await Promise.all([
-          loadPendingBooks(),
-          loadAllBooks()
-        ]);
+        await loadAllBooks();
         break;
       case 'authors':
         await loadAllAuthors();
@@ -48,18 +45,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error fetching current user:', error);
     }
     updateUI();
-  }
-
-  async function loadPendingBooks() {
-    try {
-      const response = await fetch('/api/books/pending');
-      if (response.ok) {
-        const data = await response.json();
-        state.books.pending = data.hidden ? [] : data;
-      }
-    } catch (error) {
-      throw error;
-    }
   }
 
   async function loadAllBooks() {
@@ -126,7 +111,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateBooksUI() {
-    updateTable('pending-books', state.books.pending, generatePendingBooksRow);
     updateTable('all-books', state.books, generateAllBooksRow);
   }
 
@@ -182,13 +166,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function getTableHeaders(tableId) {
     switch (tableId) {
-      case 'pending-books':
-        return `
-                    <th>Название</th>
-                    <th>Автор</th>
-                    <th>Создатель</th>
-                    <th>Действия</th>
-                `;
       case 'all-books':
         return `
                     <th>Название</th>
@@ -215,21 +192,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       default:
         return '';
     }
-  }
-
-  function generatePendingBooksRow(book) {
-    return `
-            <tr>
-                <td>${escapeHtml(book.title)}</td>
-                <td>${escapeHtml(getAuthorName(book.Author))}</td>
-                <td>${escapeHtml(`${book.Creator.firstName} ${book.Creator.lastName}`)}</td>
-                <td>
-                    <button class="action-btn approve-btn" data-id="${book.id}">
-                        Подтвердить
-                    </button>
-                </td>
-            </tr>
-        `;
   }
 
   function generateAllBooksRow(book) {
@@ -694,16 +656,5 @@ document.addEventListener('DOMContentLoaded', async () => {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;") : '';
-  }
-
-  function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      toast.remove();
-    }, 3000);
   }
 });

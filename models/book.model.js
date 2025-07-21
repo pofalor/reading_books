@@ -7,14 +7,6 @@ module.exports = (sequelize, DataTypes) => {
             return this.create(bookData);
         }
 
-        static async deleteBook(bookId) {
-            const book = await this.findByPk(bookId);
-            if (!book) {
-                throw new Error('Book not found');
-            }
-            return book.destroy();
-        }
-
         static async getFeatured(limit = 10) {
             return this.findAll({
                 order: [['createdAt', 'DESC']],
