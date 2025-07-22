@@ -3,6 +3,16 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     //Жанр
     class Genre extends Model {
+        static async getAll(search = "", limit = 100) {
+            const genres = await Genre.findAll({
+                where: sequelize.or(
+                    { name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), 'LIKE', '%' + search + '%') },
+                    { description: sequelize.where(sequelize.fn('LOWER', sequelize.col('description')), 'LIKE', '%' + search + '%') }
+                ),
+                limit: limit
+            });
+            return genres;
+        }
     }
 
     Genre.init({

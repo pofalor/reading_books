@@ -1,5 +1,5 @@
 const path = require('path');
-const { Book, Author, Genre, BookGenre, ActionHistory } = require('../models');
+const { Book, Author, Genre, BookGenre, ActionHistory, sequelize } = require('../models');
 const { cleanUpFiles } = require('../config/multer.config');
 
 exports.getFeaturedBooks = async (req, res) => {
@@ -14,19 +14,36 @@ exports.getFeaturedBooks = async (req, res) => {
 
 exports.getAllBooks = async (req, res) => {
     try {
-         const { body } = req.body;
+        const { body } = req.body;
         const limit = parseInt(body.limit) || 10;
         const search = body.search.toString().toLowerCase();
         const books = await Book.findAll({
             where: sequelize.or(
-                { title: sequelize.where(sequelize.fn('LOWER', sequelize.col('title')), 'LIKE', '%' + search + '%') }
+                { title: sequelize.where(sequelize.fn('LOWER', sequelize.col('title')), 'LIKE', '%' + search + '%') },
+                { "$Author.firstName$": sequelize.where(sequelize.fn('LOWER', sequelize.col("Author.firstName")), 'LIKE', '%' + search + '%') },
+                { "$Author.secondName$": sequelize.where(sequelize.fn('LOWER', sequelize.col("Author.secondName")), 'LIKE', '%' + search + '%') },
+                { "$Author.surname$": sequelize.where(sequelize.fn('LOWER', sequelize.col("Author.surname")), 'LIKE', '%' + search + '%') },
+                { "$Author.nickName$": sequelize.where(sequelize.fn('LOWER', sequelize.col("Author.nickName")), 'LIKE', '%' + search + '%') },
+                sequelize.literal(`EXISTS (
+                        SELECT 1 FROM book_genres
+                        JOIN genres ON genres.id = book_genres.genreId
+                        WHERE book_genres.bookId = Book.id
+                        AND LOWER(genres.name) LIKE '%${search}%'
+                    )`)
             ),
             include: [
-                { model: Author },
-                { model: Genre, through: { attributes: [] } }
+                {
+                    model: Author,
+                    where: {}, // Это нужно для правильной работы фильтрации
+                    attributes: ['id', 'firstName', 'secondName', 'surname', 'nickName'],
+                }
             ],
             limit: limit,
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
+            attributes: {
+                exclude: ['updatedAt']
+            },
+            subQuery: false
         });
         res.json(books);
     } catch (error) {

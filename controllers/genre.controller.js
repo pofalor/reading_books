@@ -3,20 +3,10 @@ const { Genre, ActionHistory, BookGenre, sequelize } = require('../models');
 exports.getAllGenres = async (req, res) => {
     try {
         const { body } = req.body;
-        const limit = parseInt(body.limit) || 100;
-        const search = body.search.toString().toLowerCase();
+        const limit = parseInt(body?.limit ?? "100");
+        const search = body?.search.toString().toLowerCase();
 
-        const genres = await Genre.findAll({
-            where: sequelize.or(
-                { name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), 'LIKE', '%' + search + '%') },
-                { description: sequelize.where(sequelize.fn('LOWER', sequelize.col('description')), 'LIKE', '%' + search + '%') }
-            ),
-            limit: limit
-        });
-
-        if (genres.length === 0) {
-            return res.json({ hidden: true });
-        }
+        const genres = await Genre.getAll(search, limit);
 
         res.json(genres);
     } catch (error) {

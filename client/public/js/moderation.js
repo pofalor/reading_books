@@ -47,9 +47,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateUI();
   }
 
-  async function loadAllBooks() {
+  async function loadAllBooks(search = "", limit = 100) {
     try {
-      const response = await fetch('/api/books?limit=100');
+      const body = { search, limit };
+      const response = await fetch('/api/books/getAll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ body })
+      });
       if (response.ok) {
         const data = await response.json();
         state.books = data.hidden ? [] : data;
@@ -60,9 +67,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  async function loadAllAuthors(search = "") {
+  async function loadAllAuthors(search = "", limit = 100) {
     try {
-      const body = { search, limit: 100 };
+      const body = { search, limit };
       const response = await fetch('/api/authors/getAll', {
         method: 'POST',
         headers: {
@@ -80,9 +87,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  async function loadAllGenres(search = "") {
+  async function loadAllGenres(search = "", limit = 100) {
     try {
-      const body = { search, limit: 100 };
+      const body = { search, limit };
       const response = await fetch('/api/genres/getAll', {
         method: 'POST',
         headers: {
@@ -92,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (response.ok) {
         const data = await response.json();
-        state.genres = data.hidden ? [] : data;
+        state.genres = data;
       }
     } catch (error) {
       state.genres = [];
@@ -272,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       // Поиск книг
-      setupSearch('book-search', 'search-books-btn', '/api/books/search', 'books');
+      setupSearch('book-search', 'search-books-btn', loadAllBooks);
 
       // Показ имени выбранного файла
       document.getElementById('book-file').addEventListener('change', function (e) {
@@ -284,17 +291,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обработчики для авторов
     if (state.activeTab === 'authors') {
       // Поиск авторов
-      setupSearch('author-search', 'search-authors-btn', '/api/authors/getAll', 'authors');
+      setupSearch('author-search', 'search-authors-btn', loadAllAuthors);
     }
 
     // Обработчики для жанров
     if (state.activeTab === 'genres') {
       // Поиск авторов
-      setupSearch('genre-search', 'search-genres-btn', '/api/genres/getAll', 'genres');
+      setupSearch('genre-search', 'search-genres-btn', loadAllGenres);
     }
   }
 
-  function setupSearch(inputId, buttonId, endpoint, dataType) {
+  function setupSearch(inputId, buttonId, searchMethod) {
     const input = document.getElementById(inputId);
     const button = document.getElementById(buttonId);
 
@@ -303,22 +310,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const search = input.value.trim();
 
       try {
-        const body = { search, limit };
-        const response = await fetch(`${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ body })
-        });
-        if (!response.ok) throw new Error('Search failed');
-
-        const data = await response.json();
-        state[dataType] = data.hidden ? [] : data;
+        await searchMethod(search, limit);
         updateUI();
       } catch (error) {
-        console.error('Search error:', error);
-        alert(`Ошибка поиска ${dataType === 'books' ? 'книг' : 'авторов'}`);
+        console.error('Search error: ', error);
+        alert(`Ошибка при поиске`);
       }
     };
 
@@ -330,16 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function setupModalHandlers() {
     if (state.activeTab === 'books') {
-      // Обработчики событий
-      document.getElementById('add-book-btn').addEventListener('click', showAddBookModal);
-      document.querySelector('#add-book-modal .close').addEventListener('click', closeAddBookModal);
-
-      // Закрытие по клику вне модалки
-      window.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('add-book-modal')) {
-          closeAddBookModal();
-        }
-      });
+      setupBookModal();
     }
     if (state.activeTab === 'authors') {
       setupAuthorModal();
@@ -350,29 +337,147 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Показ модального окна
-  function showAddBookModal() {
+  function setupBookModal() {
     const modal = document.getElementById('add-book-modal');
-    modal.style.display = 'flex'; // Используем flex для центрирования
-    document.body.style.overflow = 'hidden'; // Блокируем скролл страницы
+    const openBtn = document.getElementById('add-book-btn'); // Предполагается, что такая кнопка есть
+    const closeBtn = modal.querySelector('.close');
+    const form = document.getElementById('add-book-form');
 
-    // Анимация появления
-    setTimeout(() => {
-      modal.style.opacity = '1';
-      modal.querySelector('.modal-content').style.transform = 'translateY(0)';
-    }, 10);
-  }
+    if (!modal) return;
 
-  // Закрытие модального окна
-  function closeAddBookModal() {
-    const modal = document.getElementById('add-book-modal');
-    modal.style.opacity = '0';
-    modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
+    // Функция для открытия модального окна
+    const openModal = () => {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
 
-    setTimeout(() => {
-      modal.style.display = 'none';
-      document.body.style.overflow = 'auto';
-    }, 300);
+      // Анимация появления
+      setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+      }, 10);
+
+      document.getElementById('book-title').focus();
+    };
+
+    // Функция для закрытия модального окна
+    const closeModal = (needReset = false) => {
+      modal.style.opacity = '0';
+      modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
+
+      setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        if (needReset) form.reset();
+      }, 300);
+    };
+
+    // Обработчики открытия модального окна
+    if (openBtn) {
+      openBtn.addEventListener('click', openModal);
+    }
+
+    // Обработчики закрытия модального окна
+    closeBtn.addEventListener('click', () => closeModal(false));
+
+    // Закрытие по клику вне модалки
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal(false);
+    });
+
+    // Обработка выбора файла
+    const fileInput = document.getElementById('book-file');
+    const fileNameDisplay = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileNameDisplay.textContent = fileInput.files[0].name;
+      } else {
+        fileNameDisplay.textContent = 'Файл не выбран';
+      }
+    });
+
+    // Обработка отправки формы
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Сбор данных формы
+      const formData = new FormData();
+      formData.append('title', document.getElementById('book-title').value.trim());
+      formData.append('publicationDate', document.getElementById('book-publication-date').value || null);
+      formData.append('description', document.getElementById('book-description').value.trim() || null);
+      formData.append('price', document.getElementById('book-price').value || 0);
+      formData.append('isGuestAvailable', document.getElementById('book-guest-available').checked);
+      formData.append('authorId', document.getElementById('book-author-id').value);
+
+      // Добавляем файл, если он есть
+      if (fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+      }
+
+      // Добавляем жанры
+      const selectedGenres = document.querySelectorAll('#selected-genres .selected-item');
+      selectedGenres.forEach(genre => {
+        formData.append('genreIds', genre.getAttribute('data-id'));
+      });
+
+      // Валидация обязательных полей
+      if (!formData.get('title')) {
+        alert('Название книги обязательно для заполнения');
+        return;
+      }
+
+      if (!fileInput.files.length) {
+        alert('Файл книги обязателен для добавления');
+        return;
+      }
+
+      if (!formData.get('authorId')) {
+        alert('Необходимо выбрать автора');
+        return;
+      }
+
+      if (selectedGenres.length === 0) {
+        alert('Необходимо выбрать хотя бы один жанр');
+        return;
+      }
+
+      // Показываем индикатор загрузки
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+      submitBtn.disabled = true;
+
+      try {
+        // Отправка на сервер
+        const response = await fetch('/api/books', {
+          method: 'POST',
+          body: formData
+        });
+
+        // Обработка ответа
+        if (response.ok) {
+          alert('Книга успешно добавлена');
+          closeModal(true);
+          updateBooksUI();
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Ошибка добавления книги');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Произошла ошибка при добавлении книги');
+      } finally {
+        // Восстанавливаем кнопку
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Обработчик для кнопки добавления нового автора
+    document.getElementById('add-new-author').addEventListener('click', () => {
+      closeModal(false);
+      showAddAuthorModal(); // Предполагается, что такая функция существует
+    });
   }
 
   function setupAuthorModal() {
