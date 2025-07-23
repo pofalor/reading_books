@@ -1,0 +1,13 @@
+<div class="dropdown-selector" data-api-url="<%= apiUrl %>" data-display-field="<%= displayField %>"
+    data-value-field="<%= valueField %>" data-description-field="<%= descriptionField %>">
+    <label class="dropdown-selector-label" for="<%= id %>-input">
+        <%= label %>
+        <% if (required) { %><span class="required">*</span><% } %>
+    </label>
+    <input class="dropdown-selector-input" type="text" id="<%= id %>-input" placeholder="<%= placeholder %>"
+        autocomplete="off" value="<%= selectedDisplay %>" <% if (required) { %>required<% } %>>
+    <div id="<%= id %>-list" class="dropdown-selector-list"></div>
+    <input type="hidden" id="<%= id %>-value" name="<%= id %>" value="<%= selectedValue %>">
+</div>
+
+<script src="/js/dropdown-selector.js" type="module"></script>

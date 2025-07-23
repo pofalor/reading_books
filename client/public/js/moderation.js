@@ -1,3 +1,5 @@
+import { setupModal } from './shared/modal.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
   // Состояние приложения
   const state = {

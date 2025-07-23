@@ -120,12 +120,6 @@
     transform: scale(1.2);
 }
 
-/* Стили для поиска */
-.search-select-container {
-    position: relative;
-    margin-bottom: 10px;
-}
-
 .search-results {
     position: absolute;
     top: 100%;
@@ -149,31 +143,6 @@
 
 .search-results div:hover {
     background-color: #f5f5f5;
-}
-
-.selected-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-top: 10px;
-}
-
-.selected-item {
-    background-color: #e0f0ff;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-}
-
-.selected-item button {
-    background: none;
-    border: none;
-    color: #e74c3c;
-    margin-left: 5px;
-    cursor: pointer;
-    font-weight: bold;
 }
 
 /* Адаптивность */

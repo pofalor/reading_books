@@ -57,6 +57,31 @@ exports.getAllAuthors = async (req, res) => {
     }
 };
 
+exports.searchApproved = async (req, res) => {
+    try {
+        const { body } = req.body;
+        const limit = parseInt(body.limit) || 100;
+        const search = body.search.toString().toLowerCase();
+        const authors = await Author.findAll({
+            where: sequelize.or(
+                { firstName: sequelize.where(sequelize.fn('LOWER', sequelize.col('firstName')), 'LIKE', '%' + search + '%') },
+                { secondName: sequelize.where(sequelize.fn('LOWER', sequelize.col('secondName')), 'LIKE', '%' + search + '%') },
+                { surname: sequelize.where(sequelize.fn('LOWER', sequelize.col('surname')), 'LIKE', '%' + search + '%') },
+                { nickName: sequelize.where(sequelize.fn('LOWER', sequelize.col('nickName')), 'LIKE', '%' + search + '%') },
+            ),
+            where: {
+                isConfirmed: true 
+            },
+            limit: limit,
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.json(authors);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.createNew = async (req, res) => {
     try {
         const model = req.body;

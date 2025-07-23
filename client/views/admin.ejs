@@ -68,11 +68,11 @@
                     <h2>Удалить роль</h2>
                     <form id="delete-role-form">
                         <div class="form-group">
-                            <label for="delete-role-search">Выберите роль для удаления*</label>
-                            <div class="search-role-container">
-                                <input type="text" id="delete-role-search"
+                            <label class="dropdown-input" for="delete-role-search">Выберите роль для удаления*</label>
+                            <div class="input-dropdown-container">
+                                <input class="dropdown-input" type="text" id="delete-role-search"
                                     placeholder="Начните вводить название роли..." autocomplete="off">
-                                <div id="delete-role-dropdown" class="role-dropdown">
+                                <div id="delete-role-dropdown" class="input-dropdown">
                                     <!-- Результаты поиска будут здесь -->
                                 </div>
                             </div>
@@ -121,7 +121,7 @@
         </div>
 
         <%- include('partials/footer') %>
-            <script src="/js/admin.js"></script>
+            <script src="/js/admin.js" type="module"></script>
 </body>
 
 </html>

@@ -1,3 +1,5 @@
+import { setupModal } from './shared/modal.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
     let currentUser = null;
     let allRoles = [];
@@ -83,24 +85,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Управление модальными окнами
-    function setupModal(modalId, closeSelector) {
-        const modal = document.getElementById(modalId);
-        const close = modal.querySelector(closeSelector);
-
-        close.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        return modal;
-    }
-
     const addRoleModal = setupModal('add-role-modal', '.close');
     const deleteRoleModal = setupModal('delete-role-modal', '.close');
     const addUserRoleModal = setupModal('add-user-role-modal', '.close');
@@ -154,19 +138,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (filteredRoles.length > 0) {
                         dropdown.innerHTML = filteredRoles.map(role =>
-                            `<div class="role-dropdown-item" data-id="${role.id}" data-name="${role.name}">
+                            `<div class="input-dropdown-item" data-id="${role.id}" data-name="${role.name}">
                         ${role.name} <small>${role.description || ''}</small>
                     </div>`
                         ).join('');
                         dropdown.style.display = 'block';
                     } else {
-                        dropdown.innerHTML = '<div class="role-dropdown-item no-results">Роли не найдены</div>';
+                        dropdown.innerHTML = '<div class="input-dropdown-item no-results">Роли не найдены</div>';
                         dropdown.style.display = 'block';
                     }
                 }
             } catch (error) {
                 console.error('Error searching roles:', error);
-                dropdown.innerHTML = '<div class="role-dropdown-item error">Ошибка загрузки ролей</div>';
+                dropdown.innerHTML = '<div class="input-dropdown-item error">Ошибка загрузки ролей</div>';
                 dropdown.style.display = 'block';
             }
         })
@@ -174,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обработка выбора роли из dropdown
     document.getElementById('delete-role-dropdown').addEventListener('click', (e) => {
-        const item = e.target.closest('.role-dropdown-item');
+        const item = e.target.closest('.input-dropdown-item');
         if (!item || item.classList.contains('no-results')) return;
 
         const roleId = item.dataset.id;
@@ -188,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('delete-role-dropdown').style.display = 'none';
 
         // Подсвечиваем выбранный элемент
-        document.querySelectorAll('.role-dropdown-item').forEach(el => {
+        document.querySelectorAll('.input-dropdown-item').forEach(el => {
             el.classList.remove('selected');
         });
         item.classList.add('selected');
@@ -196,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Закрываем dropdown при клике вне его
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-role-container')) {
+        if (!e.target.closest('.input-dropdown-container')) {
             document.getElementById('delete-role-dropdown').style.display = 'none';
         }
     });
