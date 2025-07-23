@@ -417,10 +417,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       // Добавляем жанры
-      const selectedGenres = document.querySelectorAll('#selected-genres .selected-item');
-      selectedGenres.forEach(genre => {
-        formData.append('genreIds', genre.getAttribute('data-id'));
-      });
+      const selectedGenres = JSON.parse(document.getElementById('user-roles-select-value').value);
+
+      // Очистка выбора
+      const dropdown = document.querySelector('#multi-select-dropdown-user-roles-select');
+      const clearEvent = new Event('clearDropdown');
+      dropdown.dispatchEvent(clearEvent);
 
       // Валидация обязательных полей
       if (!formData.get('title')) {

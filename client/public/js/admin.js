@@ -194,6 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (response.ok) {
                 alert(`Роль "${roleName}" успешно удалена`);
+                //Генерируем ивент для дропдауна, чтоб он очистился
+                const dropdown = document.querySelector('#dropdown-selector-delete-role-select');
+                const clearEvent = new Event('clearDropdown');
+                dropdown.dispatchEvent(clearEvent);
                 deleteRoleModal.style.display = 'none';
                 await loadRoles();
             } else {

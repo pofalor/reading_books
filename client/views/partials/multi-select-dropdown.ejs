@@ -1,15 +1,16 @@
-<div class="dropdown-selector" data-method="<%= method %>" data-api-url="<%= apiUrl %>" 
+<div class="dropdown-selector multi-select-dropdown" data-method="<%= method %>" data-api-url="<%= apiUrl %>" 
     data-display-field="<%= displayField %>"
     data-value-field="<%= valueField %>" data-description-field="<%= descriptionField %>"
-    id="dropdown-selector-<%= id %>">
+    id="multi-select-dropdown-<%= id %>">
     <label class="dropdown-selector-label" for="<%= id %>-input">
         <%= label %>
         <% if (required) { %><span class="required">*</span><% } %>
     </label>
+    <div class="selected-tags-container" id="<%= id %>-tags"></div>
     <input class="dropdown-selector-input" type="text" id="<%= id %>-input" placeholder="<%= placeholder %>"
-        autocomplete="off" value="<%= selectedDisplay %>" <% if (required) { %>required<% } %>>
+        autocomplete="off" <% if (required) { %>required<% } %>>
     <div id="<%= id %>-list" class="dropdown-selector-list"></div>
-    <input type="hidden" id="<%= id %>-value" name="<%= id %>" value="<%= selectedValue %>">
+    <input type="hidden" id="<%= id %>-value" name="<%= id %>" value="<%= selectedValues || '' %>">
 </div>
 
-<script src="/js/shared/dropdown-selector.js" type="module"></script>
+<script src="/js/shared/multi-select-dropdown.js" type="module"></script>

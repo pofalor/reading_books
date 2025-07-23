@@ -1,18 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Инициализация всех dropdown-селекторов на странице
-    document.querySelectorAll('.dropdown-selector').forEach(initDropdownSelector);
+    document.querySelectorAll('.multi-select-dropdown').forEach(initMultiSelectDropdown);
 });
 
-function initDropdownSelector(container) {
+function initMultiSelectDropdown(container) {
     const input = container.querySelector('.dropdown-selector-input');
     const dropdown = container.querySelector('.dropdown-selector-list');
+    const tagsContainer = container.querySelector('.selected-tags-container');
+    const hiddenInput = container.querySelector('input[type="hidden"]');
+    
     const valueField = container.dataset.valueField;
     const descriptionField = container.dataset.descriptionField;
-    const hiddenInput = container.querySelector('input[type="hidden"]');
-
     const apiUrl = container.dataset.apiUrl;
     const displayField = container.dataset.displayField;
     const method = container.dataset.method;
+
+    let selectedItems = [];
+    
+    // Инициализация из hidden input, если есть значения
+    if (hiddenInput.value) {
+        selectedItems = JSON.parse(hiddenInput.value);
+        renderSelectedTags();
+    }
 
     // Обработчики событий 
     ['input', 'focus'].forEach(type => {
@@ -29,8 +37,10 @@ function initDropdownSelector(container) {
                 });
                 if (response.ok) {
                     const items = await response.json();
+                    // Фильтруем уже выбранные элементы
                     const filtered = items.filter(item =>
-                        (item[displayField]?.toLowerCase().includes(searchTerm) || !searchTerm));
+                        (item[displayField]?.toLowerCase().includes(searchTerm) || !searchTerm) &&
+                        !selectedItems.some(selected => selected.value === item[valueField]));
 
                     renderItems(filtered);
                 }
@@ -50,6 +60,16 @@ function initDropdownSelector(container) {
     // Обработчик нажатия клавиш
     input.addEventListener('keydown', handleKeyDown);
 
+    // Обработчик кастомного события для очистки
+    container.addEventListener('clearDropdown', () => {
+        input.value = '';
+        selectedItems = [];
+        hiddenInput.value = '';
+        dropdown.innerHTML = '';
+        dropdown.style.display = 'none';
+        renderSelectedTags();
+    });
+
     function handleOutsideClick(e) {
         if (!container.contains(e.target)) {
             dropdown.style.display = 'none';
@@ -59,13 +79,13 @@ function initDropdownSelector(container) {
     function renderItems(items) {
         if (items.length > 0) {
             dropdown.innerHTML = items.map(item => `
-        <div class="dropdown-selector-item" 
-             data-value="${item[valueField]}" 
-             data-display="${item[displayField]}">
-          ${item[displayField]} 
-          ${item[descriptionField] ? `<small>${item[descriptionField]}</small>` : ''}
-        </div>
-      `).join('');
+                <div class="dropdown-selector-item" 
+                     data-value="${item[valueField]}" 
+                     data-display="${item[displayField]}">
+                  ${item[displayField]} 
+                  ${item[descriptionField] ? `<small>${item[descriptionField]}</small>` : ''}
+                </div>
+            `).join('');
             dropdown.style.display = 'block';
         } else {
             showNoResults();
@@ -76,22 +96,49 @@ function initDropdownSelector(container) {
         const item = e.target.closest('.dropdown-selector-item');
         if (!item || item.classList.contains('no-results')) return;
 
-        // Установка выбранного значения
-        input.value = item.dataset.display;
-        hiddenInput.value = item.dataset.value;
+        // Добавление выбранного значения
+        selectedItems.push({
+            value: item.dataset.value,
+            display: item.dataset.display
+        });
 
-        // Закрытие dropdown
+        // Обновление hidden input
+        hiddenInput.value = JSON.stringify(selectedItems);
+
+        // Очистка и скрытие dropdown
+        input.value = '';
+        dropdown.innerHTML = '';
         dropdown.style.display = 'none';
 
-        // Подсветка выбранного элемента
-        container.querySelectorAll('.dropdown-selector-item').forEach(el => {
-            el.classList.remove('selected');
-        });
-        item.classList.add('selected');
+        // Рендер выбранных тегов
+        renderSelectedTags();
 
         // Генерация события изменения
         const event = new Event('change', { bubbles: true });
         hiddenInput.dispatchEvent(event);
+    }
+
+    function renderSelectedTags() {
+        tagsContainer.innerHTML = selectedItems.map(item => `
+            <div class="selected-tag">
+                ${item.display}
+                <span class="remove-tag" data-value="${item.value}">×</span>
+            </div>
+        `).join('');
+
+        // Добавляем обработчики для кнопок удаления
+        tagsContainer.querySelectorAll('.remove-tag').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const valueToRemove = e.target.dataset.value;
+                selectedItems = selectedItems.filter(item => item.value !== valueToRemove);
+                hiddenInput.value = JSON.stringify(selectedItems);
+                renderSelectedTags();
+                
+                const event = new Event('change', { bubbles: true });
+                hiddenInput.dispatchEvent(event);
+            });
+        });
     }
 
     function handleKeyDown(e) {

@@ -142,13 +142,18 @@
           </div>
 
           <div class="form-group">
-            <label for="book-genres">Жанры*</label>
-            <div class="input-dropdown-container">
-              <input class="dropdown-input" type="text" id="book-genre-search"
-                placeholder="Начните вводить название жанра..." autocomplete="off">
-              <div id="genre-results" class="input-dropdown"></div>
-            </div>
-            <input type="hidden" id="selected-genres" class="selected-items">
+            <%- include('partials/multi-select-dropdown', { 
+            id: 'genres-select',
+            label: 'Жанры', 
+            apiUrl: '/api/genres/getAll', 
+            displayField: 'name', 
+            valueField: 'id', 
+            descriptionField: '',
+            placeholder: 'Начните вводить название жанра...',
+            selectedValues: '',
+            required: true, 
+            method: 'POST'
+            }) %>
             <button type="button" id="add-new-genre" class="btn outline">Добавить новый жанр</button>
           </div>
           <button type="submit" class="btn primary">Добавить книгу</button>
