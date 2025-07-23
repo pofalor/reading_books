@@ -67,17 +67,13 @@
                     <span class="close">&times;</span>
                     <h2>Удалить роль</h2>
                     <form id="delete-role-form">
-                        <div class="form-group">
-                            <label class="dropdown-input" for="delete-role-search">Выберите роль для удаления*</label>
-                            <div class="input-dropdown-container">
-                                <input class="dropdown-input" type="text" id="delete-role-search"
-                                    placeholder="Начните вводить название роли..." autocomplete="off">
-                                <div id="delete-role-dropdown" class="input-dropdown">
-                                    <!-- Результаты поиска будут здесь -->
-                                </div>
-                            </div>
-                            <input type="hidden" id="delete-role-id">
-                        </div>
+                        <%- include('partials/dropdown-selector', { id: 'delete-role-select' , containerClass: '' , 
+                        label: 'Выберите роль для удаления' , apiUrl: '/api/admin/getRoles' , 
+                        displayField: 'name' , valueField: 'id' , descriptionField: 'description', 
+                        inputClass: '' , placeholder: 'Начните вводить название роли...' , 
+                        selectedDisplay: '' , selectedValue: '',
+                        required: true, method: 'GET'
+                        }) %>
                         <button type="submit" class="btn danger">Удалить</button>
                     </form>
                 </div>

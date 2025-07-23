@@ -12,7 +12,7 @@ function initDropdownSelector(container) {
 
     const apiUrl = container.dataset.apiUrl;
     const displayField = container.dataset.displayField;
-
+    const method = container.dataset.method;
 
     // Обработчики событий 
     ['input', 'focus'].forEach(type => {
@@ -21,11 +21,11 @@ function initDropdownSelector(container) {
             const body = { search: searchTerm, limit: 100 };
             try {
                 const response = await fetch(apiUrl, {
-                    method: 'POST',
+                    method: method,
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ body })
+                    body: method === 'POST' ? JSON.stringify({ body }) : undefined
                 });
                 if (response.ok) {
                     const items = await response.json();

@@ -120,71 +120,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обработка поиска ролей при удалении
-    "input focus".split(" ").forEach(function (type) {
-        document.getElementById('delete-role-search').addEventListener(type, async (e) => {
-            const searchTerm = e.target.value?.trim()?.toLowerCase();
-            const dropdown = document.getElementById('delete-role-dropdown');
-
-            try {
-                const response = await fetch('/api/admin/getRoles');
-                if (response.ok) {
-                    const roles = await response.json();
-
-                    // Фильтруем роли по поисковому запросу
-                    const filteredRoles = roles.filter(role =>
-                        role.name.toLowerCase().includes(searchTerm) || !searchTerm
-                    );
-
-                    if (filteredRoles.length > 0) {
-                        dropdown.innerHTML = filteredRoles.map(role =>
-                            `<div class="input-dropdown-item" data-id="${role.id}" data-name="${role.name}">
-                        ${role.name} <small>${role.description || ''}</small>
-                    </div>`
-                        ).join('');
-                        dropdown.style.display = 'block';
-                    } else {
-                        dropdown.innerHTML = '<div class="input-dropdown-item no-results">Роли не найдены</div>';
-                        dropdown.style.display = 'block';
-                    }
-                }
-            } catch (error) {
-                console.error('Error searching roles:', error);
-                dropdown.innerHTML = '<div class="input-dropdown-item error">Ошибка загрузки ролей</div>';
-                dropdown.style.display = 'block';
-            }
-        })
-    });
-
-    // Обработка выбора роли из dropdown
-    document.getElementById('delete-role-dropdown').addEventListener('click', (e) => {
-        const item = e.target.closest('.input-dropdown-item');
-        if (!item || item.classList.contains('no-results')) return;
-
-        const roleId = item.dataset.id;
-        const roleName = item.dataset.name;
-
-        // Заполняем поле поиска выбранной ролью
-        document.getElementById('delete-role-search').value = roleName;
-        document.getElementById('delete-role-id').value = roleId;
-
-        // Скрываем dropdown
-        document.getElementById('delete-role-dropdown').style.display = 'none';
-
-        // Подсвечиваем выбранный элемент
-        document.querySelectorAll('.input-dropdown-item').forEach(el => {
-            el.classList.remove('selected');
-        });
-        item.classList.add('selected');
-    });
-
-    // Закрываем dropdown при клике вне его
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.input-dropdown-container')) {
-            document.getElementById('delete-role-dropdown').style.display = 'none';
-        }
-    });
-
     // Открытие модального окна удаления роли пользователя
     async function openDeleteUserRoleModal(userId) {
         document.getElementById('delete-target-user-id').value = userId;
@@ -241,7 +176,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('delete-role-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const roleName = document.getElementById('delete-role-search').value;
+        const roleName = document.querySelector('.dropdown-selector-input')?.value;
+
+        if(!roleName){
+            alert("Пожалуйста, выберите имя роли");
+            return;
+        }
 
         try {
             const response = await fetch('/api/admin/deleteRole', {
@@ -255,9 +195,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (response.ok) {
                 alert(`Роль "${roleName}" успешно удалена`);
                 deleteRoleModal.style.display = 'none';
-                // Очищаем поля после успешного удаления
-                document.getElementById('delete-role-search').value = '';
-                document.getElementById('delete-role-id').value = '';
                 await loadRoles();
             } else {
                 const error = await response.json();
@@ -342,9 +279,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('delete-role-btn').addEventListener('click', () => {
         // Очищаем поля при открытии модального окна
-        document.getElementById('delete-role-search').value = '';
-        document.getElementById('delete-role-id').value = '';
-        document.getElementById('delete-role-dropdown').style.display = 'none';
         deleteRoleModal.style.display = 'block';
     });
 

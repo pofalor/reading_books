@@ -136,7 +136,7 @@
             <%- include('partials/dropdown-selector', { id: 'author-select' , containerClass: '' , label: 'Автор' ,
               apiUrl: '/api/authors/search' , displayField: 'nickName' , valueField: 'id' , descriptionField: ''
               , inputClass: '' , placeholder: 'Начните вводить имя автора...' , selectedDisplay: '' , selectedValue: '',
-              required: true
+              required: true, method: 'POST'
               }) %>
               <button type="button" id="add-new-author" class="btn outline">Добавить нового автора</button>
           </div>
