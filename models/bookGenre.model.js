@@ -3,17 +3,25 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     // Связь книги и жанра
     class BookGenre extends Model {
-        static async validateGenreExists(genreId) {
-            const genre = await sequelize.models.Genre.findByPk(genreId);
-            return !!genre;
-        }
 
-        static async addGenre(bookId, genreId) {
+        static async addGenre(bookId, genreId, creatorId, transaction = null) {
             const exists = await this.findOne({ where: { bookId, genreId } });
             if (exists) {
-                throw new Error('Genre already added to book');
+                throw new Error('Жанр уже добавлен для книги.');
             }
-            return this.create({ bookId, genreId });
+
+            await sequelize.models.ActionHistory.logAction(
+                creatorId,
+                'AddBookGenre',
+                `Книга: ${bookId} привязана к жанру: ${genreId}`,
+                null,
+                null,
+                bookId,
+                genreId,
+                transaction
+            );
+
+            return this.create({ bookId, genreId }, { transaction });
         }
 
         static async removeGenre(bookId, genreId) {

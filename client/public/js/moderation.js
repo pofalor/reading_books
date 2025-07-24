@@ -1,5 +1,3 @@
-import { setupModal } from './shared/modal.js';
-
 document.addEventListener('DOMContentLoaded', async () => {
   // Состояние приложения
   const state = {
@@ -331,11 +329,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       setupBookModal();
     }
     if (state.activeTab === 'authors') {
-      setupAuthorModal();
+      setupAuthorModal('add-author-btn', true);
     }
     // Обработчики для авторов
     if (state.activeTab === 'genres') {
-      setupGenreModal();
+      setupGenreModal('add-genre-btn', true);
     }
   }
 
@@ -398,6 +396,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
+    // Обработчик для кнопки добавления нового автора
+    setupAuthorModal('add-new-author', false);
+
+    // Обработчик для кнопки добавления нового жанра
+    setupGenreModal('add-new-genre', false);
+
     // Обработка отправки формы
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -407,9 +411,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       formData.append('title', document.getElementById('book-title').value.trim());
       formData.append('publicationDate', document.getElementById('book-publication-date').value || null);
       formData.append('description', document.getElementById('book-description').value.trim() || null);
-      formData.append('price', document.getElementById('book-price').value || 0);
+      formData.append('price', document.getElementById('book-price').value);
       formData.append('isGuestAvailable', document.getElementById('book-guest-available').checked);
-      formData.append('authorId', document.getElementById('book-author-id').value);
+      formData.append('authorId', document.querySelector('.dropdown-selector-item.selected')?.dataset?.value);
 
       // Добавляем файл, если он есть
       if (fileInput.files.length > 0) {
@@ -417,12 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       // Добавляем жанры
-      const selectedGenres = JSON.parse(document.getElementById('user-roles-select-value').value);
-
-      // Очистка выбора
-      const dropdown = document.querySelector('#multi-select-dropdown-user-roles-select');
-      const clearEvent = new Event('clearDropdown');
-      dropdown.dispatchEvent(clearEvent);
+      const selectedGenres = JSON.parse(document.getElementById('genres-select-value').value).map(item => item.value);
 
       // Валидация обязательных полей
       if (!formData.get('title')) {
@@ -445,6 +444,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
+      formData.append('genres', selectedGenres);
+
       // Показываем индикатор загрузки
       const submitBtn = form.querySelector('button[type="submit"]');
       const originalBtnText = submitBtn.innerHTML;
@@ -460,15 +461,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Обработка ответа
         if (response.ok) {
+          // Очистка выбора
+          const dropdown = document.querySelector('#multi-select-dropdown-genres-select');
+          const clearEvent = new Event('clearDropdown');
+          dropdown.dispatchEvent(clearEvent);
+
           alert('Книга успешно добавлена');
           closeModal(true);
+          await loadAllBooks();
           updateBooksUI();
         } else {
           const error = await response.json();
           alert(error.message || 'Ошибка добавления книги');
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error: ', error);
         alert('Произошла ошибка при добавлении книги');
       } finally {
         // Восстанавливаем кнопку
@@ -476,17 +483,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         submitBtn.disabled = false;
       }
     });
-
-    // Обработчик для кнопки добавления нового автора
-    document.getElementById('add-new-author').addEventListener('click', () => {
-      closeModal(false);
-      showAddAuthorModal(); // Предполагается, что такая функция существует
-    });
   }
 
-  function setupAuthorModal() {
+  function setupAuthorModal(openBtnId, needRefreshAfterClose) {
     const modal = document.getElementById('add-author-modal');
-    const openBtn = document.getElementById('add-author-btn');
+    const openBtn = document.getElementById(openBtnId);
     const closeBtn = document.getElementById('cancel-author-btn');
     const form = document.getElementById('add-author-form');
 
@@ -553,8 +554,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           alert('Автор успешно добавлен');
           // Закрываем модальное окно
           closeModal();
-          await loadAllAuthors();
-          updateAuthorsUI();
+          if (needRefreshAfterClose) {
+            await loadAllAuthors();
+            updateAuthorsUI();
+          }
+
         } else {
           const error = await response.json();
           alert(error.message || 'Ошибка добавления автора');
@@ -648,9 +652,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Управление модалкой жанра
-  function setupGenreModal() {
+  function setupGenreModal(openBtnId, needRefreshAfterClose) {
     const modal = document.getElementById('add-genre-modal');
-    const openBtn = document.getElementById('add-genre-btn');
+    const openBtn = document.getElementById(openBtnId);
     const closeBtn = document.getElementById('cancel-genre-btn');
     const form = document.getElementById('add-genre-form');
 
@@ -709,8 +713,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response.ok) {
           alert('Жанр успешно добавлен');
           closeModal();
-          await loadAllGenres();
-          updateGenresUI();
+          if (needRefreshAfterClose) {
+            await loadAllGenres();
+            updateGenresUI();
+          }
         } else {
           const error = await response.json();
           alert(error.message || 'Ошибка добавления жанра');

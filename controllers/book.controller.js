@@ -51,67 +51,63 @@ exports.getAllBooks = async (req, res) => {
     }
 };
 
-exports.getBookById = async (req, res) => {
-    try {
-        const book = await Book.findByPk(req.params.id, {
-            include: [
-                { model: Author },
-                { model: Genre, through: { attributes: [] } }
-            ]
-        });
-
-        if (!book) {
-            return res.status(404).json({ message: 'Book not found' });
-        }
-
-        res.json(book);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
 exports.createBook = async (req, res) => {
+    let transaction;
     try {
-        const { title, description, pagesCount, authorId, genreIds } = req.body;
+        const { title, description, publicationDate, price, isGuestAvailable, authorId, genres } = req.body;
 
         // Обработка файла, если он был загружен
-        const bookFile = req.file ? {
+        if (!req.file) {
+            throw new Error('Файл книги обязателен');
+        }
+
+        transaction = await sequelize.transaction();
+
+        // Обработка файла, если он был загружен
+        const bookFile = {
             path: req.file.path,
             originalName: req.file.originalname,
             mimetype: req.file.mimetype
-        } : null;
+        };
 
         const bookData = {
             title,
-            description,
-            pagesCount,
-            authorId,
-            fileUrl: bookFile ? `/uploads/books/${path.basename(bookFile.path)}` : null
+            description: description === 'null' ? null : description,
+            publicationDate: publicationDate === 'null' ? null : publicationDate,
+            authorId: parseInt(authorId),
+            price: price === '' ? null : price,
+            guestAvailable: isGuestAvailable === 'true',
+            creatorId: req.user.id,
+            path: `/uploads/books/${path.basename(bookFile.path)}`
         };
 
-        const book = await Book.createBook(bookData);
+        const book = await Book.create(bookData, { transaction });
 
         // Добавление жанров
-        if (genreIds && genreIds.length) {
+        if (genres && genres.length) {
             await Promise.all(
-                genreIds.map(genreId => BookGenre.addGenre(book.id, genreId))
+                genres.split(',').map(genreId => BookGenre.addGenre(book.id, genreId, req.user.id, transaction))
             );
         }
 
         // Логирование действия
-        if (req.user) {
-            await ActionHistory.logAction(
-                req.user.id,
-                'AddBook',
-                `Added book "${book.title}"`,
-                null,
-                null,
-                book.id
-            );
-        }
+        await ActionHistory.logAction(
+            req.user.id,
+            'AddBook',
+            `Добавлена книга "${book.title}"`,
+            null,
+            book.authorId,
+            book.id,
+            null,
+            transaction
+        );
+
+        // Фиксируем транзакцию
+        await transaction.commit();
 
         res.status(201).json(book);
     } catch (error) {
+        if (transaction) await transaction.rollback();
         // Очистка загруженных файлов в случае ошибки
         if (req.file) {
             cleanUpFiles({ bookFile: [req.file] });
@@ -176,23 +172,6 @@ exports.deleteBook = async (req, res) => {
         await book.destroy();
         res.json({ message: 'Book deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-exports.uploadBookFile = async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded' });
-        }
-
-        res.json({
-            success: true,
-            filePath: `/uploads/books/${req.file.filename}`,
-            originalName: req.file.originalname
-        });
-    } catch (error) {
-        cleanUpFiles({ bookFile: [req.file] });
         res.status(500).json({ message: error.message });
     }
 };

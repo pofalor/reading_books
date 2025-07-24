@@ -3,9 +3,6 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     //Книга
     class Book extends Model {
-        static async createBook(bookData) {
-            return this.create(bookData);
-        }
 
         static async getFeatured(limit = 10) {
             return this.findAll({
@@ -44,14 +41,11 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: false
         },
         publicationDate: {
-            type: DataTypes.DATEONLY
+            type: DataTypes.DATEONLY,
+            allowNull: true
         },
         description: {
             type: DataTypes.TEXT
-        },
-        pagesCount: {
-            type: DataTypes.INTEGER,
-            allowNull: false
         },
         path: {
             type: DataTypes.STRING,

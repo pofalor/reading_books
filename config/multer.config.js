@@ -32,7 +32,6 @@ const coverStorage = multer.diskStorage({
 // Фильтры файлов
 const fileFilter = (req, file, cb) => {
     const allowedTypes = [
-        'application/pdf',
         'application/epub+zip'
     ];
 
@@ -49,7 +48,7 @@ module.exports = {
         storage: bookStorage,
         fileFilter,
         limits: {
-            fileSize: 50 * 1024 * 1024 // 50MB
+            fileSize: 1000 * 1024 * 1024 // 1000MB
         }
     }),
 

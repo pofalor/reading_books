@@ -40,7 +40,7 @@ function initMultiSelectDropdown(container) {
                     // Фильтруем уже выбранные элементы
                     const filtered = items.filter(item =>
                         (item[displayField]?.toLowerCase().includes(searchTerm) || !searchTerm) &&
-                        !selectedItems.some(selected => selected.value === item[valueField]));
+                        !selectedItems.some(selected => selected.value == item[valueField]));
 
                     renderItems(filtered);
                 }
