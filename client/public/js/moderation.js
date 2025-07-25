@@ -127,6 +127,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupBookDescrModal(descriptionModal);
 
     setupDownloadBookBtn();
+
+    document.querySelectorAll('.approve-book-btn').forEach(btn => {
+      btn.addEventListener('click', () => approveBook(btn.dataset.id));
+    });
+
+    document.querySelectorAll('.delete-book-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteBook(btn.dataset.id));
+    });
   }
 
   function updateAuthorsUI() {
@@ -191,6 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <th>Цена</th>
                     <th>Доступна гостям</th>
                     <th>Дата публикации</th>
+                    <th>Жанры</th>
                     <th>Файл книги</th>
                     <th>Действия</th>
                 `;
@@ -216,12 +225,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function generateAllBooksRow(book) {
-    const isCurrentUserCreator = currentUser.id === book.creatorId;
-    const approveButtonDisabled = isCurrentUserCreator ? 'disabled' : '';
-    const approveButtonClass = isCurrentUserCreator ? 'btn secondary' : 'btn primary';
-    const approveButton = `<button class="${approveButtonClass} approve-book-btn" data-id="${book.id}" ${approveButtonDisabled}>
-                    Подтвердить
+    let approveButton = "";
+    if (!book.isConfirmed) {
+      const isCurrentUserCreator = currentUser.id === book.creatorId;
+      const approveButtonDisabled = isCurrentUserCreator ? 'disabled' : '';
+      const approveButtonClass = isCurrentUserCreator ? 'btn secondary' : 'btn primary';
+      approveButton = `<button class="${approveButtonClass} approve-book-btn" data-id="${book.id}" ${approveButtonDisabled} title="Подтвердить">
+                    <i class="fas fa-check"></i>
                     </button>`;
+    }
+
     return `
             <tr>
                 <td>${escapeHtml(book.title)}</td>
@@ -237,14 +250,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${book.guestAvailable ? 'Да' : 'Нет'}</td>
                 <td>${formatDate(book.publicationDay, book.publicationMonth, book.publicationYear)}</td>
                 <td>
+                    ${book.Genres ? book.Genres.map(genre => `
+                        <span class="list-badge">${genre.name}</span>
+                    `).join('') : ''}
+                </td>
+                <td>
                   <button class="btn primary download-book-button" data-book-id="${book.id}">
                       Скачать
                   </button>
                 </td>
                 <td class="d-flex">
                     ${approveButton}
-                    <button class="btn danger delete-book-btn" data-id="${book.id}">
-                        <i class="fas fa-trash"></i> Удалить
+                    <button class="btn danger delete-book-btn" data-id="${book.id}" title="Удалить">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -310,13 +328,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обработчики для книг
     if (state.activeTab === 'books') {
-      document.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('approve-btn')) {
-          const bookId = parseInt(e.target.dataset.id);
-          await approveBook(bookId);
-        }
-      });
-
       // Поиск книг
       setupSearch('book-search', 'search-books-btn', loadAllBooks);
 
@@ -511,6 +522,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           closeModal(true);
           await loadAllBooks();
           updateBooksUI();
+          fileNameDisplay.textContent = 'Файл не выбран';
         } else {
           const error = await response.json();
           alert(error.message || 'Ошибка добавления книги');
@@ -846,6 +858,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
     });
+  }
+
+  async function approveBook(bookId) {
+    try {
+      const response = await fetch(`/api/books/approve?bookId=${bookId}`);
+
+      if (response.ok) {
+        alert('Книга успешно подтверждена');
+
+        // Обновляем данные
+        await loadAllBooks();
+        updateBooksUI();
+      }
+      else {
+        const error = await response.json();
+        alert(error.message || 'Ошибка подтверждения книги');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert(error.message || 'Ошибка при подтверждении книги');
+    }
+  }
+
+  async function deleteBook(bookId) {
+    try {
+      if (!confirm('Вы уверены, что хотите удалить эту книгу?')) return;
+
+      const response = await fetch(`/api/books?bookId=${bookId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Книга успешно удалена');
+
+        // Обновляем данные
+        await loadAllBooks();
+        updateBooksUI();
+      }
+      else {
+        const error = await response.json();
+        alert(error.message || 'Ошибка удаления книги');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert(error.message || 'Ошибка при удалении книги');
+    }
   }
 
   // Вспомогательные функции

@@ -1,6 +1,6 @@
 const path = require('path');
 const { Book, Author, Genre, BookGenre, ActionHistory, sequelize } = require('../models');
-const { cleanUpFiles } = require('../config/multer.config');
+const { cleanUpFiles, deleteFile } = require('../config/multer.config');
 const fs = require('fs');
 
 exports.getFeaturedBooks = async (req, res) => {
@@ -47,8 +47,8 @@ exports.getAllBooks = async (req, res) => {
             ],
             limit: limit,
             order: [
-                [sequelize.literal(`CASE WHEN "creatorId" != '${currentUserId}' THEN 0 ELSE 1 END`), 'ASC'],
                 ['isConfirmed', 'ASC'],
+                [sequelize.literal(`CASE WHEN Book.creatorId != ${currentUserId} THEN 0 ELSE 1 END`), 'ASC'],
                 ['createdAt', 'DESC']
             ],
             attributes: {
@@ -161,34 +161,43 @@ exports.downloadBook = async (req, res) => {
 }
 
 exports.deleteBook = async (req, res) => {
+    let transaction;
     try {
         const { bookId } = req.query;
         const book = await Book.findByPk(bookId);
         if (!book) {
-            return res.status(404).json({ message: 'Book not found' });
+            return res.status(404).json({ message: 'Книга не найдена' });
         }
+
+        transaction = await sequelize.transaction();
 
         // Логирование перед удалением
-        if (req.user) {
-            await ActionHistory.logAction(
-                req.user.id,
-                'DeleteBook',
-                `Deleted book "${book.title}"`,
-                null,
-                book.id
-            );
-        }
+        await ActionHistory.logAction(
+            req.user.id,
+            'DeleteBook',
+            `Удалена книга "${book.title}"`,
+            book.creatorId,
+            book.authorId,
+            null,
+            null,
+            transaction
+        );
 
-        await book.destroy();
-        res.json({ message: 'Book deleted successfully' });
+        const filePath = path.join(__dirname, '..', book.path);
+        deleteFile(filePath);
+        await book.destroy({ transaction });
+        await transaction.commit();
+        res.json({ message: 'Книга удалена успешно' });
     } catch (error) {
+        if (transaction) await transaction.rollback();
         res.status(500).json({ message: error.message });
     }
 };
 
 exports.approveBook = async (req, res) => {
+    let transaction;
     try {
-        const { bookId } = req.body;
+        const { bookId } = req.query;
         const book = await Book.findByPk(bookId);
 
         if (!book) throw new Error('Книга не найдена');
@@ -196,8 +205,10 @@ exports.approveBook = async (req, res) => {
             throw new Error('Нельзя подтверждать свои собственные книги');
         }
 
+        transaction = await sequelize.transaction();
+
         book.isConfirmed = true;
-        await book.save();
+        await book.save({ transaction });
 
         await ActionHistory.logAction(
             req.user.id,
@@ -205,11 +216,17 @@ exports.approveBook = async (req, res) => {
             `Книга "${book.title}" подтверждена`,
             book.creatorId,
             book.authorId,
-            book.id
+            book.id,
+            null,
+            transaction
         );
+
+        // Фиксируем транзакцию
+        await transaction.commit();
 
         res.json(book);
     } catch (error) {
+        if (transaction) await transaction.rollback();
         res.status(400).json({ message: error.message });
     }
 };

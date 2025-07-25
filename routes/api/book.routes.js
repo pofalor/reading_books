@@ -8,9 +8,10 @@ const { bookUpload } = require('../../config/multer.config');
 router.get('/featured', bookController.getFeaturedBooks);
 
 //Модераторские маршруты
-router.post('/approve', authenticate, requireRole('moderator'), bookController.approveBook);
+router.get('/approve', authenticate, requireRole('moderator'), bookController.approveBook);
 router.post('/getAll', authenticate, requireRole('moderator'), bookController.getAllBooks);
 router.post('/', authenticate, requireRole('moderator'), bookUpload.single('file'), bookController.createBook);
 router.get('/download', authenticate, requireRole('moderator'), bookController.downloadBook);
+router.delete('/', authenticate, requireRole('moderator'), bookController.deleteBook);
 
 module.exports = router;

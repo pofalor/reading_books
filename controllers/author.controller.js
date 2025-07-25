@@ -42,8 +42,8 @@ exports.getAllAuthors = async (req, res) => {
             ),
             limit: limit,
             order: [
-                [sequelize.literal(`CASE WHEN "creatorId" != '${currentUserId}' THEN 0 ELSE 1 END`), 'ASC'],
                 ['isConfirmed', 'ASC'],
+                [sequelize.literal(`CASE WHEN Author.creatorId != ${currentUserId} THEN 0 ELSE 1 END`), 'ASC'],
                 ['createdAt', 'DESC']]
         });
 

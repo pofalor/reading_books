@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 // Конфигурация для загрузки книг
 const bookStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '../',  process.env.BOOK_UPLOAD_PATH);
+        const uploadPath = path.join(__dirname, '../', process.env.BOOK_UPLOAD_PATH);
         fs.mkdirSync(uploadPath, { recursive: true });
         cb(null, uploadPath);
     },
@@ -79,5 +79,15 @@ module.exports = {
                 }
             });
         });
+    },
+
+    deleteFile: (path) => {
+        if (!path) return;
+
+        try {
+            fs.unlinkSync(path);
+        } catch (err) {
+            console.error('Error deleting file: ', err);
+        }
     }
 };

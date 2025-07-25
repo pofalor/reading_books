@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${user.email}</td>
                 <td>
                     ${user.Roles ? user.Roles.map(role => `
-                        <span class="role-badge">${role.name}</span>
+                        <span class="list-badge">${role.name}</span>
                     `).join('') : ''}
                 </td>
                 <td>${new Date(user.createdAt).toLocaleDateString()}</td>
