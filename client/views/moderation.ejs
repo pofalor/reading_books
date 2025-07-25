@@ -102,8 +102,14 @@
           </div>
 
           <div class="form-group">
-            <label for="book-publication-date">Дата публикации</label>
-            <input type="date" id="book-publication-date" max="<%= new Date().toISOString().split('T')[0] %>">
+            <label>Дата публикации</label>
+            <div style="display: flex; align-items: baseline; gap: 5px;">
+              <input id="pub-day" type="number" placeholder="ДД" min="1" max="31">
+              <span>/</span>
+              <input id="pub-month" type="number" placeholder="ММ" min="1" max="12">
+              <span>/</span>
+              <input id="pub-year" type="number" placeholder="ГГГГ" min="1">
+            </div>
           </div>
 
           <div class="form-group">
@@ -134,27 +140,18 @@
 
           <div class="form-group">
             <%- include('partials/dropdown-selector', { id: 'author-select' , containerClass: '' , label: 'Автор' ,
-              apiUrl: '/api/authors/search' , displayField: 'nickName' , valueField: 'id' , descriptionField: ''
-              , inputClass: '' , placeholder: 'Начните вводить имя автора...' , selectedDisplay: '' , selectedValue: '',
-              required: true, method: 'POST'
-              }) %>
+              apiUrl: '/api/authors/search' , displayField: 'nickName' , valueField: 'id' , descriptionField: '' ,
+              inputClass: '' , placeholder: 'Начните вводить имя автора...' , selectedDisplay: '' , selectedValue: '' ,
+              required: true, method: 'POST' }) %>
               <button type="button" id="add-new-author" class="btn outline">Добавить нового автора</button>
           </div>
 
           <div class="form-group">
-            <%- include('partials/multi-select-dropdown', { 
-            id: 'genres-select',
-            label: 'Жанры', 
-            apiUrl: '/api/genres/getAll', 
-            displayField: 'name', 
-            valueField: 'id', 
-            descriptionField: '',
-            placeholder: 'Начните вводить название жанра...',
-            selectedValues: '',
-            required: true, 
-            method: 'POST'
-            }) %>
-            <button type="button" id="add-new-genre" class="btn outline">Добавить новый жанр</button>
+            <%- include('partials/multi-select-dropdown', { id: 'genres-select' , label: 'Жанры' ,
+              apiUrl: '/api/genres/getAll' , displayField: 'name' , valueField: 'id' , descriptionField: '' ,
+              placeholder: 'Начните вводить название жанра...' , selectedValues: '' , required: true, method: 'POST' })
+              %>
+              <button type="button" id="add-new-genre" class="btn outline">Добавить новый жанр</button>
           </div>
           <button type="submit" class="btn primary">Добавить книгу</button>
       </div>
@@ -217,7 +214,15 @@
       <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Биография автора</h2>
-        <div id="bio-content"></div>
+        <div id="bio-content" class="white-space-modal"></div>
+      </div>
+    </div>
+
+    <div id="description-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Описание книги</h2>
+        <div id="description-content" class="white-space-modal"></div>
       </div>
     </div>
 

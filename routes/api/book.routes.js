@@ -11,5 +11,6 @@ router.get('/featured', bookController.getFeaturedBooks);
 router.post('/approve', authenticate, requireRole('moderator'), bookController.approveBook);
 router.post('/getAll', authenticate, requireRole('moderator'), bookController.getAllBooks);
 router.post('/', authenticate, requireRole('moderator'), bookUpload.single('file'), bookController.createBook);
+router.get('/download', authenticate, requireRole('moderator'), bookController.downloadBook);
 
 module.exports = router;

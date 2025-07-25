@@ -1,3 +1,6 @@
+import { setupModal } from './shared/modal.js';
+import { formatDate } from './shared/utlis/date.utils.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
   // Состояние приложения
   const state = {
@@ -119,6 +122,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updateBooksUI() {
     updateTable('all-books', state.books, generateAllBooksRow);
+
+    const descriptionModal = setupModal('description-modal', '.close');
+    setupBookDescrModal(descriptionModal);
+
+    setupDownloadBookBtn();
   }
 
   function updateAuthorsUI() {
@@ -155,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     table.innerHTML = `
-            <table>
+            <table class="w-100">
                 <thead>
                     <tr>
                         ${getTableHeaders(tableId)}
@@ -179,6 +187,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <th>Автор</th>
                     <th>Статус</th>
                     <th>Дата создания</th>
+                    <th>Описание</th>
+                    <th>Цена</th>
+                    <th>Доступна гостям</th>
+                    <th>Дата публикации</th>
+                    <th>Файл книги</th>
+                    <th>Действия</th>
                 `;
       case 'all-authors':
         return `
@@ -202,12 +216,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function generateAllBooksRow(book) {
+    const isCurrentUserCreator = currentUser.id === book.creatorId;
+    const approveButtonDisabled = isCurrentUserCreator ? 'disabled' : '';
+    const approveButtonClass = isCurrentUserCreator ? 'btn secondary' : 'btn primary';
+    const approveButton = `<button class="${approveButtonClass} approve-book-btn" data-id="${book.id}" ${approveButtonDisabled}>
+                    Подтвердить
+                    </button>`;
     return `
             <tr>
                 <td>${escapeHtml(book.title)}</td>
                 <td>${escapeHtml(getAuthorName(book.Author))}</td>
-                <td>${book.isConfirmed ? 'Подтверждена' : 'На модерации'}</td>
+                <td style="color: ${book.isConfirmed ? "green" : "blue"}">${book.isConfirmed ? 'Подтверждена' : 'На модерации'}</td>
                 <td>${new Date(book.createdAt).toLocaleDateString()}</td>
+                <td>
+                  <button class="btn primary book-description-button" data-description="${escapeHtml(book.description || 'Описание отсутствует')}">
+                      Описание
+                  </button>
+                </td>
+                <td>${!book.price ? 'Бесплатно' : book.price}</td>
+                <td>${book.guestAvailable ? 'Да' : 'Нет'}</td>
+                <td>${formatDate(book.publicationDay, book.publicationMonth, book.publicationYear)}</td>
+                <td>
+                  <button class="btn primary download-book-button" data-book-id="${book.id}">
+                      Скачать
+                  </button>
+                </td>
+                <td class="d-flex">
+                    ${approveButton}
+                    <button class="btn danger delete-book-btn" data-id="${book.id}">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                </td>
             </tr>
         `;
   }
@@ -409,7 +448,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Сбор данных формы
       const formData = new FormData();
       formData.append('title', document.getElementById('book-title').value.trim());
-      formData.append('publicationDate', document.getElementById('book-publication-date').value || null);
+      formData.append('publicationDay', document.getElementById('pub-day').value || null);
+      formData.append('publicationMonth', document.getElementById('pub-month').value || null);
+      formData.append('publicationYear', document.getElementById('pub-year').value || null);
       formData.append('description', document.getElementById('book-description').value.trim() || null);
       formData.append('price', document.getElementById('book-price').value);
       formData.append('isGuestAvailable', document.getElementById('book-guest-available').checked);
@@ -753,6 +794,58 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Ошибка:', error);
       alert(error.message || 'Ошибка при удалении жанра');
     }
+  }
+
+  function setupBookDescrModal(descriptionModal) {
+    // Открытие модального окна с описаникм
+    document.querySelectorAll('.book-description-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const descr = btn.dataset.description;
+        const descrContent = document.getElementById('description-content');
+
+        descrContent.textContent = descr;
+        descriptionModal.style.display = 'block';
+      });
+    });
+  }
+
+  function setupDownloadBookBtn() {
+    // Открытие модального окна с описаникм
+    document.querySelectorAll('.download-book-button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const bookId = btn.dataset.bookId;
+        try {
+          // Отправляем запрос на скачивание
+          const response = await fetch(`/api/books/download?bookId=${bookId}`);
+
+          if (response.ok) {
+            // Получаем имя файла из заголовков
+            const contentDisposition = response.headers.get('Content-Disposition');
+            const filename = contentDisposition
+              ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+              : `book_${bookId}.epub`;
+
+            // Создаем blob и скачиваем файл
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }
+          else {
+            const error = await response.json();
+            alert(error.message || 'Ошибка при скачивании книги');
+          }
+        } catch (error) {
+          console.error('Download error: ', error);
+          alert('Произошла ошибка при скачивании книги');
+        }
+      });
+    });
   }
 
   // Вспомогательные функции

@@ -323,6 +323,10 @@ a {
   outline: none;
 }
 
+.w-100 {
+  width: 100%;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .nav-links {

@@ -1,6 +1,5 @@
 /* Основные стили страницы */
 .moderation-container {
-  max-width: 1600px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -185,7 +184,7 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-#bio-content {
+.white-space-modal {
   margin-top: 20px;
   line-height: 1.6;
   /* сохраняет переносы строк */

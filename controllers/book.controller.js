@@ -1,6 +1,7 @@
 const path = require('path');
 const { Book, Author, Genre, BookGenre, ActionHistory, sequelize } = require('../models');
 const { cleanUpFiles } = require('../config/multer.config');
+const fs = require('fs');
 
 exports.getFeaturedBooks = async (req, res) => {
     try {
@@ -17,6 +18,7 @@ exports.getAllBooks = async (req, res) => {
         const { body } = req.body;
         const limit = parseInt(body.limit) || 10;
         const search = body.search.toString().toLowerCase();
+        const currentUserId = req.user.id; // Получаем ID текущего пользователя
         const books = await Book.findAll({
             where: sequelize.or(
                 { title: sequelize.where(sequelize.fn('LOWER', sequelize.col('title')), 'LIKE', '%' + search + '%') },
@@ -36,10 +38,19 @@ exports.getAllBooks = async (req, res) => {
                     model: Author,
                     where: {}, // Это нужно для правильной работы фильтрации
                     attributes: ['id', 'firstName', 'secondName', 'surname', 'nickName'],
+                },
+                {
+                    model: Genre,
+                    through: { attributes: [] }, // Исключаем промежуточную таблицу
+                    attributes: ['name']
                 }
             ],
             limit: limit,
-            order: [['createdAt', 'DESC']],
+            order: [
+                [sequelize.literal(`CASE WHEN "creatorId" != '${currentUserId}' THEN 0 ELSE 1 END`), 'ASC'],
+                ['isConfirmed', 'ASC'],
+                ['createdAt', 'DESC']
+            ],
             attributes: {
                 exclude: ['updatedAt']
             },
@@ -54,7 +65,7 @@ exports.getAllBooks = async (req, res) => {
 exports.createBook = async (req, res) => {
     let transaction;
     try {
-        const { title, description, publicationDate, price, isGuestAvailable, authorId, genres } = req.body;
+        const { title, description, publicationDay, publicationMonth, publicationYear, price, isGuestAvailable, authorId, genres } = req.body;
 
         // Обработка файла, если он был загружен
         if (!req.file) {
@@ -73,7 +84,9 @@ exports.createBook = async (req, res) => {
         const bookData = {
             title,
             description: description === 'null' ? null : description,
-            publicationDate: publicationDate === 'null' ? null : publicationDate,
+            publicationDay: publicationDay === 'null' ? null : publicationDay,
+            publicationMonth: publicationMonth === 'null' ? null : publicationMonth,
+            publicationYear: publicationYear === 'null' ? null : publicationYear,
             authorId: parseInt(authorId),
             price: price === '' ? null : price,
             guestAvailable: isGuestAvailable === 'true',
@@ -116,44 +129,41 @@ exports.createBook = async (req, res) => {
     }
 };
 
-exports.updateBook = async (req, res) => {
+exports.downloadBook = async (req, res) => {
     try {
-        const book = await Book.findByPk(req.params.id);
+        const { bookId } = req.query;
+        const book = await Book.findByPk(bookId);
+
         if (!book) {
-            return res.status(404).json({ message: 'Book not found' });
+            throw new Error('Книга не найдена');
         }
 
-        const updatedBook = await book.update(req.body);
+        const filePath = path.join(__dirname, '..', book.path);
 
-        // Обновление жанров, если они переданы
-        if (req.body.genreIds) {
-            await BookGenre.destroy({ where: { bookId: book.id } });
-            await Promise.all(
-                req.body.genreIds.map(genreId =>
-                    BookGenre.addGenre(book.id, genreId))
-            );
+        // Проверяем, существует ли файл
+        if (!fs.existsSync(filePath)) {
+            throw new Error('Файл книги не найден');
         }
 
-        // Логирование действия
-        if (req.user) {
-            await ActionHistory.logAction(
-                req.user.id,
-                'UpdateBook',
-                `Updated book "${book.title}"`,
-                null,
-                book.id
-            );
-        }
+        // Определяем имя файла для скачивания
+        const filename = path.basename(filePath);
 
-        res.json(updatedBook);
+        // Устанавливаем заголовки для скачивания
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Type', 'application/epub+zip');
+
+        // Отправляем файл
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
-};
+}
 
 exports.deleteBook = async (req, res) => {
     try {
-        const book = await Book.findByPk(req.params.id);
+        const { bookId } = req.query;
+        const book = await Book.findByPk(bookId);
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
         }
