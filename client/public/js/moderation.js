@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                       Скачать
                   </button>
                 </td>
-                <td class="d-flex">
+                <td class="d-flex" style="min-width: 150px;">
                     ${approveButton}
                     <button class="btn danger delete-book-btn" data-id="${book.id}" title="Удалить">
                         <i class="fas fa-trash"></i>
@@ -765,7 +765,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Обработка ответа
         if (response.ok) {
           alert('Жанр успешно добавлен');
-          closeModal();
+          closeModal(true);
           if (needRefreshAfterClose) {
             await loadAllGenres();
             updateGenresUI();
