@@ -27,13 +27,6 @@ module.exports = (sequelize, DataTypes) => {
         static async removeGenre(bookId, genreId) {
             return this.destroy({ where: { bookId, genreId } });
         }
-
-        static async getBookGenres(bookId) {
-            return this.findAll({
-                where: { bookId },
-                include: [sequelize.models.Genre]
-            });
-        }
     }
 
     BookGenre.init({

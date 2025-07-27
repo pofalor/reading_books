@@ -13,6 +13,29 @@ module.exports = (sequelize, DataTypes) => {
             });
             return genres;
         }
+
+        static async getGenresWithBookCount(limit = 100) {
+            const [results] = await sequelize.query(`
+                SELECT 
+                    g.id, 
+                    g.name, 
+                    g.description, 
+                    COUNT(bg.bookId) as bookCount
+                FROM genres g
+                LEFT JOIN book_genres bg ON g.id = bg.genreId
+                GROUP BY g.id
+                ORDER BY bookCount DESC
+                LIMIT ?`,
+                {
+                    replacements: [limit]
+                }
+            );
+
+            return results.map(item => ({
+                ...item,
+                bookCount: parseInt(item.bookCount) || 0
+            }));
+        }
     }
 
     Genre.init({

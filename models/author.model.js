@@ -46,6 +46,10 @@ module.exports = (sequelize, DataTypes) => {
         getFullName() {
             return `${this.firstName} ${this.secondName ? this.secondName + ' ' : ''}${this.surname}`;
         }
+
+        getAuthorName() {
+            return this.nickName || `${this.firstName} ${this.surname}`;
+        }
     }
 
     Author.init({

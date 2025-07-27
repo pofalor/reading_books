@@ -10,5 +10,6 @@ router.get('/profile', authenticate, authController.getProfile);
 router.get('/isAuthorized', attachUserToRequest, (req, res) => {
     res.send(!!res.locals.user);
 });
+router.post('/logout', authenticate, authController.logout);
 
 module.exports = router;

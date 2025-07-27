@@ -1,5 +1,7 @@
 import { setupModal } from './shared/modal.js';
 import { formatDate } from './shared/utlis/date.utils.js';
+import { getAuthorFullName } from './shared/utlis/author.utils.js';
+import { getAuthorName } from './shared/utlis/author.utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Состояние приложения
@@ -904,15 +906,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Ошибка:', error);
       alert(error.message || 'Ошибка при удалении книги');
     }
-  }
-
-  // Вспомогательные функции
-  function getAuthorName(author) {
-    return author.nickName || `${author.firstName} ${author.surname}`;
-  }
-
-  function getAuthorFullName(author) {
-    return `${author.firstName} ${author.secondName || ''} ${author.surname}`.trim();
   }
 
   function escapeHtml(unsafe) {

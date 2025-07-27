@@ -42,6 +42,18 @@ exports.register = async (req, res) => {
     }
 };
 
+// Логин
+exports.logout = async (req, res) => {
+    try {
+        if (req.user) {
+            res.clearCookie('token'); // Если используете JWT
+            res.json({ success: true });
+        }
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 // Получить профиль
 exports.getProfile = async (req, res) => {
     res.send(req.user);

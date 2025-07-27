@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
         res.render('index', {
             title: 'Главная',
             featuredBooks: featuredBooks || [], // Гарантируем что будет массив
-            genres: await Genre.getAll() || []
+            genres: await Genre.getGenresWithBookCount() || []
         });
     } catch (error) {
         console.error(error);

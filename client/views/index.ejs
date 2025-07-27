@@ -3,6 +3,7 @@
 
 <head>
     <%- include('partials/header.ejs', { title: 'Книжная полка - Главная' }) %>
+    <link rel="stylesheet" href="/css/index.css">
 </head>
 
 <body>
@@ -19,49 +20,52 @@
             </div>
         </section>
 
-        <section class="featured-section">
-            <h2>Популярные книги</h2>
-            <div class="books-grid" id="featured-books">
-                <% if (featuredBooks && featuredBooks.length> 0) { %>
-                    <% featuredBooks.forEach(book=> { %>
-                        <div class="book-card" data-id="<%= book.id %>">
-                            <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+        <div class="page-container">
+            <section class="featured-section">
+                <h2>Новые книги</h2>
+                <div class="books-grid" id="featured-books">
+                    <% if (featuredBooks && featuredBooks.length> 0) { %>
+                        <% featuredBooks.forEach(book=> { %>
+                            <div class="book-card" data-id="<%= book.id %>">
+                                <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                                <h3>
+                                    <%= book.title %>
+                                </h3>
+                                <p>
+                                    <%= book.Author?.getAuthorName() || 'Автор неизвестен' %>
+                                </p>
+                                <a href="/book/<%= book.id %>" class="btn small">Подробнее</a>
+                            </div>
+                            <% }) %>
+                                <% } else { %>
+                                    <div class="no-books-message">
+                                        <p>Книги скоро появятся!</p>
+                                        <img src="/images/coming-soon.jpg" alt="Скоро появится">
+                                    </div>
+                                    <% } %>
+                </div>
+            </section>
+
+            <div class="genres-section">
+                <h2>Жанры</h2>
+                <div class="genres-grid">
+                    <% genres.forEach(genre=> { %>
+                        <a href="/?genre=<%= genre.id %>" class="genre-card">
                             <h3>
-                                <%= book.title %>
+                                <%= genre.name %>
                             </h3>
                             <p>
-                                <%= book.Author?.getFullName() || 'Автор неизвестен' %>
+                                книг: <%= genre.bookCount %>
                             </p>
-                            <a href="/book/<%= book.id %>" class="btn small">Подробнее</a>
-                        </div>
+                        </a>
                         <% }) %>
-                            <% } else { %>
-                                <div class="no-books-message">
-                                    <p>Книги скоро появятся!</p>
-                                    <img src="/images/coming-soon.jpg" alt="Скоро появится">
-                                </div>
-                                <% } %>
-            </div>
-        </section>
-
-        <div class="genres-section">
-            <h2>Жанры</h2>
-            <div class="genres-grid">
-                <% genres.slice(0, 6).forEach(genre=> { %>
-                    <a href="/?genre=<%= genre.id %>" class="genre-card">
-                        <h3>
-                            <%= genre.name %>
-                        </h3>
-                        <p>
-                            <%= genre.booksCount %> книг
-                        </p>
-                    </a>
-                    <% }) %>
+                </div>
             </div>
         </div>
 
+
         <%- include('partials/footer.ejs') %>
-            <script src="/js/app.js"></script>
+            <script src="/js/app.js" type="module"></script>
 </body>
 
 </html>

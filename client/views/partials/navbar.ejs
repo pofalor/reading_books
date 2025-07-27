@@ -26,16 +26,19 @@
             <a href="/admin" class="<%= activeLink === 'admin' ? 'active' : '' %>">
               <i class="fas fa-user-shield"></i> Администрирование
             </a>
-            <% } %>
-              <% if (!!user && !!user.roles && user.roles.some(role=> role === 'moderator')) { %>
-                <a href="/moderation" class="<%= activeLink === 'moderation' ? 'active' : '' %>">
-                  <i class="fas fa-gavel"></i> Модерация
-                </a>
-                <% } %>
-                  <div class="user-profile auth-only">
-                    <img src="/images/user-icon.png" alt="Профиль" class="user-avatar" style="max-width: 30px;">
-                    <span class="user-name"></span>
-                  </div>
+          <% } %>
+          <% if (!!user && !!user.roles && user.roles.some(role=> role === 'moderator')) { %>
+            <a href="/moderation" class="<%= activeLink === 'moderation' ? 'active' : '' %>">
+              <i class="fas fa-gavel"></i> Модерация
+            </a>
+          <% } %>
+          <div class="user-profile auth-only">
+            <img src="/images/user-icon.png" alt="Профиль" class="user-avatar" style="max-width: 30px;">
+            <span class="user-name"></span>
+          </div>
+          <a href="#" class="logout-link auth-only" title="Выйти">
+            <img src="/images/logout.png" alt="Выйти" style="max-width: 30px;">
+          </a>
     </div>
     <button class="mobile-menu-btn">
       <i class="fas fa-bars"></i>
@@ -47,5 +50,28 @@
   // Мобильное меню
   document.querySelector('.mobile-menu-btn').addEventListener('click', function () {
     document.querySelector('.nav-links').classList.toggle('active');
+  });
+
+  document.querySelector('.logout-link')?.addEventListener('click', async function(e) {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (response.ok) {
+        window.location.href = '/'; // Перенаправляем после успешного выхода
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Ошибка при выходе');
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      alert(error.message || 'Ошибка при выходе');
+    }
   });
 </script>
