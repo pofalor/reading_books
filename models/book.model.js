@@ -23,7 +23,29 @@ module.exports = (sequelize, DataTypes) => {
                     }
                 ],
                 attributes: {
-                    exclude: ['updatedAt'] // Исключаем ненужные поля
+                    exclude: ['updatedAt', 'path'] // Исключаем ненужные поля
+                }
+            });
+        }
+
+        static async getBookByIdForUsers(bookId) {
+            return this.findByPk(bookId, {
+                where: {
+                    isConfirmed: true
+                },
+                include: [
+                    {
+                        model: sequelize.models.Author,
+                        attributes: ['id', 'firstName', 'secondName', 'surname', 'nickName', 'bio']
+                    },
+                    {
+                        model: sequelize.models.Genre,
+                        through: { attributes: [] },
+                        attributes: ['id', 'name']
+                    }
+                ],
+                attributes: {
+                    exclude: ['updatedAt', 'path', 'creatorId', 'isConfirmed', 'createdAt'] // Исключаем ненужные поля
                 }
             });
         }
@@ -142,7 +164,36 @@ module.exports = (sequelize, DataTypes) => {
                     }
                 }
             }
-        }
+        },
+        getterMethods: {
+            formattedPublicationDate() {
+                if (!this.publicationYear) return '—';
+
+                if (this.publicationDay && !this.publicationMonth) return '—';
+
+                // Названия месяцев
+                const monthNames = [
+                    'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+                    'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+                ];
+
+                // Если есть день - возвращаем в формате DD.MM.YYYY
+                if (this.publicationDay) {
+                    const normalizedDay = String(this.publicationDay).padStart(2, '0');
+                    const normalizedMonth = this.publicationMonth ? String(this.publicationMonth).padStart(2, '0') : '';
+                    return `${normalizedDay}.${normalizedMonth}.${this.publicationYear}`;
+                }
+
+                // Если нет дня, но есть месяц - возвращаем "месяц год"
+                if (this.publicationMonth) {
+                    const monthName = monthNames[this.publicationMonth - 1] || '';
+                    return `${monthName} ${this.publicationYear}`;
+                }
+
+                // Если только год
+                return String(this.publicationYear);
+            }
+        },
     });
 
     return Book;

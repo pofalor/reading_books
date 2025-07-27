@@ -1,5 +1,4 @@
 import { setupModal } from './shared/modal.js';
-import { formatDate } from './shared/utlis/date.utils.js';
 import { getAuthorFullName } from './shared/utlis/author.utils.js';
 import { getAuthorName } from './shared/utlis/author.utils.js';
 
@@ -250,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td>${!book.price ? 'Бесплатно' : book.price}</td>
                 <td>${book.guestAvailable ? 'Да' : 'Нет'}</td>
-                <td>${formatDate(book.publicationDay, book.publicationMonth, book.publicationYear)}</td>
+                <td>${book.formattedPublicationDate}</td>
                 <td>
                     ${book.Genres ? book.Genres.map(genre => `
                         <span class="list-badge">${genre.name}</span>

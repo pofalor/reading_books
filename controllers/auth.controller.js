@@ -42,7 +42,7 @@ exports.register = async (req, res) => {
     }
 };
 
-// Логин
+// Логаут
 exports.logout = async (req, res) => {
     try {
         if (req.user) {

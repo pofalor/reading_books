@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <%- include('partials/header.ejs', { title: `Книжная полка - ${book.title}` }) %>
+    <link rel="stylesheet" href="/css/book.css">
+</head>
+
+<body>
+    <%- include('partials/navbar', { activeLink: 'none', authButtons: !locals.user, user: locals.user }) %>
+
+    <div class="page-container">
+        <div class="book-header">
+            <div class="book-cover">
+                <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+            </div>
+            <div class="book-info">
+                <h1><%= book.title %></h1>
+                <p class="book-author">
+                    Автор: <%= book.Author?.getAuthorName() || 'Неизвестен' %>
+                </p>
+                
+                <% if (book.publicationYear) { %>
+                    <p class="book-publication">
+                        Год публикации: 
+                        <%= book.formattedPublicationDate %>
+                    </p>
+                <% } %>
+
+                <% if (book.price) { %>
+                    <p class="book-price"><%= book.price.toFixed(2) %> ₽</p>
+                <% } %>
+
+                <div class="book-genres">
+                    <% if (book.Genres && book.Genres.length > 0) { %>
+                        <% book.Genres.forEach(genre => { %>
+                            <span class="list-badge"><%= genre.name %></span>
+                        <% }) %>
+                    <% } else { %>
+                        <span class="list-badge">Жанр не указан</span>
+                    <% } %>
+                </div>
+
+                <div class="book-actions">
+                    <% if (book.path) { %>
+                        <a href="<%= book.path %>" class="btn primary" target="_blank">Читать</a>
+                    <% } %>
+                    <% if (locals.user && locals.user.id === book.creatorId) { %>
+                        <a href="/book/<%= book.id %>/edit" class="btn outline">Редактировать</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div class="book-content">
+            <% if (book.description) { %>
+                <div class="book-description">
+                    <h2>Описание</h2>
+                    <p><%= book.description %></p>
+                </div>
+            <% } %>
+
+            <div class="book-author-info">
+                <h2>Об авторе</h2>
+                <% if (book.Author) { %>
+                    <p><%= book.Author.bio || 'Информация об авторе отсутствует.' %></p>
+                <% } else { %>
+                    <p>Автор не указан.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+</body>
+
+</html>
