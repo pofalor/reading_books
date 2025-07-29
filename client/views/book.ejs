@@ -42,12 +42,13 @@
                 </div>
 
                 <div class="book-actions">
-                    <% if (book.path) { %>
-                        <a href="<%= book.path %>" class="btn primary" target="_blank">Читать</a>
+                    <button class="btn primary" id="read-btn">Читать</button>
+                    <% if (book.price && book.price > 0) { %>
+                        <a href="/purchase/<%= book.id %>" class="btn accent" id="buy-btn">Купить за <%= book.price.toFixed(2) %> ₽</a>
                     <% } %>
-                    <% if (locals.user && locals.user.id === book.creatorId) { %>
-                        <a href="/book/<%= book.id %>/edit" class="btn outline">Редактировать</a>
-                    <% } %>
+                    <button class="btn outline" id="shelf-btn">
+                        <%= onShelf ? 'Убрать с полки' : 'На полку' %>
+                    </button>
                 </div>
             </div>
         </div>
@@ -70,6 +71,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Модалка авторизации -->
+    <div id="auth-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Доступ ограничен</h2>
+        <p id="modal-message"></p>
+        <div class="modal-actions">
+            <a href="/auth/login" class="btn primary">Войти</a>
+            <a href="/auth/register" class="btn outline">Регистрация</a>
+            <% if (book.price && book.price > 0) { %>
+                <a href="/purchase/<%= book.id %>" class="btn accent">Купить книгу</a>
+            <% } %>
+        </div>
+    </div>
+</div>
 
     <%- include('partials/footer') %>
 </body>

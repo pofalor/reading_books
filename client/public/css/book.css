@@ -83,6 +83,13 @@
     font-size: 1.1rem;
 }
 
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
     .book-header {
         flex-direction: column;
@@ -102,5 +109,13 @@
     .book-genres,
     .book-actions {
         justify-content: center;
+    }
+
+    .book-actions {
+        flex-direction: column;
+    }
+
+    .book-actions .btn {
+        width: 100%;
     }
 }
