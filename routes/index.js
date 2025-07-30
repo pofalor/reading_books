@@ -7,6 +7,8 @@ router.use('/api/books', require('./api/book.routes'));
 router.use('/api/admin', require('./api/admin.routes'));
 router.use('/api/authors', require('./api/author.routes'));
 router.use('/api/genres', require('./api/genre.routes'));
+router.use('/api/userBook', require('./api/userBook.routes'));
+
 
 // Web routes
 router.use('/', require('./web/app.routes'));

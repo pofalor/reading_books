@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
             });
         }
 
-        static async getBookByIdForUsers(bookId) {
+        static async getBookByIdForUsers(bookId, userId = null) {
             return this.findByPk(bookId, {
                 where: {
                     isConfirmed: true
@@ -42,7 +42,29 @@ module.exports = (sequelize, DataTypes) => {
                         model: sequelize.models.Genre,
                         through: { attributes: [] },
                         attributes: ['id', 'name']
-                    }
+                    },
+                    ...(userId ? [{
+                        model: sequelize.models.Transaction,
+                        where: {
+                            bookId: bookId,
+                            userId: userId,
+                            status: 'COMPLETED',
+                            type: 'PURCHASE'
+                        },
+                        required: false,
+                        attributes: ['id']
+                    }] : []),
+                    // Добавляем проверку наличия на книжной полке
+                    ...(userId ? [{
+                        model: sequelize.models.UserBook,
+                        where: {
+                            userId: userId,
+                            bookId: bookId,
+                            status: ['OnShelf', 'InProgress'] // Учитываем только активные статусы
+                        },
+                        required: false,
+                        attributes: ['status', 'addedAt']
+                    }] : [])
                 ],
                 attributes: {
                     exclude: ['updatedAt', 'path', 'creatorId', 'isConfirmed', 'createdAt'] // Исключаем ненужные поля

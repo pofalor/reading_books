@@ -4,7 +4,7 @@ const { Book } = require('../../models');
 
 // Страница информации о книге
 router.get('/:bookId', async (req, res) => {
-    const book = await Book.getBookByIdForUsers(req.params.bookId);
+    const book = await Book.getBookByIdForUsers(req.params.bookId, req.user?.id);
 
     if (!book) {
         return res.status(404).render('error', {

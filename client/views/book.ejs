@@ -9,7 +9,8 @@
 <body>
     <%- include('partials/navbar', { activeLink: 'none', authButtons: !locals.user, user: locals.user }) %>
 
-    <div class="page-container">
+    <div class="page-container" data-book='<%- JSON.stringify(book) %>' 
+        data-user='<%- JSON.stringify(locals.user) %>'>
         <div class="book-header">
             <div class="book-cover">
                 <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
@@ -47,7 +48,8 @@
                         <a href="/purchase/<%= book.id %>" class="btn accent" id="buy-btn">Купить за <%= book.price.toFixed(2) %> ₽</a>
                     <% } %>
                     <button class="btn outline" id="shelf-btn">
-                        <%= onShelf ? 'Убрать с полки' : 'На полку' %>
+                        <%= (book?.UserBook?.status === 'InProgress' || book?.UserBook?.status === 'OnShelf') ? 
+                        'Убрать с полки' : 'На полку' %>
                     </button>
                 </div>
             </div>
@@ -74,21 +76,22 @@
 
     <!-- Модалка авторизации -->
     <div id="auth-modal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Доступ ограничен</h2>
-        <p id="modal-message"></p>
-        <div class="modal-actions">
-            <a href="/auth/login" class="btn primary">Войти</a>
-            <a href="/auth/register" class="btn outline">Регистрация</a>
-            <% if (book.price && book.price > 0) { %>
-                <a href="/purchase/<%= book.id %>" class="btn accent">Купить книгу</a>
-            <% } %>
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Доступ ограничен</h2>
+            <p id="modal-message"></p>
+            <div class="modal-actions">
+                <a href="/auth/login" class="btn primary">Войти</a>
+                <a href="/auth/register" class="btn outline">Регистрация</a>
+                <% if (book.price && book.price > 0) { %>
+                    <a href="/purchase/<%= book.id %>" class="btn accent">Купить книгу</a>
+                <% } %>
+            </div>
         </div>
     </div>
-</div>
 
     <%- include('partials/footer') %>
+    <script type="module" src="/js/book.js"></script>
 </body>
 
 </html>

@@ -198,10 +198,20 @@
                     "field": "isConfirmed",
                     "seqType": "Sequelize.BOOLEAN"
                 },
-                "publicationDate": {
+                "publicationDay": {
                     "allowNull": true,
-                    "field": "publicationDate",
-                    "seqType": "Sequelize.DATEONLY"
+                    "field": "publicationDay",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "publicationMonth": {
+                    "allowNull": true,
+                    "field": "publicationMonth",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "publicationYear": {
+                    "allowNull": true,
+                    "field": "publicationYear",
+                    "seqType": "Sequelize.INTEGER"
                 },
                 "description": {
                     "field": "description",
@@ -523,5 +533,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 6
+    "revision": 7
 }
