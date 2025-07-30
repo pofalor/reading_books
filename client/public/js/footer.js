@@ -11,7 +11,7 @@ $(document).ready(function() {
     // Обработка клика по книге
     $('.book-card').click(function() {
         const bookId = $(this).data('id');
-        window.location.href = `/book/${bookId}`;
+        window.location.href = `/book?bookId=${bookId}`;
     });
 });
 

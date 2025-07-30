@@ -34,7 +34,7 @@
                                 <p>
                                     <%= book.Author?.getAuthorName() || 'Автор неизвестен' %>
                                 </p>
-                                <a href="/book/<%= book.id %>" class="btn small">Подробнее</a>
+                                <a href="/book?bookId=<%= book.id %>" class="btn small">Подробнее</a>
                             </div>
                             <% }) %>
                                 <% } else { %>

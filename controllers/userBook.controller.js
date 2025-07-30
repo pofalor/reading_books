@@ -3,7 +3,7 @@ const { UserBook, ActionHistory, Book, Transaction, sequelize } = require('../mo
 exports.addToShelf = async (req, res) => {
     let transaction;
     try {
-        const { bookId } = req.params.bookId;
+        const { bookId } = req.query;
         const userId = req.user.id;
 
         if(!userId){
@@ -59,7 +59,7 @@ exports.addToShelf = async (req, res) => {
 exports.removeFromShelf = async (req, res) => {
     let transaction;
     try {
-        const { bookId } = req.params;
+        const { bookId } = req.query;
         const userId = req.user.id;
 
         transaction = await sequelize.transaction();

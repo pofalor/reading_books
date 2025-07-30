@@ -242,6 +242,12 @@ a {
   border-radius: 3px;
 }
 
+.button-no-border {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .nav-links {
