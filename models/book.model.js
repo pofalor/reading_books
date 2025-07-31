@@ -29,7 +29,8 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         static async getBookByIdForUsers(bookId, userId = null) {
-            return this.findByPk(bookId, {
+            let promises = [];
+            let bookPromise = this.findByPk(bookId, {
                 where: {
                     isConfirmed: true
                 },
@@ -43,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
                         through: { attributes: [] },
                         attributes: ['id', 'name']
                     },
-                    ...(userId ? [{
+                    {
                         model: sequelize.models.Transaction,
                         where: {
                             bookId: bookId,
@@ -53,23 +54,35 @@ module.exports = (sequelize, DataTypes) => {
                         },
                         required: false,
                         attributes: ['id']
-                    }] : []),
-                    // Добавляем проверку наличия на книжной полке
-                    ...(userId ? [{
-                        model: sequelize.models.UserBook,
-                        where: {
-                            userId: userId,
-                            bookId: bookId,
-                            status: ['OnShelf', 'InProgress'] // Учитываем только активные статусы
-                        },
-                        required: false,
-                        attributes: ['status', 'addedAt']
-                    }] : [])
+                    }
                 ],
                 attributes: {
                     exclude: ['updatedAt', 'path', 'creatorId', 'isConfirmed', 'createdAt'] // Исключаем ненужные поля
                 }
             });
+            promises.push(bookPromise);
+
+            if (userId) {
+                // Добавляем проверку наличия на книжной полке
+                let userBookPromise = sequelize.models.UserBook.findOne({
+                    where: {
+                        bookId: bookId,
+                        userId: userId
+                    },
+                    attributes: ['status']
+                });
+
+                promises.push(userBookPromise);
+            }
+
+            let result;
+            await Promise.all(promises)
+                .then(resultArr => {
+                    resultArr[0].userBookStatus = resultArr[1] ? resultArr[1].status : null;
+                    resultArr[0].dataValues.userBookStatus = resultArr[1] ? resultArr[1].status : null;
+                    result = resultArr[0];
+                });
+            return result;
         }
     }
 

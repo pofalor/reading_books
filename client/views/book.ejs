@@ -50,7 +50,7 @@
                         <button class="btn accent" id="buy-btn">Купить за <%= book.price.toFixed(2) %> ₽</button>
                     <% } %>
                     <button class="btn outline" id="shelf-btn">
-                    <%= (book.UserBook?.status === 'InProgress' || book.UserBook?.status === 'OnShelf') ? 
+                    <%= (book.userBookStatus === 'OnShelf' || book.userBookStatus === 'InProgress') ? 
                     'Убрать с полки' : 'На полку' %>
                     </button>
                 </div>

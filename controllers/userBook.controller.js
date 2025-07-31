@@ -19,7 +19,7 @@ exports.addToShelf = async (req, res) => {
         const exists = await UserBook.findOne({ 
             where: { 
                 bookId, 
-                genreId, 
+                userId, 
                 status: ['OnShelf', 'InProgress'] 
             } 
         });

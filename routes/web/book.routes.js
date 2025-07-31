@@ -5,7 +5,7 @@ const { Book } = require('../../models');
 // Страница информации о книге
 router.get('/', async (req, res) => {
     const { bookId } = req.query;
-    const book = await Book.getBookByIdForUsers(bookId, req.user?.id);
+    const book = await Book.getBookByIdForUsers(bookId, res.locals?.user?.id);
 
     if (!book) {
         return res.status(404).render('error', {
@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
             message: 'Страница не найдена'
         });
     }
-
+    console.info(book.userBookStatus);
     res.render('book', { book })
 });
 

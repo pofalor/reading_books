@@ -23,8 +23,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     modal.style.display = "block";
                     return;
                 }
-
-                const response = await fetch(`/api/userBook?bookId=${book.id}`);
+                const methodType = (book.userBookStatus === 'InProgress' || book.userBookStatus === 'OnShelf') 
+                ? "DELETE" : "GET";
+                const response = await fetch(`/api/userBook?bookId=${book.id}`, {
+                    method: methodType,
+                });
 
                 if (response.ok) {
                     alert('Книга успешно добавлена на полку');
