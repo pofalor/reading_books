@@ -47,7 +47,12 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'UserBook',
         tableName: 'user_books',
-        timestamps: false
+        timestamps: false,
+        hooks: {
+            beforeUpdate: (instance) => {
+                instance.lastUpdated = new Date();
+            }
+        }
     });
 
     return UserBook;

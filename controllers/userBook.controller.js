@@ -48,7 +48,7 @@ exports.addToShelf = async (req, res) => {
         );
 
         await transaction.commit();
-        res.json(userBook);
+        res.json({success: true});
 
     } catch (error) {
         if (transaction) await transaction.rollback();
@@ -101,7 +101,7 @@ exports.removeFromShelf = async (req, res) => {
         );
 
         await transaction.commit();
-        res.json({ message: 'Книга успешно удалена с полки' });
+        res.json({ success: true });
 
     } catch (error) {
         if (transaction) await transaction.rollback();

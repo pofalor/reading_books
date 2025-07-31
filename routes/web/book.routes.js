@@ -13,7 +13,6 @@ router.get('/', async (req, res) => {
             message: 'Страница не найдена'
         });
     }
-    console.info(book.userBookStatus);
     res.render('book', { book })
 });
 

@@ -23,16 +23,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     modal.style.display = "block";
                     return;
                 }
-                const methodType = (book.userBookStatus === 'InProgress' || book.userBookStatus === 'OnShelf') 
-                ? "DELETE" : "GET";
+                const isBookOnShelf = book.userBookStatus === 'InProgress' || book.userBookStatus === 'OnShelf';
+                const methodType = isBookOnShelf ? "DELETE" : "GET";
                 const response = await fetch(`/api/userBook?bookId=${book.id}`, {
                     method: methodType,
                 });
 
                 if (response.ok) {
-                    alert('Книга успешно добавлена на полку');
                     const content = await response.json();
-                    shelfBtn.textContent = content.status === 'Deleted' ? 'На полку' : 'Убрать с полки';
+                    if (content.success) {
+                        const operation = isBookOnShelf ? "убрана с полки" : "добавлена на полку";
+                        shelfBtn.textContent = isBookOnShelf ? 'На полку' : 'Убрать с полки';
+                        book.userBookStatus = isBookOnShelf ? 'Deleted' : 'OnShelf';
+                        pageContainer.dataset.book = JSON.stringify(book);
+                        alert('Книга успешно ' + operation);
+                    }
                 }
                 else {
                     const error = await response.json();
