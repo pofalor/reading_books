@@ -56,5 +56,5 @@ exports.logout = async (req, res) => {
 
 // Получить профиль
 exports.getProfile = async (req, res) => {
-    res.send(req.user);
+    res.send(res.locals?.user);
 };

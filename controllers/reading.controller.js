@@ -1,56 +1,89 @@
-const { UserBook, Book } = require('../models');
 const path = require('path');
 const Epub = require('epub');
+const { Book, Genre, Author, Transaction } = require('../models');
 
 exports.getReaderPage = async (req, res) => {
     try {
         const { bookId } = req.query;
-        const userId = req.user?.id;
-        const book = req.book;
+        const userId = res.locals?.user?.id ?? null;
 
-        if(!book){
+        if (!bookId) {
             return res.status(404).send('Книга не найдена');
         }
 
-        // Получаем прогресс чтения
-        let currentPage = 1;
-        let currentStatus = null;
-        if (req.user) {
-            const [userBook, created] = await UserBook.findOrCreate({
-                where: { userId, bookId },
-                defaults: {
-                    userId,
-                    bookId,
-                    status: 'InProgress',
-                    currentPage: 1,
-                    addedAt: new Date(),
-                    lastUpdated: new Date()
-                }
-            });
+        const book = await Book.findByPk(bookId, {
+            include: [
+                {
+                    model: Author,
+                    attributes: ['id', 'firstName', 'secondName', 'surname', 'nickName'],
+                },
+                {
+                    model: Genre,
+                    through: { attributes: [] }, // Исключаем промежуточную таблицу
+                    attributes: ['name']
+                },
+                {
+                    model: Transaction,
+                    where: {
+                        bookId: bookId,
+                        userId: userId,
+                        status: 'COMPLETED',
+                        type: 'PURCHASE'
+                    },
+                    required: false,
+                    attributes: ['id']
+                }]
+        });
 
-            if (!created && userBook.status !== 'InProgress') {
-                userBook.status = 'InProgress';
-                await userBook.save();
-            }
-            currentStatus = userBook.status;
-            currentPage = userBook.currentPage;
+        if (!book) {
+            return res.status(404).send('Книга не найдена');
+        }
+
+        // Проверка доступа
+        if (!book.guestAvailable && !userId) {
+            return res.status(401).render('error-401', {
+                title: 'Ошибка 401',
+                errorTitle: 'Доступ запрещен',
+                needLoginButton: true,
+                needRegisterButton: true,
+                errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
+                            Пожалуйста, войдите в систему или зарегистрируйтесь.`,
+                needAdditionalButton: false
+            });
+        }
+
+        //если книга платная, то нужно проверить куплена ли она
+        if (book.price && !book.Transactions.some()) {
+            return res.status(401).render('error-401', {
+                title: 'Ошибка 401',
+                errorTitle: 'Доступ запрещен',
+                errorMessage: `Для того, чтобы читать эту книгу, необходимо её купить.`,
+                needAdditionalButton: true,
+                addButtonHref: `/purchase/${book.id}`,
+                addButtonClass: "btn accent",
+                addButtonText: `Купить за ${book.price.toFixed(2)} ₽`,
+                addButtonIcon: "fas fa-cart-shopping"
+            });
+        }
+
+        if (!book) {
+            return res.status(404).send('Книга не найдена');
         }
 
         const epubPath = path.join(__dirname, '..', book.path);
-        
         const epub = new Epub(epubPath);
 
-        //TODO: убрать выдачу пользователям контента всей книги
         epub.on('end', async () => {
+            // Получаем весь контент книги
+            const bookContent = await this.getAllBookContent(epub);
+
             res.render('reader', {
                 book,
                 metadata: epub.metadata,
                 spine: epub.spine,
                 toc: epub.toc,
-                currentPage,
-                user: req.user,
-                isSidebarOpen: true,
-                currentStatus
+                bookContent, // Добавляем полный контент книги
+                user: req.user
             });
         });
 
@@ -61,40 +94,30 @@ exports.getReaderPage = async (req, res) => {
     }
 };
 
-exports.getPageContent = async (req, res) => {
-    try {
-        const { bookId, pageId } = req.query;
-        const book = req.book;
+// Вспомогательная функция для получения всего контента книги
+exports.getAllBookContent = async (epub) => {
+    return new Promise((resolve, reject) => {
+        const contents = [];
+        let processed = 0;
 
-        if (!book) {
-            return res.status(404).send('Книга не найдена');
-        }
-
-        const epubPath = path.join(__dirname, '..', book.path);
-        const epub = new Epub(epubPath);
-        
-        epub.on('end', () => {
-            epub.getChapter(pageId, async (error, text) => {
+        epub.spine.contents.forEach((item, index) => {
+            epub.getChapter(item.id, (error, text) => {
                 if (error) {
-                    //TODO: писать логи в файл
-                    console.error(`Произошла ошибка при открытии файла. bookId=${bookId}, pageId=${pageId}), 
-                        userId=${req.user?.id}, error: ${error}`);
-                    return res.status(404).send('Ошибка при открытии файла');
+                    console.error(`Error getting chapter ${item.id}:`, error);
+                    text = `<p>Ошибка загрузки главы</p>`;
                 }
 
-                // Обновляем прогресс для зарегистрированных пользователей
-                if (req.user) {
-                    const spineIndex = epub.spine.contents.findIndex(item => item.id === pageId);
-                    await UserBook.updateReadingProgress(req.user.id, bookId, spineIndex + 1);
-                }
+                contents[index] = {
+                    id: item.id,
+                    content: text
+                };
 
-                res.send(text);
+                processed++;
+
+                if (processed === epub.spine.contents.length) {
+                    resolve(contents);
+                }
             });
         });
-
-        epub.parse();
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
-    }
+    });
 };

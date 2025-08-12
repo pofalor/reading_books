@@ -12,7 +12,8 @@ const authenticate = async (req, res, next) => {
                 needLoginButton: true,
                 needRegisterButton: true,
                 errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
-                    Пожалуйста, войдите в систему или зарегистрируйтесь.`
+                    Пожалуйста, войдите в систему или зарегистрируйтесь.`,
+                needAdditionalButton: false
             });
         }
 
@@ -36,7 +37,8 @@ const authenticate = async (req, res, next) => {
             needLoginButton: true,
             needRegisterButton: true,
             errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
-                    Пожалуйста, войдите в систему или зарегистрируйтесь.`
+                    Пожалуйста, войдите в систему или зарегистрируйтесь.`,
+            needAdditionalButton: false
         });
     }
 };
@@ -97,7 +99,8 @@ const requireRole = function (...role) {
                 needLoginButton: true,
                 needRegisterButton: true,
                 errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
-                    Пожалуйста, войдите в систему или зарегистрируйтесь.`
+                    Пожалуйста, войдите в систему или зарегистрируйтесь.`,
+                needAdditionalButton: false
             });
         }
     }
