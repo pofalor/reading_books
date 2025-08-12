@@ -62,21 +62,32 @@
     <div class="container">
         <div class="error-container">
             <img src="/images/401-error.svg" alt="Доступ запрещен" class="error-image">
-            <h1 class="error-title">Доступ запрещен</h1>
+            <h1 class="error-title"><%= errorTitle %></h1>
             <p class="error-message">
-                Для просмотра этой страницы необходимо авторизоваться. 
-                Пожалуйста, войдите в систему или зарегистрируйтесь.
+                <%= errorMessage %>
             </p>
             <div class="error-actions">
-                <a href="/auth/login" class="btn primary">
-                    <i class="fas fa-sign-in-alt"></i> Войти
-                </a>
-                <a href="/auth/register" class="btn secondary">
-                    <i class="fas fa-user-plus"></i> Регистрация
-                </a>
+                <% if (needLoginButton) { %>
+                     <a href="/auth/login" class="btn primary">
+                        <i class="fas fa-sign-in-alt"></i> Войти
+                    </a>
+                <% } %>
+               
+                <% if (needRegisterButton) { %>
+                    <a href="/auth/register" class="btn secondary">
+                        <i class="fas fa-user-plus"></i> Регистрация
+                    </a>
+                <% } %>
+                
                 <a href="/" class="btn outline">
                     <i class="fas fa-home"></i> На главную
                 </a>
+
+                 <% if (needAdditionalButton && addButtonHref) { %>
+                    <a href="<%= addButtonHref %>" class="<%= addButtonClass %>">
+                        <i class="<%= addButtonIcon %>"></i> addButtonText
+                    </a>
+                <% } %>
             </div>
         </div>
     </div>

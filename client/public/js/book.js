@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
             readBtn.addEventListener('click', function () {
                 // Проверяем доступность книги для пользователя
                 if (book.guestAvailable || (user && !book.price) || (user && book.transaction.id)) {
-                    window.location.href = `/read/${book.id}`;
+                    window.location.href = `/reading?bookId=${book.id}`;
                 }
                 else if (!user) {
                     modalMessage.textContent = "Для чтения этой книги необходимо войти в систему.";

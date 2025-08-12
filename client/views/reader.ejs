@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header.ejs', { title: `Чтение - ${book.title}` }) %>
+    <link rel="stylesheet" href="/css/reader.css">
+    <style>
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status-OnShelf { background: #6c757d; color: white; }
+        .status-InProgress { background: #4361ee; color: white; }
+        .status-Deleted { background: #dc3545; color: white; }
+    </style>
+</head>
+<body class="<%= locals.user ? 'logged-in' : '' %>">
+    <%- include('partials/navbar',  { activeLink: 'none', authButtons: !locals.user, user: locals.user }) %>
+    
+    <div class="reader-container" data-spineContents='<%- JSON.stringify(spine.contents) %>'>
+        <aside class="reader-sidebar <%= !!isSidebarOpen ? 'open' : '' %>">
+            <div class="sidebar-header">
+                <h3><%= book.title %></h3>
+                <button id="sidebar-toggle" class="sidebar-toggle">
+                    <%= isSidebarOpen ? '✕' : '☰' %>
+                </button>
+            </div>
+            
+            <div class="book-meta">
+                <p>Автор: <%= book.Author?.getAuthorName() || 'Неизвестен' %></p>
+                <% if (currentPage) { %>
+                    <p>Прогресс: <%= Math.round((currentPage / spine.contents.length) * 100) %>%</p>
+                <% } %>
+                <% if (currentStatus) { %>
+                    <span class="status-badge status-<%= currentStatus %>">
+                        <%= currentStatus === 'OnShelf' ? 'На полке' : 
+                            currentStatus === 'InProgress' ? 'Читаю' : 'Удалена' %>
+                    </span>
+                <% } %>
+            </div>
+            
+            <div class="toc-container">
+                <h4>Оглавление</h4>
+                <ul class="toc-list">
+                    <% spine.contents.forEach((item, index) => { %>
+                        <li>
+                            <a href="#" data-id="<%= item.id %>" 
+                               class="toc-item <%= currentPage === index + 1 ? 'active' : '' %>">
+                                <%= toc.find(t => t.id === item.id)?.label || `Глава ${index + 1}` %>
+                                <% if (currentPage === index + 1) { %>
+                                    <span class="current-page-marker">●</span>
+                                <% } %>
+                            </a>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </aside>
+        
+        <main class="reader-content">
+            <div class="reader-toolbar">
+                <button id="prev-page" class="toolbar-btn" <%= currentPage === 1 ? 'disabled' : '' %>>← Назад</button>
+                <span class="page-info">
+                    Страница <span id="current-page"><%= currentPage %></span> 
+                    из <span id="total-pages"><%= spine.contents.length %></span>
+                </span>
+                <button id="next-page" class="toolbar-btn" <%= currentPage === spine.contents.length ? 'disabled' : '' %>>Вперед →</button>
+            </div>
+            
+            <div id="book-content" class="book-content">
+                <!-- Контент будет загружаться динамически -->
+                Загрузка...
+            </div>
+            
+            <% if (currentPage === spine.contents.length) { %>
+                <div class="book-complete-actions">
+                    <button id="mark-as-completed" class="btn primary">
+                        Отметить как прочитанную
+                    </button>
+                </div>
+            <% } %>
+        </main>
+    </div>
+    
+    <script src="/js/reader.js" type="module"></script>
+</body>
+</html>

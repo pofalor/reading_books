@@ -372,6 +372,13 @@
                     },
                     "field": "lastUpdated",
                     "seqType": "Sequelize.DATE"
+                },
+                "currentPage": {
+                    "defaultValue": {
+                        "value": 1
+                    },
+                    "field": "currentPage",
+                    "seqType": "Sequelize.INTEGER"
                 }
             },
             "indexes": []
@@ -526,5 +533,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 8
+    "revision": 9
 }

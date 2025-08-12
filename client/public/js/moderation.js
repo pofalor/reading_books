@@ -1,6 +1,5 @@
 import { setupModal } from './shared/modal.js';
-import { getAuthorFullName } from './shared/utlis/author.utils.js';
-import { getAuthorName } from './shared/utlis/author.utils.js';
+import { getAuthorFullName, getAuthorName, formattedPublicationDate } from './shared/utlis/entity.utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Состояние приложения
@@ -249,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td>${!book.price ? 'Бесплатно' : book.price}</td>
                 <td>${book.guestAvailable ? 'Да' : 'Нет'}</td>
-                <td>${book.formattedPublicationDate}</td>
+                <td>${formattedPublicationDate(book.publicationYear, book.publicationMonth, book.publicationDay)}</td>
                 <td>
                     ${book.Genres ? book.Genres.map(genre => `
                         <span class="list-badge">${genre.name}</span>

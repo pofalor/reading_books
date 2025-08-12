@@ -8,7 +8,11 @@ const authenticate = async (req, res, next) => {
         if (!token) {
             return res.status(401).render('error-401', {
                 title: 'Ошибка 401',
-                message: 'Доступ запрещен'
+                errorTitle: 'Доступ запрещен',
+                needLoginButton: true,
+                needRegisterButton: true,
+                errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
+                    Пожалуйста, войдите в систему или зарегистрируйтесь.`
             });
         }
 
@@ -28,7 +32,11 @@ const authenticate = async (req, res, next) => {
     } catch (error) {
         res.status(401).render('error-401', {
             title: 'Ошибка 401',
-            message: 'Доступ запрещен'
+            errorTitle: 'Доступ запрещен',
+            needLoginButton: true,
+            needRegisterButton: true,
+            errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
+                    Пожалуйста, войдите в систему или зарегистрируйтесь.`
         });
     }
 };
@@ -85,7 +93,11 @@ const requireRole = function (...role) {
         } catch (error) {
             res.status(401).render('error-401', {
                 title: 'Ошибка 401',
-                message: 'Доступ запрещен'
+                errorTitle: 'Доступ запрещен',
+                needLoginButton: true,
+                needRegisterButton: true,
+                errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
+                    Пожалуйста, войдите в систему или зарегистрируйтесь.`
             });
         }
     }
