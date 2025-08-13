@@ -334,6 +334,7 @@
                     "unique": "user_books_bookId_userId_unique",
                     "onDelete": "CASCADE",
                     "onUpdate": "CASCADE",
+                    "allowNull": true,
                     "seqType": "Sequelize.INTEGER"
                 },
                 "bookId": {
@@ -346,6 +347,7 @@
                     "unique": "user_books_bookId_userId_unique",
                     "onDelete": "CASCADE",
                     "onUpdate": "CASCADE",
+                    "allowNull": true,
                     "seqType": "Sequelize.INTEGER"
                 },
                 "status": {
@@ -526,5 +528,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 10
+    "revision": 11
 }

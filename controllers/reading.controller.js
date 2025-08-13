@@ -1,6 +1,6 @@
 const path = require('path');
 const Epub = require('epub');
-const { Book, Genre, Author, Transaction, UserBook } = require('../models');
+const { Book, Genre, Author, Transaction, UserBook, ActionHistory, sequelize } = require('../models');
 
 exports.getReaderPage = async (req, res) => {
     try {
@@ -24,7 +24,7 @@ exports.getReaderPage = async (req, res) => {
                 },
                 {
                     model: UserBook,
-                    as: 'UserBooks', 
+                    as: 'UserBooks',
                     attributes: ['userId', 'bookId', 'status'],
                     where: {
                         userId: userId
@@ -79,9 +79,36 @@ exports.getReaderPage = async (req, res) => {
             return res.status(404).send('Книга не найдена');
         }
 
-        if(!!book.UserBooks && book.UserBooks.length > 0 && book.UserBooks[0].status === 'OnShelf'){
-            book.UserBooks[0].status = 'InProgress';
-            await book.UserBooks[0].save();
+        if (userId) {
+            let transaction;
+            try {
+                transaction = await sequelize.transaction();
+                const userBook = !!book.UserBooks && book.UserBooks.length > 0
+                    ? book?.UserBooks[0]
+                    : await UserBook.create(
+                        { userId, bookId },
+                        { transaction }
+                    );
+
+                if (userBook.status === 'OnShelf') {
+                    await ActionHistory.logAction(userId,
+                        'BeginReading',
+                        `Пользователь ${res.locals.user.email} начал читать книгу "${book.title}"`,
+                        null,
+                        book.authorId,
+                        book.id,
+                        null,
+                        transaction);
+                    userBook.status = 'InProgress';
+                    await userBook.save({ transaction });
+                    if (transaction) await transaction.commit();
+                }
+            }
+            catch (error) {
+                if (transaction) await transaction.rollback();
+                console.error(`Error on changing status to 'InProgress' for userBook. 
+                        UserId=${userId}, BookId=${bookId}. Error:${error}`);
+            }
         }
 
         const epubPath = path.join(__dirname, '..', book.path);

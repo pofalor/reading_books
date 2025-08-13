@@ -21,13 +21,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 const content = await response.json();
                 if (response.ok && content.success) {
                     card.style.opacity = '0';
-                    setTimeout(() => card.remove(), 300);
-
-                    // Обновляем количество книг, если нужно
-                    const booksGrid = document.querySelector('.books-grid');
-                    if (booksGrid && booksGrid.children.length === 0) {
-                        location.reload();
-                    }
+                    setTimeout(() => {
+                        card.remove();
+                        // Обновляем количество книг, если нужно
+                        const booksGrid = document.querySelector('.books-grid');
+                        if (booksGrid && booksGrid.children.length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
                 } else {
                     alert(content.message || 'Не удалось убрать книгу с полки');
                 }

@@ -35,7 +35,7 @@ exports.addToShelf = async (req, res) => {
             status: 'OnShelf'
         }, { returning: true }, { transaction });
 
-        // Логирование перед удалением
+        // Логирование перед добавлением
         await ActionHistory.logAction(
             req.user.id,
             'AddUserBook',
