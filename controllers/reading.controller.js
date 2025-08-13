@@ -1,6 +1,6 @@
 const path = require('path');
 const Epub = require('epub');
-const { Book, Genre, Author, Transaction } = require('../models');
+const { Book, Genre, Author, Transaction, UserBook } = require('../models');
 
 exports.getReaderPage = async (req, res) => {
     try {
@@ -21,6 +21,15 @@ exports.getReaderPage = async (req, res) => {
                     model: Genre,
                     through: { attributes: [] }, // Исключаем промежуточную таблицу
                     attributes: ['name']
+                },
+                {
+                    model: UserBook,
+                    as: 'UserBooks', 
+                    attributes: ['userId', 'bookId', 'status'],
+                    where: {
+                        userId: userId
+                    },
+                    required: false,
                 },
                 {
                     model: Transaction,
@@ -68,6 +77,11 @@ exports.getReaderPage = async (req, res) => {
 
         if (!book) {
             return res.status(404).send('Книга не найдена');
+        }
+
+        if(!!book.UserBooks && book.UserBooks.length > 0 && book.UserBooks[0].status === 'OnShelf'){
+            book.UserBooks[0].status = 'InProgress';
+            await book.UserBooks[0].save();
         }
 
         const epubPath = path.join(__dirname, '..', book.path);

@@ -42,10 +42,10 @@
                             </div>
                             
                             <div class="book-actions">
-                                <a href="/reading?bookId=<%= book.id %>" class="btn small primary">
+                                <a href="/reading?bookId=<%= book.id %>" class="btn primary" style="text-align: center;">
                                     <%= book.status === 'InProgress' ? 'Продолжить' : 'Читать' %>
                                 </a>
-                                <button class="btn small outline remove-from-shelf" data-book-id="<%= book.id %>">
+                                <button class="btn outline remove-from-shelf" data-book-id="<%= book.id %>">
                                     Убрать
                                 </button>
                             </div>
