@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="/css/my-books.css">
 </head>
 <body>
-    <%- include('partials/navbar', { user: locals.user, activeLink: 'my-books', authButtons: !locals.user, }) %>
+    <%- include('partials/navbar', { user: _locals.user, activeLink: 'my-books', authButtons: !_locals.user, }) %>
     
     <div class="page-container">
         <h1>Мои книги</h1>
