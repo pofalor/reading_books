@@ -13,6 +13,12 @@ module.exports = function(models) {
   
   User.belongsToMany(Book, { through: UserBook, foreignKey: 'userId' });
   Book.belongsToMany(User, { through: UserBook, foreignKey: 'bookId' });
+
+  UserBook.belongsTo(User, { foreignKey: 'userId' });
+  UserBook.belongsTo(Book, { foreignKey: 'bookId' });
+  
+  User.hasMany(UserBook, { foreignKey: 'userId' });
+  Book.hasMany(UserBook, { foreignKey: 'bookId' });
   
   User.hasMany(Transaction, { foreignKey: 'userId' });
   Transaction.belongsTo(User, { foreignKey: 'userId' });

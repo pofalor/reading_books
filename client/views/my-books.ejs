@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header.ejs', { title: 'Мои книги' }) %>
+    <link rel="stylesheet" href="/css/my-books.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: locals.user, activeLink: 'my-books', authButtons: !locals.user, }) %>
+    
+    <div class="page-container">
+        <h1>Мои книги</h1>
+        
+        <% if (books.length === 0) { %>
+            <div class="empty-state">
+                <img src="/images/empty-shelf.jpg" alt="Пустая полка">
+                <h3>Ваша книжная полка пуста</h3>
+                <p>Добавляйте книги на полку, чтобы они отображались здесь</p>
+                <a href="/" class="btn primary">Найти книги</a>
+            </div>
+        <% } else { %>
+            <div class="books-grid">
+                <% books.forEach(book => { %>
+                    <div class="book-card clickable-card"" data-id="<%= book.id %>">
+                        <div class="book-card-header">
+                            <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                            <span class="book-status <%= book.status === 'InProgress' ? 'in-progress' : 'on-shelf' %>">
+                                <%= book.status === 'InProgress' ? 'Читаю' : 'На полке' %>
+                            </span>
+                        </div>
+                        
+                        <div class="book-card-body">
+                            <h3><%= book.title %></h3>
+                            <p class="author"><%= book.Author?.getAuthorName() || 'Автор неизвестен' %></p>
+                            
+                            <div class="genres">
+                                <% book.Genres.slice(0, 3).forEach(genre => { %>
+                                    <span class="list-badge"><%= genre.name %></span>
+                                <% }) %>
+                                <% if (book.Genres.length > 3) { %>
+                                    <span class="list-badge">+<%= book.Genres.length - 3 %></span>
+                                <% } %>
+                            </div>
+                            
+                            <div class="book-actions">
+                                <a href="/reading?bookId=<%= book.id %>" class="btn small primary">
+                                    <%= book.status === 'InProgress' ? 'Продолжить' : 'Читать' %>
+                                </a>
+                                <button class="btn small outline remove-from-shelf" data-book-id="<%= book.id %>">
+                                    Убрать
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+
+    <%- include('partials/footer.ejs') %>
+    <script src="/js/my-books.js" type="module"></script>
+</body>
+</html>

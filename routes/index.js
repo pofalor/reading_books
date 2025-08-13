@@ -16,6 +16,7 @@ router.use('/admin', require('./web/admin.routes'));
 router.use('/moderation', require('./web/moderation.routes'));
 router.use('/book', require('./web/book.routes'));
 router.use('/reading', require('./web/reading.routes'));
+router.use('/my-books', require('./web/myBooks.routes'));
 
 // 404 для web-страниц
 router.use((req, res) => {

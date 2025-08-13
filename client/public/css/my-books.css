@@ -1,0 +1,132 @@
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.empty-state img {
+    max-width: 200px;
+    opacity: 0.7;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--dark-color);
+}
+
+.empty-state p {
+    color: var(--gray-color);
+    margin-bottom: 20px;
+}
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.book-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* Фиксируем высоту */
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+}
+
+.book-card-header {
+    position: relative;
+}
+
+.book-card-header img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.book-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+}
+
+.book-status.on-shelf {
+    background: var(--gray-color);
+}
+
+.book-status.in-progress {
+    background: var(--primary-color);
+}
+
+.book-card-body {
+    padding: 15px;
+    flex: 1;
+    /* Растягиваем тело карточки */
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card-body h3 {
+    font-size: 1.1rem;
+    margin: 0 0 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-card-body .author {
+    color: var(--gray-color);
+    font-size: 0.9rem;
+    margin: 0 0 10px;
+}
+
+.genres {
+    flex: 1;
+    /* Жанры занимают доступное пространство */
+    min-height: 60px;
+    /* Минимальная высота для 1-2 строк */
+    overflow: hidden;
+    /* Скрываем избыток жанров */
+    display: -webkit-box;
+    --webkit-line-clamp: 2;
+    /* Ограничиваем до 2 строк */
+    -webkit-box-orient: vertical;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 0;
+    line-height: 1.4;
+    max-height: 2.8em; /* 2 строки */
+}
+
+.book-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto; /* Прижимаем кнопки к низу */
+    flex-shrink: 0; /* Запрещаем сжатие */
+}
+
+.book-actions .btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .book-card-header img {
+        height: 160px;
+    }
+}

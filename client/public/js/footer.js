@@ -7,12 +7,6 @@ $(document).ready(function() {
 
     // Инициализация фильтров
     $('#genre-filter, #author-filter').change(applyFilters);
-
-    // Обработка клика по книге
-    $('.book-card').click(function() {
-        const bookId = $(this).data('id');
-        window.location.href = `/book?bookId=${bookId}`;
-    });
 });
 
 function performSearch() {
