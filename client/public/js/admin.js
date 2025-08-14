@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch('/api/auth/profile');
         if (response.ok) {
             currentUser = await response.json();
-            if (currentUser && currentUser.Roles.some(r => r.name === 'super_admin')) {
+            if (currentUser && currentUser.roles.some(r => r === 'super_admin')) {
                 document.getElementById('super-admin-buttons').style.display = 'block';
             }
         }
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                 <td>
-                    ${currentUser && currentUser.Roles.some(r => r.name === 'super_admin' || r.name === 'admin') ? `
+                    ${currentUser && currentUser.roles.some(r => r === 'super_admin' || r === 'admin') ? `
                         <i class="action-icon add" data-userid="${user.id}" title="Добавить роль">➕</i>
                         <i class="action-icon remove" data-userid="${user.id}" title="Удалить роль">➖</i>
                     ` : ''}
