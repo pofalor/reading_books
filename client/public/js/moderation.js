@@ -160,7 +160,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateTable(tableId, data, rowGenerator) {
-    const container = document.getElementById(`${tableId}-container`);
     const table = document.getElementById(`${tableId}-table`);
     const noDataMessage = document.getElementById(`no-${tableId}`);
 

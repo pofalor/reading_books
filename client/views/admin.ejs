@@ -9,38 +9,82 @@
 <body>
     <%- include('partials/navbar', { activeLink: 'admin' , authButtons: false }) %>
 
-        <div class="admin-container">
+        <div class="page-container">
+            <h1>Статистика покупок</h1>
+            <div class="card">
+
+
+                <div class="stats-grid" id="stats-container">
+                    <!-- Данные будут загружены через JS -->
+                </div>
+
+                <!-- Фильтры -->
+                <div class="search-container" style="margin-top: 20px;">
+                    <input type="date" id="start-date" class="date-filter">
+                    <span style="margin: 0 10px;">—</span>
+                    <input type="date" id="end-date" class="date-filter">
+                    <button id="reset-filter" class="btn outline">Сбросить</button>
+                    <button id="search-button-stats" class="btn primary">Поиск</button>
+                </div>
+
+                <!-- Таблица покупок -->
+                <div class="table" id="stats-table" style="margin-top: 20px;">
+                    <table class="w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Книга</th>
+                                <th>Пользователь</th>
+                                <th>Сумма</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchases-table-body">
+                            <!-- Данные будут загружены через JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-stats" class="no-data-message">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>Покупки не найдены</p>
+                </div>
+            </div>
+
             <h1>Управление пользователями</h1>
 
-            <!-- Поиск пользователей -->
-            <div class="search-container">
-                <input type="text" id="user-search" placeholder="Поиск пользователей...">
-                <button id="search-button" class="btn primary">Поиск</button>
+            <div class="card">
+                <!-- Поиск пользователей -->
+                <div class="search-container">
+                    <input type="text" id="user-search" placeholder="Поиск пользователей...">
+                    <button id="search-button" class="btn primary">Поиск</button>
+                </div>
+
+                <!-- Кнопки для супер-админа -->
+                <div id="super-admin-buttons" class="admin-actions" style="display: none;">
+                    <button id="add-role-btn" class="btn primary">Добавить роль</button>
+                    <button id="delete-role-btn" class="btn danger">Удалить роль</button>
+                </div>
+
+                <div class="table">
+                    <table class="w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя</th>
+                                <th>Email</th>
+                                <th>Роли</th>
+                                <th>Дата добавления</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admins-table-body">
+                            <!-- Список будет загружен через JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Кнопки для супер-админа -->
-            <div id="super-admin-buttons" class="admin-actions" style="display: none;">
-                <button id="add-role-btn" class="btn primary">Добавить роль</button>
-                <button id="delete-role-btn" class="btn danger">Удалить роль</button>
-            </div>
-
-            <div class="admin-list">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Имя</th>
-                            <th>Email</th>
-                            <th>Роли</th>
-                            <th>Дата добавления</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admins-table-body">
-                        <!-- Список будет загружен через JS -->
-                    </tbody>
-                </table>
-            </div>
 
             <!-- Модальное окно добавления роли -->
             <div id="add-role-modal" class="modal">
@@ -67,14 +111,12 @@
                     <span class="close">&times;</span>
                     <h2>Удалить роль</h2>
                     <form id="delete-role-form">
-                        <%- include('partials/dropdown-selector', { id: 'delete-role-select' , containerClass: '' , 
-                        label: 'Выберите роль для удаления' , apiUrl: '/api/admin/getRoles' , 
-                        displayField: 'name' , valueField: 'id' , descriptionField: 'description', 
-                        inputClass: '' , placeholder: 'Начните вводить название роли...' , 
-                        selectedDisplay: '' , selectedValue: '',
-                        required: true, method: 'GET'
-                        }) %>
-                        <button type="submit" class="btn danger">Удалить</button>
+                        <%- include('partials/dropdown-selector', { id: 'delete-role-select' , containerClass: '' ,
+                            label: 'Выберите роль для удаления' , apiUrl: '/api/admin/getRoles' , displayField: 'name' ,
+                            valueField: 'id' , descriptionField: 'description' , inputClass: '' ,
+                            placeholder: 'Начните вводить название роли...' , selectedDisplay: '' , selectedValue: '' ,
+                            required: true, method: 'GET' }) %>
+                            <button type="submit" class="btn danger">Удалить</button>
                     </form>
                 </div>
             </div>

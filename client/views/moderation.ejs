@@ -25,7 +25,7 @@
       </div>
 
       <% if (activeTab==='books' ) { %>
-        <div class="tab-content">
+        <div class="card">
           <button id="add-book-btn" class="btn primary moderation-add-button">
             <i class="fas fa-plus"></i> Добавить книгу
           </button>
@@ -36,7 +36,7 @@
             <button id="search-books-btn" class="btn primary">Поиск</button>
           </div>
           <div id="all-books-container">
-            <div id="all-books-table" class="moderation-table"></div>
+            <div id="all-books-table" class="table"></div>
             <div id="no-all-books" class="no-data-message">
               <i class="fas fa-book-open"></i>
               <p>Книги не найдены</p>
@@ -45,7 +45,7 @@
         </div>
         <% } %>
           <% if (activeTab==='authors' ) { %>
-            <div class="tab-content">
+            <div class="card">
               <button id="add-author-btn" class="btn primary moderation-add-button">
                 <i class="fas fa-user-plus"></i> Добавить автора
               </button>
@@ -56,7 +56,7 @@
                 <button id="search-authors-btn" class="btn primary">Поиск</button>
               </div>
               <div id="all-authors-container">
-                <div id="all-authors-table" class="moderation-table"></div>
+                <div id="all-authors-table" class="table"></div>
                 <div id="no-all-authors" class="no-data-message">
                   <i class="fas fa-book-open"></i>
                   <p>Авторы не найдены</p>
@@ -65,7 +65,7 @@
             </div>
             <% } %>
               <% if (activeTab==='genres' ) { %>
-                <div class="tab-content">
+                <div class="card">
                   <button id="add-genre-btn" class="btn primary moderation-add-button">
                     <i class="fas fa-plus"></i> Добавить жанр
                   </button>
@@ -77,7 +77,7 @@
                   </div>
 
                   <div id="genres-container">
-                    <div id="genres-table" class="moderation-table"></div>
+                    <div id="genres-table" class="table"></div>
                     <div id="no-genres" class="no-data-message">
                       <i class="fas fa-tag"></i>
                       <p>Жанры не найдены</p>

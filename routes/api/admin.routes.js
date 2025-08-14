@@ -11,5 +11,6 @@ router.post('/deleteRole', authenticate, requireRole('super_admin'), adminContro
 router.post('/addUserRole', authenticate, requireRole('super_admin', 'admin'), adminController.addUserRole);
 router.post('/removeUserRole', authenticate, requireRole('super_admin', 'admin'), adminController.removeUserRole);
 router.get('/getRoleById', authenticate, requireRole('super_admin'), adminController.getRoleById);
+router.post('/getStats', authenticate, requireRole('super_admin', 'admin'), adminController.getStats);
 
 module.exports = router;

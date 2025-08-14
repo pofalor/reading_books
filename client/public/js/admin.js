@@ -85,6 +85,96 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    async function loadStats() {
+        try {
+            const beginDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const limit = 50;
+
+            const response = await fetch(`/api/admin/getStats`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ limit, beginDate, endDate })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                renderPurchaseStats(data.stats);
+                renderPurchases(data.purchases);
+            } else {
+                console.error('Error loading purchase stats');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при загрузке статистики');
+        }
+    }
+
+    // Отображение статистики
+    function renderPurchaseStats(stats) {
+        const container = document.getElementById('stats-container');
+        container.innerHTML = `
+        <div class="card card-stats">
+            <div class="stat-value">${stats.totalPurchases || 0}</div>
+            <div class="stat-label">Всего покупок</div>
+        </div>
+        <div class="card card-stats">
+            <div class="stat-value">${stats.totalRevenue || 0} ₽</div>
+            <div class="stat-label">Общий доход</div>
+        </div>
+        <div class="card card-stats">
+            <div class="stat-value">${stats.avgPurchase || 0} ₽</div>
+            <div class="stat-label">Средний чек</div>
+        </div>
+        <div class="card card-stats">
+            <div class="stat-value">${stats.topBook?.title || 'Нет данных'}</div>
+            <div class="stat-label">Самая популярная книга</div>
+        </div>
+        `;
+    }
+
+    // Отображение таблицы покупок
+    function renderPurchases(purchases) {
+        const tbody = document.getElementById('purchases-table-body');
+        const table = document.getElementById("stats-table");
+        const noDataMessage = document.getElementById(`no-stats`);
+
+        if (!purchases || purchases.length === 0) {
+            table.style.display = 'none';
+            noDataMessage.style.display = 'block';
+            return;
+        }
+        tbody.innerHTML = purchases.map(purchase => `
+        <tr>
+            <td>${purchase.id}</td>
+            <td>${purchase.Book.title}</td>
+            <td>${purchase.User.email}</td>
+            <td>${purchase.amount} ₽</td>
+            <td>${new Date(purchase.date).toLocaleDateString()}</td>
+            <td>
+                <span class="status-badge ${purchase.status.toLowerCase()}">
+                    ${getTransStatus(purchase.status)}
+                </span>
+            </td>
+        </tr>`).join('');
+
+        table.style.display = 'block';
+        noDataMessage.style.display = 'none';
+    }
+
+    function getTransStatus(status) {
+        switch (status) {
+            case 'COMPLETED':
+                return 'Завершено';
+            case 'FAILED':
+                return 'Отклонено';
+            case 'PENDING':
+                return 'В процессе';
+        }
+    }
+
     const addRoleModal = setupModal('add-role-modal', '.close');
     const deleteRoleModal = setupModal('delete-role-modal', '.close');
     const addUserRoleModal = setupModal('add-user-role-modal', '.close');
@@ -178,7 +268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const roleName = document.querySelector('.dropdown-selector-input')?.value;
 
-        if(!roleName){
+        if (!roleName) {
             alert("Пожалуйста, выберите имя роли");
             return;
         }
@@ -286,7 +376,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         deleteRoleModal.style.display = 'block';
     });
 
+    document.getElementById('reset-filter')?.addEventListener('click', () => {
+        document.getElementById('start-date').value = '';
+        document.getElementById('end-date').value = '';
+    });
+
+    document.getElementById('search-button-stats').addEventListener('click', () => {
+        loadStats();
+    });
+
     // Инициализация
     await loadRoles();
     await loadUsers();
+    await loadStats();
 });

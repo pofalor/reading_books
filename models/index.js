@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize, DataTypes, Op } = require('sequelize');
 
 const sequelize = new Sequelize(
     process.env.DB_NAME || 'book_app_db',
@@ -28,5 +28,6 @@ require('./associations')(sequelize.models);
 
 module.exports = {
   sequelize,
-  ...sequelize.models
+  ...sequelize.models,
+  Op
 };

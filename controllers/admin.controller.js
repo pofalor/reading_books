@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { User, Role } = require('../models');
+const { User, Role, Transaction, Book, sequelize, Op } = require('../models');
 
 exports.getAdmins = async (req, res) => {
     try {
@@ -93,5 +93,83 @@ exports.getRoleById = async (req, res) => {
         res.json(role);
     } catch (error) {
         res.status(404).json({ message: error.message });
+    }
+};
+
+exports.getStats = async (req, res) => {
+    try {
+        const { limit, beginDate, endDate } = req.body;
+
+        const baseWhere = {
+            type: 'PURCHASE',
+            status: 'COMPLETED'
+        };
+
+        // Добавляем фильтрацию по датам, если они переданы
+        if (beginDate || endDate) {
+            baseWhere.date = {};
+            if (beginDate) baseWhere.date[Op.gte] = new Date(beginDate);
+            if (endDate) baseWhere.date[Op.lte] = new Date(endDate);
+        }
+
+        const totalPurchases = await Transaction.count({ where: baseWhere });
+        const totalRevenue = await Transaction.sum('amount', { where: baseWhere });
+        const avgPurchase = totalPurchases > 0 ? (totalRevenue / totalPurchases).toFixed(2) : 0;
+
+        // Находим самую популярную книгу
+        const topBook = await Transaction.findOne({
+            attributes: [
+                'bookId',
+                [sequelize.fn('COUNT', sequelize.col('bookId')), 'purchaseCount']
+            ],
+            where: baseWhere,
+            group: ['bookId'],
+            order: [[sequelize.literal('purchaseCount'), 'DESC']],
+            include: [{
+                model: Book,
+                attributes: ['title', 'id']
+            }],
+            raw: true,
+            nest: true
+        });
+
+        const stats = {
+            totalPurchases,
+            totalRevenue,
+            avgPurchase,
+            topBook: topBook?.Book
+        };
+
+        const purchasesWhere = { type: 'PURCHASE' };
+        if (beginDate || endDate) {
+            purchasesWhere.date = {};
+            if (beginDate) purchasesWhere.date[Op.gte] = new Date(beginDate);
+            if (endDate) purchasesWhere.date[Op.lte] = new Date(endDate);
+        }
+
+        // Получаем последние покупки
+        const purchases = await Transaction.findAll({
+            where: purchasesWhere,
+            limit: limit || undefined,
+            order: [['date', 'DESC']],
+            include: [
+                {
+                    model: Book,
+                    attributes: ['title']
+                },
+                {
+                    model: User,
+                    attributes: ['email']
+                }
+            ]
+        });
+
+        res.json({
+            stats,
+            purchases
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
 };
