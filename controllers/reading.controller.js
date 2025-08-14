@@ -62,16 +62,18 @@ exports.getReaderPage = async (req, res) => {
         }
 
         //если книга платная, то нужно проверить куплена ли она
-        if (book.price && !book.Transactions.some()) {
+        if (book.price && book.Transactions.length <= 0) {
             return res.status(401).render('error-401', {
                 title: 'Ошибка 401',
                 errorTitle: 'Доступ запрещен',
                 errorMessage: `Для того, чтобы читать эту книгу, необходимо её купить.`,
                 needAdditionalButton: true,
-                addButtonHref: `/purchase/${book.id}`,
+                addButtonHref: `/transaction?bookId=${book.id}`,
                 addButtonClass: "btn accent",
                 addButtonText: `Купить за ${book.price.toFixed(2)} ₽`,
-                addButtonIcon: "fas fa-cart-shopping"
+                addButtonIcon: "fas fa-cart-shopping",
+                needLoginButton: false,
+                needRegisterButton: false
             });
         }
 

@@ -43,10 +43,10 @@
                 </div>
 
                 <div class="book-actions">
-                    <% if (!book.price || (book.price && locals.user && book.transaction?.id)) { %>
+                    <% if (!book.price || (book.price && locals.user && book.Transactions.length > 0)) { %>
                         <button class="btn primary" id="read-btn">Читать</button>
                     <% } %>
-                    <% if (book.price && book.price > 0 && (!locals.user || !book.transaction?.id)) { %>
+                    <% if (book.price && book.price > 0 && (!locals.user || book.Transactions.length == 0)) { %>
                         <button class="btn accent" id="buy-btn">Купить за <%= book.price.toFixed(2) %> ₽</button>
                     <% } %>
                     <button class="btn outline" id="shelf-btn">
@@ -88,7 +88,7 @@
                     <a href="/auth/register" class="btn outline">Регистрация</a>
                 <% } %>
                 <% if (book.price && book.price > 0) { %>
-                    <a href="/purchase/<%= book.id %>" class="btn accent">Купить книгу</a>
+                    <a href="/transaction?bookId=<%= book.id %>" class="btn accent">Купить книгу</a>
                 <% } %>
             </div>
         </div>

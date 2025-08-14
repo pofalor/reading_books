@@ -78,9 +78,11 @@ module.exports = (sequelize, DataTypes) => {
             let result;
             await Promise.all(promises)
                 .then(resultArr => {
-                    resultArr[0].userBookStatus = resultArr[1] ? resultArr[1].status : null;
-                    resultArr[0].dataValues.userBookStatus = resultArr[1] ? resultArr[1].status : null;
-                    result = resultArr[0];
+                    if (resultArr && resultArr.length > 0 && resultArr[0]) {
+                        resultArr[0].userBookStatus = resultArr[1] ? resultArr[1].status : null;
+                        resultArr[0].dataValues.userBookStatus = resultArr[1] ? resultArr[1].status : null;
+                        result = resultArr[0];
+                    }
                 });
             return result;
         }

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         shelfBtn.addEventListener('click', async function () {
             if (user) {
                 // Проверяем, является ли книга платной и не куплена ли она
-                if (book.price && book.price > 0 && !book.transaction?.id) {
+                if (book.price && book.price > 0 && book.Transactions.length == 0) {
                     modalMessage.textContent = "Для добавления этой книги на полку необходимо её купить.";
                     modal.style.display = "block";
                     return;
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (buyBtn) {
             buyBtn.addEventListener('click', function () {
                 if (user) {
-                    window.location.href = `/purchase/${book.id}`;
+                    window.location.href = `/transaction?bookId=${book.id}`;
                 } else {
                     modalMessage.textContent = "Для покупки книги необходимо войти в систему.";
                     modal.style.display = "block";
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (readBtn) {
             readBtn.addEventListener('click', function () {
                 // Проверяем доступность книги для пользователя
-                if (book.guestAvailable || (user && !book.price) || (user && book.transaction.id)) {
+                if (book.guestAvailable || (user && !book.price) || (user && book.Transactions.length > 0)) {
                     window.location.href = `/reading?bookId=${book.id}`;
                 }
                 else if (!user) {

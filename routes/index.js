@@ -8,6 +8,7 @@ router.use('/api/admin', require('./api/admin.routes'));
 router.use('/api/authors', require('./api/author.routes'));
 router.use('/api/genres', require('./api/genre.routes'));
 router.use('/api/userBook', require('./api/userBook.routes'));
+router.use('/api/transaction', require('./api/transaction.routes'));
 
 // Web routes
 router.use('/', require('./web/app.routes'));
@@ -17,6 +18,7 @@ router.use('/moderation', require('./web/moderation.routes'));
 router.use('/book', require('./web/book.routes'));
 router.use('/reading', require('./web/reading.routes'));
 router.use('/my-books', require('./web/myBooks.routes'));
+router.use('/transaction', require('./web/transaction.routes'));
 
 // 404 для web-страниц
 router.use((req, res) => {

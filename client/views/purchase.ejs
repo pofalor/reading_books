@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header.ejs', { title: `Покупка книги - ${book.title}` }) %>
+    <link rel="stylesheet" href="/css/purchase.css">
+</head>
+<body>
+    <%- include('partials/navbar', { activeLink: 'none', user: locals.user, authButtons: !locals.user, }) %>
+    
+    <div class="purchase-container">
+        <div class="purchase-card">
+            <div class="book-info">
+                <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                <div>
+                    <h2><%= book.title %></h2>
+                    <p class="author"><%= book.Author?.getAuthorName() || 'Автор неизвестен' %></p>
+                    <div class="price"><%= book.price.toFixed(2) %> ₽</div>
+                </div>
+            </div>
+            
+            <form id="payment-form" class="payment-form">
+                <h3>Данные для оплаты</h3>
+                
+                <div class="form-group">
+                    <label for="card-number">Номер карты</label>
+                    <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-expiry">Срок действия</label>
+                        <input type="text" id="card-expiry" placeholder="MM/YY" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="card-cvc">CVC/CVV</label>
+                        <input type="text" id="card-cvc" placeholder="123" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="card-name">Имя владельца</label>
+                    <input type="text" id="card-name" placeholder="IVAN IVANOV" required>
+                </div>
+                
+                <button type="submit" class="btn primary pay-btn">
+                    <svg class="icon" viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M20,8H4V6H20M20,18H4V12H20M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
+                    </svg>
+                    Оплатить
+                </button>
+                
+                <div class="test-mode-notice">
+                    <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16"/>
+                    </svg>
+                    Тестовый режим: платежи проходят с вероятностью 90%
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="payment-loader">
+                <div class="loader"></div>
+                <p>Обработка платежа...</p>
+            </div>
+            
+            <div class="payment-result success">
+                <svg class="icon" viewBox="0 0 24 24" width="48" height="48">
+                    <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
+                </svg>
+                <h3>Оплата прошла успешно!</h3>
+                <p>Книга добавлена на вашу полку.</p>
+                <a href="/reading?bookId=<%= book.id %>" class="btn primary">Читать сейчас</a>
+            </div>
+            
+            <div class="payment-result failed">
+                <svg class="icon" viewBox="0 0 24 24" width="48" height="48">
+                    <path fill="currentColor" d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
+                </svg>
+                <h3>Оплата не прошла</h3>
+                <p id="failed-trans-text">Пожалуйста, попробуйте другую карту.</p>
+                <button class="btn outline try-again">Попробовать снова</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/purchase.js" type="module"></script>
+</body>
+</html>
