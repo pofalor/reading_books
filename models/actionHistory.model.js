@@ -14,10 +14,6 @@ module.exports = (sequelize, DataTypes) => {
             }, 
             { transaction });
         }
-
-        static async getActionsByUser(userId) {
-            return this.findAll({ where: { userId } });
-        }
     }
 
     ActionHistory.init({

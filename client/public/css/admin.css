@@ -68,11 +68,6 @@
     font-size: 14px;
 }
 
-/* Фильтры */
-.date-filter {
-   max-width: 200px;
-}
-
 /* Статусы */
 .status-badge {
     display: inline-block;

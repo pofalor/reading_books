@@ -32,6 +32,11 @@
               <i class="fas fa-gavel"></i> Модерация
             </a>
           <% } %>
+          <% if (!!user && !!user.roles && user.roles.some(role=> role === 'moderator' || role === 'super_admin' || role === 'admin')) { %>
+            <a href="/history" class="<%= activeLink === 'history' ? 'active' : '' %>">
+              <i class="fas fa-history"></i> Журнал
+            </a>
+          <% } %>
           <div class="user-profile auth-only">
             <img src="/images/user-icon.png" alt="Профиль" class="user-avatar" style="max-width: 30px;">
             <span class="user-name"></span>

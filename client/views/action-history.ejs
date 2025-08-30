@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <%- include('partials/header', { title: 'История действий' }) %>
+</head>
+
+<body>
+    <%- include('partials/navbar', { activeLink: 'history' , user: locals.user, authButtons: false }) %>
+
+        <div class="page-container">
+            <h1>История действий</h1>
+            <div class="card">
+                <!-- Фильтры -->
+                <div class="search-container">
+                    <input type="text" id="history-search" placeholder="Поиск по истории...">
+                    <input type="date" id="start-date">
+                    <span style="margin: 0 10px;">—</span>
+                    <input type="date" id="end-date">
+                    <button id="reset-filter" class="btn outline">Сбросить</button>
+                    <button id="search-button-history" class="btn primary">Поиск</button>
+                </div>
+
+                <!-- Таблица действий -->
+                <div class="table" id="history-table" style="margin-top: 20px;">
+                    <table class="w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Тип действия</th>
+                                <th>Описание</th>
+                                <th>Инициатор</th>
+                                <th>Связанный пользователь</th>
+                                <th>Связанный автор</th>
+                                <th>Связанная книга</th>
+                                <th>Связанный жанр</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <!-- Данные будут загружены через JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-history" class="no-data-message">
+                    <i class="fas fa-search"></i>
+                    <p>Данные не найдены</p>
+                </div>
+            </div>
+
+            <%- include('partials/footer') %>
+                <script src="/js/actionHistory.js" type="module"></script>
+</body>
+
+</html>

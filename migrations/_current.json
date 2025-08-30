@@ -475,6 +475,8 @@
                     },
                     "allowNull": false,
                     "field": "actorId",
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
                     "seqType": "Sequelize.INTEGER"
                 },
                 "userId": {
@@ -528,5 +530,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 12
+    "revision": 13
 }
