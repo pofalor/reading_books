@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             return genres;
         }
 
-        static async getGenresWithBookCount(limit = 100) {
+        static async getGenresWithBookCount(search = "", limit = 100) {
             const [results] = await sequelize.query(`
                 SELECT 
                     g.id, 
@@ -22,12 +22,13 @@ module.exports = (sequelize, DataTypes) => {
                     g.description, 
                     COUNT(bg.bookId) as bookCount
                 FROM genres g
-                LEFT JOIN book_genres bg ON g.id = bg.genreId
+                JOIN book_genres bg ON g.id = bg.genreId
+                WHERE LOWER(g.name) LIKE ?
                 GROUP BY g.id
                 ORDER BY bookCount DESC
                 LIMIT ?`,
                 {
-                    replacements: [limit]
+                    replacements: [`%${search.toLowerCase()}%`, limit]
                 }
             );
 

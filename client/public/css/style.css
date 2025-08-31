@@ -200,7 +200,7 @@ a {
   outline: none;
 }
 
-.search-container input[type="date"]{
+.search-container input[type="date"] {
   max-width: 200px;
 }
 
@@ -311,6 +311,14 @@ a {
   animation: fadeIn 0.3s ease-out;
 }
 
+.d-flex {
+  display: flex;
+}
+
+.align-items-end {
+  align-items: end;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .nav-links {
@@ -326,10 +334,6 @@ a {
   }
 
   .nav-links.active {
-    display: flex;
-  }
-
-  .d-flex {
     display: flex;
   }
 

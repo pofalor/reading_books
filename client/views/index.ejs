@@ -50,7 +50,7 @@
                 <h2>Жанры</h2>
                 <div class="genres-grid">
                     <% genres.forEach(genre=> { %>
-                        <a href="/?genre=<%= genre.id %>" class="genre-card">
+                        <a href="/search?genreId=<%= genre.id %>&genreName=<%= genre.name %>" class="genre-card">
                             <h3>
                                 <%= genre.name %>
                             </h3>

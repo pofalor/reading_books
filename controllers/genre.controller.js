@@ -14,6 +14,21 @@ exports.getAllGenres = async (req, res) => {
     }
 };
 
+exports.getGenresForUsers = async (req, res) => {
+    try {
+        const { body } = req.body;
+        const limit = parseInt(body?.limit ?? "100");
+        const search = body?.search.toString().toLowerCase();
+
+        const genres = await Genre.getGenresWithBookCount(search, limit);
+
+        res.json(genres);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.createGenre = async (req, res) => {
     try {
         const { name, description } = req.body;

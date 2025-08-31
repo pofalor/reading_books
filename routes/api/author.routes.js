@@ -8,6 +8,8 @@ router.post('/approve', authenticate, requireRole('moderator'), authorController
 router.post('/getAll', authenticate, requireRole('moderator'), authorController.getAllAuthors);
 router.post('/', authenticate, requireRole('moderator'), authorController.createNew);
 router.get('/delete', authenticate, requireRole('moderator'), authorController.delete);
-router.post('/search', authenticate, requireRole('moderator'), authorController.searchApproved)
+
+//Маршруты для всех
+router.post('/search', authorController.searchApproved);
 
 module.exports = router;

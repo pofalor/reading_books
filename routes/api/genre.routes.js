@@ -6,5 +6,6 @@ const genreController = require('../../controllers/genre.controller');
 router.post('/getAll', genreController.getAllGenres);
 router.post('/', authenticate, requireRole('moderator'), genreController.createGenre);
 router.delete('/', authenticate, requireRole('moderator'), genreController.deleteGenre);
+router.post('/getGenresForUsers', genreController.getGenresForUsers);
 
 module.exports = router;

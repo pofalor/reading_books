@@ -1,4 +1,4 @@
-<div class="dropdown-selector" data-method="<%= method %>" data-api-url="<%= apiUrl %>" 
+<div class="dropdown-selector <%= containerClass %>" data-method="<%= method %>" data-api-url="<%= apiUrl %>" 
     data-display-field="<%= displayField %>"
     data-value-field="<%= valueField %>" data-description-field="<%= descriptionField %>"
     id="dropdown-selector-<%= id %>">
@@ -6,7 +6,7 @@
         <%= label %>
         <% if (required) { %><span class="required">*</span><% } %>
     </label>
-    <input class="dropdown-selector-input" type="text" id="<%= id %>-input" placeholder="<%= placeholder %>"
+    <input class="dropdown-selector-input <%= inputClass %>" type="text" id="<%= id %>-input" placeholder="<%= placeholder %>"
         autocomplete="off" value="<%= selectedDisplay %>" <% if (required) { %>required<% } %>>
     <div id="<%= id %>-list" class="dropdown-selector-list"></div>
     <input type="hidden" id="<%= id %>-value" name="<%= id %>" value="<%= selectedValue %>">

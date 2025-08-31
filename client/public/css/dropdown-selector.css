@@ -71,7 +71,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    margin-bottom: 5px;
 }
 
 
@@ -82,6 +81,7 @@
     font-size: 14px;
     display: flex;
     align-items: center;
+    margin-bottom: 5px;
 }
 
 .remove-tag {

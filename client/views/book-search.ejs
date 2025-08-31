@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <%- include('partials/header', { title: 'Поиск книг' }) %>
+    <link rel="stylesheet" href="/css/book-search.css">
+</head>
+<body>
+    <%- include('partials/navbar', { activeLink: 'search', authButtons: !locals.user, user: locals.user }) %>
+
+    <div class="page-container">
+        <h1>Поиск книг</h1>
+
+        <div class="card">
+            <!-- Форма поиска -->
+            <form id="search-form" class="search-filters">
+                <div class="d-flex align-items-end w-100">
+                    <div class="form-group w-100" style="padding-bottom: 15px;">
+                        <label for="title-input">Название книги</label>
+                        <input type="text" id="title-input" placeholder="Введите название книги...">
+                    </div>
+                </div>
+
+                <div class="form-group d-flex align-items-end w-100">
+                    <%- include('partials/dropdown-selector', { 
+                        id: 'author-select', 
+                        containerClass: 'w-100', 
+                        label: 'Автор', 
+                        apiUrl: '/api/authors/search', 
+                        displayField: 'nickName', 
+                        valueField: 'id', 
+                        descriptionField: '', 
+                        inputClass: '', 
+                        placeholder: 'Начните вводить имя автора...', 
+                        selectedDisplay: '', 
+                        selectedValue: '', 
+                        required: false, 
+                        method: 'POST' 
+                    }) %>
+                </div>
+
+                <div class="form-group">
+                    <%- include('partials/multi-select-dropdown', { 
+                        id: 'genres-select', 
+                        label: 'Жанры', 
+                        apiUrl: '/api/genres/getGenresForUsers', 
+                        displayField: 'name', 
+                        valueField: 'id', 
+                        descriptionField: '', 
+                        placeholder: 'Начните вводить название жанра...', 
+                        selectedValues: initialGenre, 
+                        required: false, 
+                        method: 'POST' 
+                    }) %>
+                </div>
+
+                <div class="search-actions">
+                    <button type="submit" class="btn primary">Найти</button>
+                    <button type="button" id="reset-filters" class="btn outline">Сбросить</button>
+                </div>
+                
+            </form>
+
+            <!-- Результаты поиска -->
+            <div class="search-results">
+            <div id="results-count" class="results-count"></div>
+                    
+            <div id="books-grid" class="books-grid">
+                <!-- Результаты будут загружены здесь -->
+            </div>
+        
+            <div id="loading" class="loading" style="display: none;">
+                <p>Загрузка книг...</p>
+            </div>
+        
+            <div id="no-results" class="no-results" style="display: none;">
+                <p>Книги не найдены</p>
+            </div>
+        
+            <div id="too-many-results" class="too-many-results" style="display: none;">
+                <p>Показаны первые 100 результатов. Уточните параметры поиска для более точных результатов.</p>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    <script src="/js/book-search.js" type="module"></script>
+</body>
+</html>
