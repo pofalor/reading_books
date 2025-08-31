@@ -1,4 +1,4 @@
-const { User, ActionHistory, Book, Author, Genre, Op } = require('../models');
+const { User, ActionHistory, Book, Author, Genre, Op, sequelize } = require('../models');
 
 exports.getActionHistory = async (req, res) => {
     try {
@@ -18,30 +18,30 @@ exports.getActionHistory = async (req, res) => {
             ...(actionTypes && { actionType: { [Op.in]: actionTypes } }),
             ...(search && {
                 [Op.or]: [
-                    { actionType: { [Op.iLike]: `%${search}%` } },
-                    { description: { [Op.iLike]: `%${search}%` } },
-                    { '$Actor.email$': { [Op.iLike]: `%${search}%` } },
-                    { '$Actor.firstName$': { [Op.iLike]: `%${search}%` } },
-                    { '$Actor.lastName$': { [Op.iLike]: `%${search}%` } },
-                    { '$User.email$': { [Op.iLike]: `%${search}%` } },
-                    { '$User.firstName$': { [Op.iLike]: `%${search}%` } },
-                    { '$User.lastName$': { [Op.iLike]: `%${search}%` } },
-                    { '$Author.firstName$': { [Op.iLike]: `%${search}%` } },
-                    { '$Author.secondName$': { [Op.iLike]: `%${search}%` } },
-                    { '$Author.nickName$': { [Op.iLike]: `%${search}%` } },
-                    { '$Author.surname$': { [Op.iLike]: `%${search}%` } },
-                    { '$Genre.name$': { [Op.iLike]: `%${search}%` } },
-                    { '$Genre.description$': { [Op.iLike]: `%${search}%` } },
-                    { '$Book.title$': { [Op.iLike]: `%${search}%` } }
+                    { actionType: sequelize.where(sequelize.fn('LOWER', sequelize.col('actionType')), 'LIKE', '%' + search + '%') },
+                    { '$ActionHistory.description': sequelize.where(sequelize.fn('LOWER', sequelize.col('ActionHistory.description')), 'LIKE', '%' + search + '%') },
+                    { '$Actor.email$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Actor.email')), 'LIKE', '%' + search + '%') },
+                    { '$Actor.firstName$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Actor.firstName')), 'LIKE', '%' + search + '%') },
+                    { '$Actor.lastName$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Actor.lastName')), 'LIKE', '%' + search + '%') },
+                    { '$User.email$': sequelize.where(sequelize.fn('LOWER', sequelize.col('User.email')), 'LIKE', '%' + search + '%') },
+                    { '$User.firstName$': sequelize.where(sequelize.fn('LOWER', sequelize.col('User.firstName')), 'LIKE', '%' + search + '%') },
+                    { '$Author.firstName$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Author.firstName')), 'LIKE', '%' + search + '%') },
+                    { '$User.lastName$': sequelize.where(sequelize.fn('LOWER', sequelize.col('User.lastName')), 'LIKE', '%' + search + '%') },
+                    { '$Author.secondName$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Author.secondName')), 'LIKE', '%' + search + '%') },
+                    { '$Author.nickName$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Author.nickName')), 'LIKE', '%' + search + '%') },
+                    { '$Author.surname$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Author.surname')), 'LIKE', '%' + search + '%') },
+                    { '$Genre.name$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Genre.name')), 'LIKE', '%' + search + '%') },
+                    { '$Genre.description$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Genre.description')), 'LIKE', '%' + search + '%') },
+                    { '$Book.title$': sequelize.where(sequelize.fn('LOWER', sequelize.col('Book.title')), 'LIKE', '%' + search + '%') }
                 ]
             })
         };
 
         // Добавляем фильтрацию по датам, если они переданы
         if (beginDate || endDate) {
-            where.date = {};
-            if (beginDate) where.date[Op.gte] = new Date(beginDate);
-            if (endDate) where.date[Op.lte] = new Date(endDate);
+            where.timestamp = {};
+            if (beginDate) where.timestamp[Op.gte] = new Date(beginDate);
+            if (endDate) where.timestamp[Op.lte] = new Date(endDate);
         }
 
          const history = await ActionHistory.findAll({

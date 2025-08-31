@@ -1,3 +1,5 @@
+import { getAuthorName } from "./shared/utlis/entity.utils.js";
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Загрузка списка пользователей
     async function loadHistory() {
@@ -5,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const beginDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
             const limit = 1000;
-            const search = document.getElementById('history-search').value;
+            const search = document.getElementById('history-search').value.trim();
             const response = await fetch('/api/history/getAll', {
                 method: 'POST',
                 headers: {
@@ -45,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${action.description}</td>
                 <td>${action.Actor ? `${action.Actor.firstName} ${action.Actor.lastName} (${action.Actor.email})` : '-'}</td>
                 <td>${action.User ? `${action.User.firstName} ${action.User.lastName} (${action.User.email})` : '-'}</td>
-                <td>${action.Author ? `${action.Author.firstName} ${action.Author.lastName} (${action.Author.nickName})` : '-'}</td>
+                <td>${action.Author ? getAuthorName(action.Author) : '-'}</td>
                 <td>${action.Book ? action.Book.title : '-'}</td>
                 <td>${action.Genre ? action.Genre.name : '-'}</td>
                 <td>${new Date(action.timestamp).toLocaleString()}</td>
