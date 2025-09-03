@@ -5,21 +5,21 @@ const Sequelize = require("sequelize");
  *
  * createTable() => "users", deps: []
  * createTable() => "roles", deps: []
- * createTable() => "authors", deps: []
  * createTable() => "genres", deps: []
  * createTable() => "user_roles", deps: [users, roles]
- * createTable() => "books", deps: [authors]
+ * createTable() => "authors", deps: [users]
+ * createTable() => "books", deps: [authors, users]
  * createTable() => "book_genres", deps: [books, genres]
  * createTable() => "user_books", deps: [users, books]
  * createTable() => "transactions", deps: [users, books]
- * createTable() => "action_history", deps: [users, users, authors, books]
+ * createTable() => "action_history", deps: [users, users, authors, books, genres]
  *
  */
 
 const info = {
   revision: 1,
   name: "initial",
-  created: "2025-07-15T12:39:48.083Z",
+  created: "2025-09-02T12:01:51.465Z",
   comment: "",
 };
 
@@ -97,36 +97,6 @@ const migrationCommands = (transaction) => [
   {
     fn: "createTable",
     params: [
-      "authors",
-      {
-        id: {
-          type: Sequelize.INTEGER,
-          field: "id",
-          autoIncrement: true,
-          primaryKey: true,
-        },
-        firstName: {
-          type: Sequelize.STRING,
-          field: "firstName",
-          allowNull: false,
-        },
-        secondName: { type: Sequelize.STRING, field: "secondName" },
-        surname: { type: Sequelize.STRING, field: "surname" },
-        nickName: { type: Sequelize.STRING, field: "nickName" },
-        birthDate: { type: Sequelize.DATEONLY, field: "birthDate" },
-        createdAt: {
-          type: Sequelize.DATE,
-          field: "createdAt",
-          defaultValue: Sequelize.NOW,
-          allowNull: false,
-        },
-      },
-      { transaction },
-    ],
-  },
-  {
-    fn: "createTable",
-    params: [
       "genres",
       {
         id: {
@@ -182,6 +152,51 @@ const migrationCommands = (transaction) => [
   {
     fn: "createTable",
     params: [
+      "authors",
+      {
+        id: {
+          type: Sequelize.INTEGER,
+          field: "id",
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        firstName: { type: Sequelize.STRING, field: "firstName" },
+        secondName: { type: Sequelize.STRING, field: "secondName" },
+        surname: { type: Sequelize.STRING, field: "surname" },
+        nickName: {
+          type: Sequelize.STRING,
+          field: "nickName",
+          unique: true,
+          allowNull: false,
+        },
+        birthDate: { type: Sequelize.DATEONLY, field: "birthDate" },
+        createdAt: {
+          type: Sequelize.DATE,
+          field: "createdAt",
+          defaultValue: Sequelize.NOW,
+          allowNull: false,
+        },
+        isConfirmed: {
+          type: Sequelize.BOOLEAN,
+          field: "isConfirmed",
+          defaultValue: false,
+        },
+        bio: { type: Sequelize.TEXT, field: "bio" },
+        creatorId: {
+          type: Sequelize.INTEGER,
+          onUpdate: "CASCADE",
+          onDelete: "CASCADE",
+          field: "creatorId",
+          allowNull: false,
+          references: { model: "users", key: "id" },
+        },
+      },
+      { transaction },
+    ],
+  },
+  {
+    fn: "createTable",
+    params: [
       "books",
       {
         id: {
@@ -196,20 +211,45 @@ const migrationCommands = (transaction) => [
           field: "isConfirmed",
           defaultValue: false,
         },
-        publicationDate: { type: Sequelize.DATEONLY, field: "publicationDate" },
-        description: { type: Sequelize.TEXT, field: "description" },
-        pagesCount: {
+        publicationDay: {
           type: Sequelize.INTEGER,
-          field: "pagesCount",
-          allowNull: false,
+          field: "publicationDay",
+          allowNull: true,
         },
+        publicationMonth: {
+          type: Sequelize.INTEGER,
+          field: "publicationMonth",
+          allowNull: true,
+        },
+        publicationYear: {
+          type: Sequelize.INTEGER,
+          field: "publicationYear",
+          allowNull: true,
+        },
+        description: { type: Sequelize.TEXT, field: "description" },
+        path: { type: Sequelize.STRING, field: "path", allowNull: false },
         authorId: {
           type: Sequelize.INTEGER,
           onUpdate: "CASCADE",
           onDelete: "CASCADE",
-          allowNull: true,
           field: "authorId",
+          allowNull: false,
           references: { model: "authors", key: "id" },
+        },
+        price: { type: Sequelize.FLOAT, field: "price", allowNull: true },
+        guestAvailable: {
+          type: Sequelize.BOOLEAN,
+          field: "guestAvailable",
+          defaultValue: true,
+          allowNull: false,
+        },
+        creatorId: {
+          type: Sequelize.INTEGER,
+          onUpdate: "CASCADE",
+          onDelete: "CASCADE",
+          field: "creatorId",
+          allowNull: false,
+          references: { model: "users", key: "id" },
         },
         createdAt: {
           type: Sequelize.DATE,
@@ -255,6 +295,7 @@ const migrationCommands = (transaction) => [
       {
         userId: {
           type: Sequelize.INTEGER,
+          allowNull: true,
           onUpdate: "CASCADE",
           onDelete: "CASCADE",
           unique: "user_books_bookId_userId_unique",
@@ -264,6 +305,7 @@ const migrationCommands = (transaction) => [
         },
         bookId: {
           type: Sequelize.INTEGER,
+          allowNull: true,
           onUpdate: "CASCADE",
           onDelete: "CASCADE",
           unique: "user_books_bookId_userId_unique",
@@ -287,11 +329,6 @@ const migrationCommands = (transaction) => [
           field: "lastUpdated",
           defaultValue: Sequelize.NOW,
           allowNull: false,
-        },
-        lastPage: {
-          type: Sequelize.INTEGER,
-          field: "lastPage",
-          defaultValue: 0,
         },
       },
       { transaction },
@@ -365,7 +402,15 @@ const migrationCommands = (transaction) => [
             "AddRole",
             "DeleteRole",
             "AddRoleToUser",
-            "RemoveRoleFromUser"
+            "RemoveRoleFromUser",
+            "ApproveBook",
+            "ApproveAuthor",
+            "AddGenre",
+            "DeleteGenre",
+            "AddBookGenre",
+            "AddUserBook",
+            "RemoveUserBook",
+            "BeginReading"
           ),
           field: "actionType",
           allowNull: false,
@@ -383,6 +428,8 @@ const migrationCommands = (transaction) => [
         },
         actorId: {
           type: Sequelize.INTEGER,
+          onUpdate: "CASCADE",
+          onDelete: "CASCADE",
           field: "actorId",
           allowNull: false,
           references: { model: "users", key: "id" },
@@ -410,6 +457,14 @@ const migrationCommands = (transaction) => [
           field: "bookId",
           allowNull: true,
           references: { model: "books", key: "id" },
+        },
+        genreId: {
+          type: Sequelize.INTEGER,
+          onUpdate: "CASCADE",
+          onDelete: "SET NULL",
+          field: "genreId",
+          allowNull: true,
+          references: { model: "genres", key: "id" },
         },
       },
       { transaction },

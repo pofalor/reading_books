@@ -112,6 +112,10 @@
   margin-right: 15px;
 }
 
+.approve-book-btn{
+  margin-right: 15px;
+}
+
 /* Адаптивность формы */
 @media (max-width: 576px) {
   #add-author-form .form-group {
