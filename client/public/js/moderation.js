@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                       Скачать
                   </button>
                 </td>
-                <td class="d-flex" style="min-width: 150px;">
+                <td class="d-flex" style="min-width: 150px; margin: 15px;">
                     ${approveButton}
                     <button class="btn danger delete-book-btn" data-id="${book.id}" title="Удалить">
                         <i class="fas fa-trash"></i>

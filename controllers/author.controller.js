@@ -6,7 +6,7 @@ exports.approveAuthor = async (req, res) => {
         const author = await Author.findByPk(authorId);
 
         if (!author) throw new Error('Автор не найден');
-        if (author.id === req.user.id) {
+        if (author.creatorId === req.user.id) {
             throw new Error('Нельзя подтверждать своих собственных авторов');
         }
 
