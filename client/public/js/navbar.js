@@ -35,6 +35,11 @@ async function initApp() {
             alert(error.message || 'Ошибка при выходе');
         }
     });
+
+    // Мобильное меню
+    document.querySelector('.user-profile').addEventListener('click', function () {
+        window.location.href = `/profile`;
+    });
 }
 
 async function checkAuthStatus() {

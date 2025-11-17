@@ -1,0 +1,258 @@
+/* Profile Container */
+.profile-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.profile-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    color: var(--dark-color);
+    text-align: center;
+}
+
+/* Profile Content */
+.profile-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Profile Card */
+.profile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.profile-avatar {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-right: 20px;
+}
+
+.profile-info h2 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    color: var(--dark-color);
+}
+
+.profile-email {
+    color: var(--gray-color);
+    margin-bottom: 5px;
+}
+
+.profile-joined {
+    font-size: 0.9rem;
+    color: var(--gray-color);
+}
+
+/* Profile Form */
+.profile-form {
+    max-width: 400px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    outline: none;
+}
+
+.form-group input.disabled-input {
+    background-color: #f8fafc;
+    color: var(--gray-color);
+    cursor: not-allowed;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: var(--gray-color);
+}
+
+/* Profile Sidebar */
+.profile-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.info-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: var(--dark-color);
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+}
+
+/* Action Links */
+.action-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.action-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f8fafc;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    color: var(--dark-color);
+}
+
+.action-link:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateX(5px);
+}
+
+.action-link i {
+    margin-right: 10px;
+    width: 16px;
+}
+
+.action-link.logout {
+    color: var(--warning-color);
+}
+
+.action-link.logout:hover {
+    background: var(--warning-color);
+    color: white;
+}
+
+/* Alerts */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .stat-item {
+        padding: 10px 5px;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+    }
+
+    .profile-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container h1 {
+        font-size: 2rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-form {
+        max-width: 100%;
+    }
+}

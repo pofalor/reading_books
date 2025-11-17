@@ -11,6 +11,7 @@ router.use('/api/userBook', require('./api/userBook.routes'));
 router.use('/api/transaction', require('./api/transaction.routes'));
 router.use('/api/history', require('./api/actionHistory.routes'));
 router.use('/api/search', require('./api/search.routes'));
+router.use('/api/profile', require('./api/profile.routes'));
 
 // Web routes
 router.use('/', require('./web/app.routes'));
@@ -23,6 +24,7 @@ router.use('/my-books', require('./web/myBooks.routes'));
 router.use('/transaction', require('./web/transaction.routes'));
 router.use('/history', require('./web/actionHistory.routes'));
 router.use('/search', require('./web/search.routes'));
+router.use('/profile', require('./web/profile.routes'));
 
 // 404 для web-страниц
 router.use((req, res) => {

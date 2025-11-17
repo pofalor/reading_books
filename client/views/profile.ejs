@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <%- include('partials/header.ejs', { title: 'Книжная полка - Мой профиль' }) %>
+    <link rel="stylesheet" href="/css/profile.css">
+</head>
+
+<body>
+    <%- include('partials/navbar', { activeLink: 'profile' , authButtons: !locals.user, user: locals.user }) %>
+
+    <div class="page-container">
+        <div class="profile-container">
+            <h1>Мой профиль</h1>
+
+            <div class="profile-content">
+                <!-- Карточка профиля -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h2><%= user.firstName + ' ' + user.lastName %></h2>
+                            <p class="profile-email"><%= user.email %></p>
+                            <p class="profile-joined">Зарегистрирован: <%= new Date(user.createdAt).toLocaleDateString('ru-RU') %></p>
+                        </div>
+                    </div>
+
+                    <!-- Форма редактирования -->
+                    <form class="profile-form" action="/profile/update" method="POST">
+                        <div class="form-group">
+                            <label for="firstName">Имя</label>
+                            <input 
+                                type="text" 
+                                id="firstName" 
+                                name="firstName" 
+                                value="<%= user.firstName %>" 
+                                required
+                                minlength="2"
+                                maxlength="50"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Фамилия</label>
+                            <input 
+                                type="text" 
+                                id="lastName" 
+                                name="lastName" 
+                                value="<%= user.lastName %>" 
+                                required
+                                minlength="2"
+                                maxlength="50"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                value="<%= user.email %>" 
+                                disabled
+                                class="disabled-input"
+                            >
+                            <small class="form-hint">Email нельзя изменить</small>
+                        </div>
+
+                        <button type="submit" class="btn primary w-100">
+                            <i class="fas fa-save"></i>
+                            Сохранить изменения
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Дополнительная информация -->
+                <div class="profile-sidebar">
+                    <div class="info-card">
+                        <h3>Статистика</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Прочитано книг</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">В избранном</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">В планах</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Быстрые действия</h3>
+                        <div class="action-links">
+                            <a href="/favorites" class="action-link">
+                                <i class="fas fa-heart"></i>
+                                Избранные книги
+                            </a>
+                            <a href="/reading-list" class="action-link">
+                                <i class="fas fa-bookmark"></i>
+                                Список для чтения
+                            </a>
+                            <a href="/auth/logout" class="action-link logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Выйти
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer.ejs') %>
+    <script src="/js/profile.js" type="module"></script>
+</body>
+
+</html>
