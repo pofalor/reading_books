@@ -21,7 +21,7 @@
                             <i class="fas fa-user-circle"></i>
                         </div>
                         <div class="profile-info">
-                            <h2><%= user.firstName + ' ' + user.lastName %></h2>
+                            <h2><%= user.getFullName() %></h2>
                             <p class="profile-email"><%= user.email %></p>
                             <p class="profile-joined">Зарегистрирован: <%= new Date(user.createdAt).toLocaleDateString('ru-RU') %></p>
                         </div>
@@ -77,35 +77,13 @@
                 <!-- Дополнительная информация -->
                 <div class="profile-sidebar">
                     <div class="info-card">
-                        <h3>Статистика</h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-value">0</div>
-                                <div class="stat-label">Прочитано книг</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">0</div>
-                                <div class="stat-label">В избранном</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">0</div>
-                                <div class="stat-label">В планах</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-card">
                         <h3>Быстрые действия</h3>
                         <div class="action-links">
-                            <a href="/favorites" class="action-link">
+                            <a href="/my-books" class="action-link">
                                 <i class="fas fa-heart"></i>
                                 Избранные книги
                             </a>
-                            <a href="/reading-list" class="action-link">
-                                <i class="fas fa-bookmark"></i>
-                                Список для чтения
-                            </a>
-                            <a href="/auth/logout" class="action-link logout">
+                            <a href="/auth/logout" class="action-link logout logout-link">
                                 <i class="fas fa-sign-out-alt"></i>
                                 Выйти
                             </a>

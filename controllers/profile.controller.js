@@ -3,7 +3,7 @@ const { User } = require('../models');
 // Получить страницу профиля
 exports.getProfilePage = async (req, res) => {
     try {
-        const user = res.locals.user;
+        const user = req.user;
         if (!user) {
             return res.redirect('/auth/login');
         }
