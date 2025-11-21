@@ -68,9 +68,6 @@ if (registerForm) {
             return;
         }
 
-        // Эмуляция отправки данных
-        console.log('Отправка данных регистрации:', formData);
-
         fetch('/api/auth/register', {
             method: 'POST',
             headers: {
