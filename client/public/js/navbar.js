@@ -13,27 +13,29 @@ async function initApp() {
         document.querySelector('.nav-links').classList.toggle('active');
     });
 
-    document.querySelector('.logout-link')?.addEventListener('click', async function (e) {
-        e.preventDefault();
+    document.querySelectorAll('.logout-link')?.forEach(x=> {
+        x.addEventListener('click', async function (e) {
+            e.preventDefault();
 
-        try {
-            const response = await fetch('api/auth/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+            try {
+                const response = await fetch('api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+            
+                if (response.ok) {
+                    window.location.href = '/'; // Перенаправляем после успешного выхода
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Ошибка при выходе');
                 }
-            });
-
-            if (response.ok) {
-                window.location.href = '/'; // Перенаправляем после успешного выхода
-            } else {
-                const error = await response.json();
+            } catch (error) {
+                console.error('Error: ', error);
                 alert(error.message || 'Ошибка при выходе');
             }
-        } catch (error) {
-            console.error('Error: ', error);
-            alert(error.message || 'Ошибка при выходе');
-        }
+        });
     });
 
     // Мобильное меню

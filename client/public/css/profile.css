@@ -123,32 +123,6 @@
     border-bottom: 1px solid #f1f5f9;
 }
 
-/* Stats Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
-
-.stat-item {
-    text-align: center;
-    padding: 15px 10px;
-    background: #f8fafc;
-    border-radius: 8px;
-}
-
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    font-size: 0.8rem;
-    color: var(--gray-color);
-}
-
 /* Action Links */
 .action-links {
     display: flex;
@@ -223,19 +197,6 @@
     .profile-avatar {
         margin-right: 0;
         margin-bottom: 15px;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-
-    .stat-item {
-        padding: 10px 5px;
-    }
-
-    .stat-value {
-        font-size: 1.2rem;
     }
 
     .profile-card {
