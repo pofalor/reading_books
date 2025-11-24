@@ -1,15 +1,40 @@
+import {getUserFullName} from './shared/utlis/entity.utils.js';
+
 // Валидация формы профиля
 document.addEventListener('DOMContentLoaded', function() {
     const profileForm = document.querySelector('.profile-form');
     
     if (profileForm) {
         profileForm.addEventListener('submit', async function(e) {
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
+            e.preventDefault();
+            const firstNameEl = document.getElementById('firstName');
+            const lastNameEl = document.getElementById('lastName')
+            const firstName = firstNameEl.value.trim();
+            const lastName = lastNameEl.value.trim();
             
             if (!firstName || !lastName) {
-                e.preventDefault();
+                
                 showAlert('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+
+            if (firstName.length < 2) {
+                showAlert('Имя должно содержать минимум 2 символа', 'error');
+                return;
+            }
+
+            if (lastName.length < 2) {
+                showAlert('Фамилия должна содержать минимум 2 символа', 'error');
+                return;
+            }
+
+            if (firstName.length > 50) {
+                showAlert('Максимальная длина имени 50 символов', 'error');
+                return;
+            }
+
+            if (lastName.length > 50) {
+                showAlert('Максимальная длина фамилии 50 символов', 'error');
                 return;
             }
             
@@ -23,12 +48,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Отправка на сервер
                 const response = await fetch('/api/profile/update', {
-                  method: 'POST',
-                  body: JSON.stringify({ firstName, lastName})
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ firstName, lastName})
                 });
 
                 // Обработка ответа
                 if (response.ok) {                
+                  var resp = await response.json();
+                  firstNameEl.value = resp.firstName;
+                  lastNameEl.value = resp.lastName;
+                  document.getElementById('userFullName').textContent = getUserFullName(resp);
                   alert('Данные успешно изменены');
                 } else {
                   const error = await response.json();

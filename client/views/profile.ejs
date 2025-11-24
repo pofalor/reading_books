@@ -21,14 +21,14 @@
                             <i class="fas fa-user-circle"></i>
                         </div>
                         <div class="profile-info">
-                            <h2><%= user.getFullName() %></h2>
+                            <h2 id="userFullName"><%= user.getFullName() %></h2>
                             <p class="profile-email"><%= user.email %></p>
                             <p class="profile-joined">Зарегистрирован: <%= new Date(user.createdAt).toLocaleDateString('ru-RU') %></p>
                         </div>
                     </div>
 
                     <!-- Форма редактирования -->
-                    <form class="profile-form" action="/profile/update" method="POST">
+                    <form class="profile-form">
                         <div class="form-group">
                             <label for="firstName">Имя</label>
                             <input 
@@ -83,7 +83,7 @@
                                 <i class="fas fa-heart"></i>
                                 Избранные книги
                             </a>
-                            <a href="/auth/logout" class="action-link logout logout-link">
+                            <a class="action-link logout logout-link">
                                 <i class="fas fa-sign-out-alt"></i>
                                 Выйти
                             </a>

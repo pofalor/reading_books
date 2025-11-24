@@ -1,11 +1,19 @@
-const { User } = require('../models');
+const { User, sequelize, ActionHistory } = require('../models');
 
 // Получить страницу профиля
 exports.getProfilePage = async (req, res) => {
     try {
         const user = req.user;
         if (!user) {
-            return res.redirect('/auth/login');
+            return res.status(401).render('error-401', {
+                title: 'Ошибка 401',
+                errorTitle: 'Доступ запрещен',
+                needLoginButton: true,
+                needRegisterButton: true,
+                errorMessage: `Для просмотра этой страницы необходимо авторизоваться. 
+                            Пожалуйста, войдите в систему или зарегистрируйтесь.`,
+                needAdditionalButton: false
+            });
         }
 
         res.render('profile', {
@@ -30,6 +38,22 @@ exports.updateProfile = async (req, res) => {
             throw new Error('Пожалуйста, заполните все поля');
         }
 
+        if (firstName.length < 2) {
+            throw new Error('Имя должно содержать минимум 2 символа');
+        }
+
+        if (lastName.length < 2) {
+            throw new Error('Фамилия должна содержать минимум 2 символа');
+        }
+
+        if (firstName.length > 50) {
+            throw new Error('Максимальная длина имени 50 символов');
+        }
+
+        if (lastName.length > 50) {
+            throw new Error('Максимальная длина фамилии 50 символов');
+        }
+
         // Обновление пользователя
         const user = await User.findByPk(userId);
         if (!user) {
@@ -51,7 +75,7 @@ exports.updateProfile = async (req, res) => {
             req.user.id,
             'UpdateProfile',
             `Пользователь "${user.email}" сменил имя и фамилию. 
-            Старое имя: "${oldFirstName}". Старая фамилия: "${user.firstName}". 
+            Старое имя: "${oldFirstName}". Старая фамилия: "${oldLastName}". 
             Новое имя: "${firstName}". Новая фамилия: "${user.lastName}".`,
             null,
             null,
