@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     activeTab: getActiveTab(),
     books: [],
     authors: [],
-    genres: []
+    genres: [],
+    editingEntity: null
   };
   let currentUser = null;
 
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadDataForCurrentTab();
     setupEventListeners();
     setupModalHandlers();
+    setupEditModals();
   } catch (error) {
     console.error('Initialization error: ', error);
   }
@@ -135,6 +137,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.delete-book-btn').forEach(btn => {
       btn.addEventListener('click', () => deleteBook(btn.dataset.id));
     });
+
+    document.querySelectorAll('.edit-book-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bookId = btn.dataset.id;
+        const book = state.books.find(b => b.id == bookId);
+        if (book) openEditBookModal(book);
+      });
+    });
   }
 
   function updateAuthorsUI() {
@@ -149,6 +159,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     setupAuthorBioModal();
+
+    document.querySelectorAll('.edit-author-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const authorId = btn.dataset.id;
+        const author = state.authors.find(a => a.id == authorId);
+        if (author) openEditAuthorModal(author);
+      });
+    });
   }
 
   function updateGenresUI() {
@@ -156,6 +174,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.querySelectorAll('.delete-genre-btn').forEach(btn => {
       btn.addEventListener('click', () => deleteGenre(btn.dataset.id));
+    });
+
+    document.querySelectorAll('.edit-genre-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const genreId = btn.dataset.id;
+        const genre = state.genres.find(g => g.id == genreId);
+        if (genre) openEditGenreModal(genre);
+      });
     });
   }
 
@@ -260,6 +286,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td class="d-flex" style="min-width: 150px; margin: 15px;">
                     ${approveButton}
+                    <button class="btn warning edit-book-btn" data-id="${book.id}" title="Редактировать">
+                      <i class="fas fa-edit"></i>
+                    </button>
                     <button class="btn danger delete-book-btn" data-id="${book.id}" title="Удалить">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -293,6 +322,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td class="d-flex">
                     ${approveButton}
+                    <button class="btn warning edit-author-btn" data-id="${author.id}" title="Редактировать">
+                      <i class="fas fa-edit"></i>
+                    </button>
                     <button class="btn danger delete-author-btn" data-id="${author.id}">
                         <i class="fas fa-trash"></i> Удалить
                     </button>
@@ -307,6 +339,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td>${escapeHtml(genre.name)}</td>
         <td>${escapeHtml(genre.description || '—')}</td>
         <td>
+            <button class="btn warning edit-genre-btn" data-id="${genre.id}" title="Редактировать">
+              <i class="fas fa-edit"></i>
+            </button>
             <button class="btn danger delete-genre-btn" data-id="${genre.id}">
                 <i class="fas fa-trash"></i> Удалить
             </button>
@@ -904,6 +939,331 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert(error.message || 'Ошибка при удалении книги');
     }
   }
+
+  // Настройка обработчиков для модалок редактирования
+  function setupEditModals() {
+    // Модалка редактирования книги
+    const editBookModal = document.getElementById('edit-book-modal');
+    if (editBookModal) {
+      const closeBtn = editBookModal.querySelector('.close');
+      const cancelBtn = editBookModal.querySelector('#cancel-edit-book-btn');
+      const form = document.getElementById('edit-book-form');
+
+      closeBtn.addEventListener('click', () => closeModal(editBookModal));
+      cancelBtn.addEventListener('click', () => closeModal(editBookModal));
+      editBookModal.addEventListener('click', (e) => {
+        if (e.target === editBookModal) closeModal(editBookModal);
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const bookData = {
+          id: state.editingEntity.id,
+          title: document.getElementById('edit-book-title').value.trim(),
+          publicationDay: document.getElementById('edit-pub-day').value || null,
+          publicationMonth: document.getElementById('edit-pub-month').value || null,
+          publicationYear: document.getElementById('edit-pub-year').value || null,
+          description: document.getElementById('edit-book-description').value.trim() || null,
+          price: document.getElementById('edit-book-price').value,
+          guestAvailable: document.getElementById('edit-book-guest-available').checked,
+          authorId: document.querySelector('#edit-author-select .dropdown-selector-item.selected')?.dataset?.value,
+          genres: JSON.parse(document.getElementById('edit-genres-select-value').value).map(item => item.value)
+        };
+
+        // Получаем выбранные жанры
+        const selectedGenres = JSON.parse(document.getElementById('edit-genres-select-value').value).map(item => item.value);
+        bookData.genres = selectedGenres;
+
+        // Валидация
+        if (!bookData.title) {
+          alert('Название книги обязательно для заполнения');
+          return;
+        }
+
+        if (!bookData.authorId) {
+          alert('Необходимо выбрать автора');
+          return;
+        }
+
+        if (bookData.genres.length === 0) {
+          alert('Необходимо выбрать хотя бы один жанр');
+          return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+        submitBtn.disabled = true;
+
+        const success = await updateBook(bookData);
+        if (success) {
+          closeModal(editBookModal, true);
+        }
+
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+
+    // Аналогично настройте модалки для авторов и жанров...
+    // Модалка редактирования автора
+    const editAuthorModal = document.getElementById('edit-author-modal');
+    if (editAuthorModal) {
+      const closeBtn = editAuthorModal.querySelector('.close');
+      const cancelBtn = editAuthorModal.querySelector('#cancel-edit-author-btn');
+      const form = document.getElementById('edit-author-form');
+
+      closeBtn.addEventListener('click', () => closeModal(editAuthorModal));
+      cancelBtn.addEventListener('click', () => closeModal(editAuthorModal));
+      editAuthorModal.addEventListener('click', (e) => {
+        if (e.target === editAuthorModal) closeModal(editAuthorModal);
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const authorData = {
+          id: state.editingEntity.id,
+          firstName: document.getElementById('edit-author-first-name').value.trim() || null,
+          secondName: document.getElementById('edit-author-second-name').value.trim() || null,
+          surname: document.getElementById('edit-author-surname').value.trim() || null,
+          nickName: document.getElementById('edit-author-nickname').value.trim(),
+          birthDate: document.getElementById('edit-author-birth-date').value || null,
+          bio: document.getElementById('edit-author-bio').value.trim() || null
+        };
+
+        if (!authorData.nickName) {
+          alert('Псевдоним обязателен для заполнения');
+          return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+        submitBtn.disabled = true;
+
+        const success = await updateAuthor(authorData);
+        if (success) {
+          closeModal(editAuthorModal, true);
+        }
+
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+
+    // Модалка редактирования жанра
+    const editGenreModal = document.getElementById('edit-genre-modal');
+    if (editGenreModal) {
+      const closeBtn = editGenreModal.querySelector('.close');
+      const cancelBtn = editGenreModal.querySelector('#cancel-edit-genre-btn');
+      const form = document.getElementById('edit-genre-form');
+
+      closeBtn.addEventListener('click', () => closeModal(editGenreModal));
+      cancelBtn.addEventListener('click', () => closeModal(editGenreModal));
+      editGenreModal.addEventListener('click', (e) => {
+        if (e.target === editGenreModal) closeModal(editGenreModal);
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const genreData = {
+          id: state.editingEntity.id,
+          name: document.getElementById('edit-genre-name').value.trim(),
+          description: document.getElementById('edit-genre-description').value.trim() || null
+        };
+
+        if (!genreData.name) {
+          alert('Название жанра обязательно для заполнения');
+          return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+        submitBtn.disabled = true;
+
+        const success = await updateGenre(genreData);
+        if (success) {
+          closeModal(editGenreModal, true);
+        }
+
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+  }
+
+  // Функции для открытия модалок редактирования
+  function openEditBookModal(book) {
+    state.editingEntity = book;
+    const modal = document.getElementById('edit-book-modal');
+
+    // Заполняем форму данными книги
+    document.getElementById('edit-book-title').value = book.title || '';
+    document.getElementById('edit-pub-day').value = book.publicationDay || '';
+    document.getElementById('edit-pub-month').value = book.publicationMonth || '';
+    document.getElementById('edit-pub-year').value = book.publicationYear || '';
+    document.getElementById('edit-book-description').value = book.description || '';
+    document.getElementById('edit-book-price').value = book.price || '';
+    document.getElementById('edit-book-guest-available').checked = book.guestAvailable || false;
+
+    // Устанавливаем автора
+    if (book.Author) {
+      const authorSelect = document.querySelector('#edit-author-select .dropdown-selector-item');
+      if (authorSelect) {
+        authorSelect.dataset.value = book.Author.id;
+        authorSelect.textContent = book.Author.nickName;
+        authorSelect.classList.add('selected');
+      }
+    }
+
+    // Устанавливаем жанры
+    if (book.Genres && book.Genres.length > 0) {
+      const selectedGenres = book.Genres.map(genre => ({
+        value: genre.id,
+        text: genre.name
+      }));
+      document.getElementById('edit-genres-select-value').value = JSON.stringify(selectedGenres);
+
+      // Обновляем отображение выбранных жанров
+      const dropdown = document.querySelector('#edit-multi-select-dropdown-genres-select');
+      if (dropdown) {
+        const updateEvent = new CustomEvent('updateSelected', { detail: selectedGenres });
+        dropdown.dispatchEvent(updateEvent);
+      }
+    }
+
+    openModal(modal);
+  }
+
+  function openEditAuthorModal(author) {
+    state.editingEntity = author;
+    const modal = document.getElementById('edit-author-modal');
+
+    document.getElementById('edit-author-first-name').value = author.firstName || '';
+    document.getElementById('edit-author-second-name').value = author.secondName || '';
+    document.getElementById('edit-author-surname').value = author.surname || '';
+    document.getElementById('edit-author-nickname').value = author.nickName || '';
+    document.getElementById('edit-author-birth-date').value = author.birthDate ? author.birthDate.split('T')[0] : '';
+    document.getElementById('edit-author-bio').value = author.bio || '';
+
+    openModal(modal);
+  }
+
+  function openEditGenreModal(genre) {
+    state.editingEntity = genre;
+    const modal = document.getElementById('edit-genre-modal');
+
+    document.getElementById('edit-genre-name').value = genre.name || '';
+    document.getElementById('edit-genre-description').value = genre.description || '';
+
+    openModal(modal);
+  }
+
+  // Общая функция открытия модалки
+  function openModal(modal) {
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Функция закрытия модалки
+  function closeModal(modal, needReset = false) {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    state.editingEntity = null;
+
+    if (needReset) {
+      const form = modal.querySelector('form');
+      if (form) form.reset();
+    }
+  }
+
+  // Функции для отправки редактирования
+async function updateBook(bookData) {
+  try {
+    const response = await fetch('/api/moderation/books/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookData)
+    });
+
+    if (response.ok) {
+      alert('Книга успешно обновлена');
+      await loadAllBooks();
+      updateBooksUI();
+      return true;
+    } else {
+      const error = await response.json();
+      alert(error.message || 'Ошибка обновления книги');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error updating book:', error);
+    alert('Произошла ошибка при обновлении книги');
+    return false;
+  }
+}
+
+async function updateAuthor(authorData) {
+  try {
+    const response = await fetch('/api/moderation/authors/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(authorData)
+    });
+
+    if (response.ok) {
+      alert('Автор успешно обновлен');
+      await loadAllAuthors();
+      updateAuthorsUI();
+      return true;
+    } else {
+      const error = await response.json();
+      alert(error.message || 'Ошибка обновления автора');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error updating author:', error);
+    alert('Произошла ошибка при обновлении автора');
+    return false;
+  }
+}
+
+async function updateGenre(genreData) {
+  try {
+    const response = await fetch('/api/moderation/genres/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(genreData)
+    });
+
+    if (response.ok) {
+      alert('Жанр успешно обновлен');
+      await loadAllGenres();
+      updateGenresUI();
+      return true;
+    } else {
+      const error = await response.json();
+      alert(error.message || 'Ошибка обновления жанра');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error updating genre:', error);
+    alert('Произошла ошибка при обновлении жанра');
+    return false;
+  }
+}
+
+
 
   function escapeHtml(unsafe) {
     return unsafe ? unsafe.toString()

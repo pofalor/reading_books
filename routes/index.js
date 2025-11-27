@@ -12,6 +12,7 @@ router.use('/api/transaction', require('./api/transaction.routes'));
 router.use('/api/history', require('./api/actionHistory.routes'));
 router.use('/api/search', require('./api/search.routes'));
 router.use('/api/profile', require('./api/profile.routes'));
+router.use('/api/moderation', require('./api/moderation.routes'));
 
 // Web routes
 router.use('/', require('./web/app.routes'));

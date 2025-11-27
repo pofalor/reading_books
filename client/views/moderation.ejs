@@ -257,6 +257,150 @@
       </div>
     </div>
 
+    <!-- Модальное окно редактирования книги -->
+    <div id="edit-book-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Редактировать книгу</h2>
+        <form id="edit-book-form">
+          <div class="form-group">
+            <label for="edit-book-title">Название*</label>
+            <input type="text" id="edit-book-title" required>
+          </div>
+        
+          <div class="form-group">
+            <label>Дата публикации</label>
+            <div style="display: flex; align-items: baseline; gap: 5px;">
+              <input id="edit-pub-day" type="number" placeholder="ДД" min="1" max="31">
+              <span>/</span>
+              <input id="edit-pub-month" type="number" placeholder="ММ" min="1" max="12">
+              <span>/</span>
+              <input id="edit-pub-year" type="number" placeholder="ГГГГ" min="1">
+            </div>
+          </div>
+        
+          <div class="form-group">
+            <label for="edit-book-description">Описание</label>
+            <textarea id="edit-book-description"></textarea>
+          </div>
+        
+          <div class="form-group">
+            <label for="edit-book-price">Цена</label>
+            <input type="number" id="edit-book-price" min="0" step="1">
+          </div>
+        
+          <div class="form-group">
+            <input type="checkbox" id="edit-book-guest-available">
+            <label for="edit-book-guest-available">Доступна гостям</label>
+          </div>
+        
+          <div class="form-group">
+            <%- include('partials/dropdown-selector', { id: 'edit-author-select' , containerClass: '' , label: 'Автор' ,
+              apiUrl: '/api/authors/search' , displayField: 'nickName' , valueField: 'id' , descriptionField: '' ,
+              inputClass: '' , placeholder: 'Начните вводить имя автора...' , selectedDisplay: '' , selectedValue: '' ,
+              required: true, method: 'POST' }) %>
+          </div>
+        
+          <div class="form-group">
+            <%- include('partials/multi-select-dropdown', { id: 'edit-genres-select' , label: 'Жанры' ,
+              apiUrl: '/api/genres/getAll' , displayField: 'name' , valueField: 'id' , descriptionField: '' ,
+              placeholder: 'Начните вводить название жанра...' , selectedValues: '' , required: true, method: 'POST' }) %>
+          </div>
+        
+          <div class="form-footer">
+            <button type="button" class="btn outline" id="cancel-edit-book-btn">
+              <i class="fas fa-times"></i> Отмена
+            </button>
+            <button type="submit" class="btn primary">
+              <i class="fas fa-save"></i> Сохранить изменения
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Модальное окно редактирования автора -->
+    <div id="edit-author-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-user-edit"></i> Редактировать автора</h2>
+      
+        <div class="modal-form-container">
+          <form id="edit-author-form">
+            <div class="form-group">
+              <label for="edit-author-first-name">Имя</label>
+              <input type="text" id="edit-author-first-name">
+            </div>
+          
+            <div class="form-group">
+              <label for="edit-author-second-name">Отчество</label>
+              <input type="text" id="edit-author-second-name">
+            </div>
+          
+            <div class="form-group">
+              <label for="edit-author-surname">Фамилия</label>
+              <input type="text" id="edit-author-surname">
+            </div>
+          
+            <div class="form-group">
+              <label for="edit-author-nickname">Псевдоним*</label>
+              <input type="text" id="edit-author-nickname" required>
+            </div>
+          
+            <div class="form-group">
+              <label for="edit-author-birth-date">Дата рождения</label>
+              <input type="date" id="edit-author-birth-date">
+            </div>
+          
+            <div class="form-group">
+              <label for="edit-author-bio">Биография</label>
+              <textarea id="edit-author-bio" rows="4"></textarea>
+            </div>
+          </form>
+        </div>
+      
+        <div class="form-footer">
+          <button type="button" class="btn outline" id="cancel-edit-author-btn">
+            <i class="fas fa-times"></i> Отмена
+          </button>
+          <button type="submit" form="edit-author-form" class="btn primary">
+            <i class="fas fa-save"></i> Сохранить изменения
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Модальное окно редактирования жанра -->
+    <div id="edit-genre-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-tag"></i> Редактировать жанр</h2>
+      
+        <div class="modal-form-container">
+          <form id="edit-genre-form">
+            <div class="form-group">
+              <label for="edit-genre-name">Название*</label>
+              <input type="text" id="edit-genre-name" required>
+            </div>
+          
+            <div class="form-group">
+              <label for="edit-genre-description">Описание</label>
+              <textarea id="edit-genre-description" rows="4"></textarea>
+            </div>
+          </form>
+        </div>
+      
+        <div class="form-footer">
+          <button type="button" class="btn outline" id="cancel-edit-genre-btn">
+            <i class="fas fa-times"></i> Отмена
+          </button>
+          <button type="submit" form="edit-genre-form" class="btn primary">
+            <i class="fas fa-save"></i> Сохранить изменения
+          </button>
+        </div>
+      </div>
+    </div>
+
     <%- include('partials/footer') %>
       <script src="/js/moderation.js" type="module"></script>
 </body>
