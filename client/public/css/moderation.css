@@ -141,3 +141,28 @@
   padding-top: 20px;
   border-top: 1px solid #eee;
 }
+
+.current-file-info {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.current-file-info label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.btn.small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.file-name {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #6c757d;
+}

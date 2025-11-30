@@ -1,3 +1,4 @@
+const path = require('path');
 const { Book, Author, Genre, BookGenre, ActionHistory, sequelize } = require('../models');
 const { cleanUpFiles, deleteFile } = require('../config/multer.config');
 
@@ -17,11 +18,6 @@ exports.updateBook = async (req, res) => {
             authorId, 
             genres 
         } = req.body;
-
-        // Обработка файла, если он был загружен
-        if (!req.file) {
-            throw new Error('Файл книги обязателен');
-        }
 
         if (!authorId || authorId === 'null') {
             throw new Error('Автор обязателен');
@@ -63,12 +59,21 @@ exports.updateBook = async (req, res) => {
             path: book.path
         };
 
-        // Обработка файла, если он был загружен
-        const bookFile = {
-            path: req.file.path,
-            originalName: req.file.originalname,
-            mimetype: req.file.mimetype
-        };
+        // Обработка нового файла, если он был загружен
+        let bookFilePath = null;
+        if (req.file) {
+            bookFilePath = req.file.path;
+            // Удаляем старый файл, если он существует
+            if (book.path) {
+                const filePath = path.join(__dirname, '..', book.path);
+                try {
+                    deleteFile(filePath);
+                } catch (error) {
+                    console.warn('Не удалось удалить старый файл: ', error.message);
+                    // Продолжаем выполнение, даже если не удалось удалить старый файл
+                }
+            }
+        }
 
         // Обновляем данные книги
         const bookData = {
@@ -80,7 +85,7 @@ exports.updateBook = async (req, res) => {
             authorId: parseInt(authorId),
             price: price === '' ? null : price,
             guestAvailable: isGuestAvailable === 'true',
-            path: `/uploads/books/${path.basename(bookFile.path)}`,
+            path: `/uploads/books/${path.basename(bookFilePath)}`,
             isConfirmed: false
         };
 

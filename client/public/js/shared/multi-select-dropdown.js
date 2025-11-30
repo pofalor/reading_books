@@ -18,8 +18,13 @@ function initMultiSelectDropdown(container) {
     
     // Инициализация из hidden input, если есть значения
     if (hiddenInput.value) {
-        selectedItems = JSON.parse(hiddenInput.value);
-        renderSelectedTags();
+        try {
+            selectedItems = JSON.parse(hiddenInput.value);
+            renderSelectedTags();
+        } catch (error) {
+            console.error('Error parsing selected items:', error);
+            selectedItems = [];
+        }
     }
 
     // Обработчики событий 
@@ -70,6 +75,16 @@ function initMultiSelectDropdown(container) {
         renderSelectedTags();
     });
 
+    // Обработчик кастомного события для установки значений
+    container.addEventListener('setSelectedValues', (e) => {
+        setSelectedValues(e.detail);
+    });
+
+    // Обработчик кастомного события для обновления выбранных значений
+    container.addEventListener('updateSelected', (e) => {
+        updateSelectedOptions(e.detail);
+    });
+
     function handleOutsideClick(e) {
         if (!container.contains(e.target)) {
             dropdown.style.display = 'none';
@@ -103,7 +118,7 @@ function initMultiSelectDropdown(container) {
         });
 
         // Обновление hidden input
-        hiddenInput.value = JSON.stringify(selectedItems);
+        updateHiddenInput();
 
         // Очистка и скрытие dropdown
         input.value = '';
@@ -116,6 +131,29 @@ function initMultiSelectDropdown(container) {
         // Генерация события изменения
         const event = new Event('change', { bubbles: true });
         hiddenInput.dispatchEvent(event);
+    }
+
+    function setSelectedValues(items) {
+        selectedItems = Array.isArray(items) ? items : [];
+        updateHiddenInput();
+        renderSelectedTags();
+        
+        // Генерация события изменения
+        const event = new Event('change', { bubbles: true });
+        hiddenInput.dispatchEvent(event);
+    }
+
+    function updateSelectedOptions(items) {
+        selectedItems = Array.isArray(items) ? items.map(item => ({
+            value: item.value,
+            display: item.text || item.display
+        })) : [];
+        updateHiddenInput();
+        renderSelectedTags();
+    }
+
+    function updateHiddenInput() {
+        hiddenInput.value = JSON.stringify(selectedItems);
     }
 
     function renderSelectedTags() {
@@ -132,7 +170,7 @@ function initMultiSelectDropdown(container) {
                 e.stopPropagation();
                 const valueToRemove = e.target.dataset.value;
                 selectedItems = selectedItems.filter(item => item.value !== valueToRemove);
-                hiddenInput.value = JSON.stringify(selectedItems);
+                updateHiddenInput();
                 renderSelectedTags();
                 
                 const event = new Event('change', { bubbles: true });

@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td class="d-flex" style="min-width: 150px; margin: 15px;">
                     ${approveButton}
-                    <button class="btn warning edit-book-btn" data-id="${book.id}" title="Редактировать">
+                    <button class="btn warning edit-book-btn" style="margin-right: 15px;" data-id="${book.id}" title="Редактировать">
                       <i class="fas fa-edit"></i>
                     </button>
                     <button class="btn danger delete-book-btn" data-id="${book.id}" title="Удалить">
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td class="d-flex">
                     ${approveButton}
-                    <button class="btn warning edit-author-btn" data-id="${author.id}" title="Редактировать">
+                    <button class="btn warning edit-author-btn" style="margin-right: 15px;" data-id="${author.id}" title="Редактировать">
                       <i class="fas fa-edit"></i>
                     </button>
                     <button class="btn danger delete-author-btn" data-id="${author.id}">
@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td>${escapeHtml(genre.name)}</td>
         <td>${escapeHtml(genre.description || '—')}</td>
         <td>
-            <button class="btn warning edit-genre-btn" data-id="${genre.id}" title="Редактировать">
+            <button class="btn warning edit-genre-btn" style="margin-right: 15px;" data-id="${genre.id}" title="Редактировать">
               <i class="fas fa-edit"></i>
             </button>
             <button class="btn danger delete-genre-btn" data-id="${genre.id}">
@@ -948,6 +948,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       const closeBtn = editBookModal.querySelector('.close');
       const cancelBtn = editBookModal.querySelector('#cancel-edit-book-btn');
       const form = document.getElementById('edit-book-form');
+      const editBookFileInput = document.getElementById('edit-book-file');
+      const editFileNameDisplay = document.getElementById('edit-file-name');
+
+      editBookFileInput.addEventListener('change', () => {
+        if (editBookFileInput.files.length > 0) {
+          editFileNameDisplay.textContent = editBookFileInput.files[0].name;
+        } else {
+          editFileNameDisplay.textContent = 'Файл не выбран (текущий файл останется)';
+        }
+      });
 
       closeBtn.addEventListener('click', () => closeModal(editBookModal));
       cancelBtn.addEventListener('click', () => closeModal(editBookModal));
@@ -958,35 +968,41 @@ document.addEventListener('DOMContentLoaded', async () => {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const bookData = {
-          id: state.editingEntity.id,
-          title: document.getElementById('edit-book-title').value.trim(),
-          publicationDay: document.getElementById('edit-pub-day').value || null,
-          publicationMonth: document.getElementById('edit-pub-month').value || null,
-          publicationYear: document.getElementById('edit-pub-year').value || null,
-          description: document.getElementById('edit-book-description').value.trim() || null,
-          price: document.getElementById('edit-book-price').value,
-          guestAvailable: document.getElementById('edit-book-guest-available').checked,
-          authorId: document.querySelector('#edit-author-select .dropdown-selector-item.selected')?.dataset?.value,
-          genres: JSON.parse(document.getElementById('edit-genres-select-value').value).map(item => item.value)
-        };
+        const formData = new FormData();
+        formData.append('id', state.editingEntity.id);
+        formData.append('title', document.getElementById('edit-book-title').value.trim());
+        formData.append('publicationDay', document.getElementById('edit-pub-day').value || null);
+        formData.append('publicationMonth', document.getElementById('edit-pub-month').value || null);
+        formData.append('publicationYear', document.getElementById('edit-pub-year').value || null);
+        formData.append('description', document.getElementById('edit-book-description').value.trim() || null);
+        formData.append('price', document.getElementById('edit-book-price').value);
+        formData.append('guestAvailable', document.getElementById('edit-book-guest-available').checked);
+        formData.append('authorId', document.querySelector('#edit-author-select .dropdown-selector-item.selected')?.dataset?.value);
 
-        // Получаем выбранные жанры
+        // Добавляем жанры
         const selectedGenres = JSON.parse(document.getElementById('edit-genres-select-value').value).map(item => item.value);
-        bookData.genres = selectedGenres;
+        selectedGenres.forEach(genreId => {
+          formData.append('genres', genreId);
+        });
+
+        // Добавляем файл, если он выбран
+        const fileInput = document.getElementById('edit-book-file');
+        if (fileInput.files.length > 0) {
+          formData.append('file', fileInput.files[0]);
+        }
 
         // Валидация
-        if (!bookData.title) {
+        if (!formData.get('title')) {
           alert('Название книги обязательно для заполнения');
           return;
         }
 
-        if (!bookData.authorId) {
+        if (!formData.get('authorId')) {
           alert('Необходимо выбрать автора');
           return;
         }
 
-        if (bookData.genres.length === 0) {
+        if (selectedGenres.length === 0) {
           alert('Необходимо выбрать хотя бы один жанр');
           return;
         }
@@ -996,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
         submitBtn.disabled = true;
 
-        const success = await updateBook(bookData);
+        const success = await updateBook(formData);
         if (success) {
           closeModal(editBookModal, true);
         }
@@ -1038,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
-        const submitBtn = form.querySelector('button[type="submit"]');
+        const submitBtn = document.querySelector('button[type="submit"][form="edit-author-form"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
         submitBtn.disabled = true;
@@ -1080,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
-        const submitBtn = form.querySelector('button[type="submit"]');
+        const submitBtn = document.querySelector('button[type="submit"][form="edit-genre-form"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
         submitBtn.disabled = true;
@@ -1110,29 +1126,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('edit-book-price').value = book.price || '';
     document.getElementById('edit-book-guest-available').checked = book.guestAvailable || false;
 
+    const currentFileInfo = document.getElementById('current-file-info');
+    const currentFileLink = document.getElementById('current-file-link');
+
+    if (book.path) {
+      currentFileInfo.style.display = 'block';
+      currentFileLink.href = `/api/books/download?bookId=${book.id}`;
+      currentFileLink.innerHTML = `<i class="fas fa-download"></i> Скачать текущий файл`;
+    } else {
+      currentFileInfo.style.display = 'none';
+    }
+
+    // Сбрасываем поле файла
+    document.getElementById('edit-book-file').value = '';
+    document.getElementById('edit-file-name').textContent = 'Файл не выбран (текущий файл останется)';
+
     // Устанавливаем автора
     if (book.Author) {
-      const authorSelect = document.querySelector('#edit-author-select .dropdown-selector-item');
-      if (authorSelect) {
-        authorSelect.dataset.value = book.Author.id;
-        authorSelect.textContent = book.Author.nickName;
-        authorSelect.classList.add('selected');
+      const authorContainer = document.getElementById('dropdown-selector-edit-author-select');
+    if (authorContainer) {
+        const authorEvent = new CustomEvent('setSelectedValue', {
+          detail: {
+            value: book.Author.id.toString(),
+            display: book.Author.nickName
+          }
+        });
+        authorContainer.dispatchEvent(authorEvent);
       }
     }
 
     // Устанавливаем жанры
     if (book.Genres && book.Genres.length > 0) {
-      const selectedGenres = book.Genres.map(genre => ({
-        value: genre.id,
-        text: genre.name
+        const selectedGenres = book.Genres.map(genre => ({
+        value: genre.id.toString(),
+        display: genre.name
       }));
-      document.getElementById('edit-genres-select-value').value = JSON.stringify(selectedGenres);
-
-      // Обновляем отображение выбранных жанров
-      const dropdown = document.querySelector('#edit-multi-select-dropdown-genres-select');
-      if (dropdown) {
-        const updateEvent = new CustomEvent('updateSelected', { detail: selectedGenres });
-        dropdown.dispatchEvent(updateEvent);
+    
+      const genresContainer = document.getElementById('multi-select-dropdown-edit-genres-select');
+      if (genresContainer) {
+        const genresEvent = new CustomEvent('setSelectedValues', {
+          detail: selectedGenres
+        });
+        genresContainer.dispatchEvent(genresEvent);
       }
     }
 
@@ -1186,10 +1221,7 @@ async function updateBook(bookData) {
   try {
     const response = await fetch('/api/moderation/books/update', {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookData)
+      body: bookData
     });
 
     if (response.ok) {

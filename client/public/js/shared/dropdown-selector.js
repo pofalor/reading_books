@@ -61,6 +61,11 @@ function initDropdownSelector(container) {
         });
     });
 
+    // Обработчик кастомного события для установки значения
+    container.addEventListener('setSelectedValue', (e) => {
+        setSelectedValue(e.detail.value, e.detail.display);
+    });
+
     function handleOutsideClick(e) {
         if (!container.contains(e.target)) {
             dropdown.style.display = 'none';
@@ -87,9 +92,13 @@ function initDropdownSelector(container) {
         const item = e.target.closest('.dropdown-selector-item');
         if (!item || item.classList.contains('no-results')) return;
 
+        setSelectedValue(item.dataset.value, item.dataset.display);
+    }
+
+    function setSelectedValue(value, display) {
         // Установка выбранного значения
-        input.value = item.dataset.display;
-        hiddenInput.value = item.dataset.value;
+        input.value = display;
+        hiddenInput.value = value;
 
         // Закрытие dropdown
         dropdown.style.display = 'none';
@@ -98,7 +107,15 @@ function initDropdownSelector(container) {
         container.querySelectorAll('.dropdown-selector-item').forEach(el => {
             el.classList.remove('selected');
         });
-        item.classList.add('selected');
+
+        // Находим и подсвечиваем соответствующий элемент в dropdown
+        const items = container.querySelectorAll('.dropdown-selector-item');
+        const selectedItem = Array.from(items).find(item => 
+            item.dataset.value === value && item.dataset.display === display
+        );
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
+        }
 
         // Генерация события изменения
         const event = new Event('change', { bubbles: true });

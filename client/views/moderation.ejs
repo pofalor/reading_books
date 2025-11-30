@@ -283,6 +283,25 @@
             <label for="edit-book-description">Описание</label>
             <textarea id="edit-book-description"></textarea>
           </div>
+
+          <div class="form-group">
+            <label for="edit-book-file">Файл книги (epub)</label>
+            <div class="file-input-container">
+              <button type="button" class="file-input-button">
+                <i class="fas fa-upload"></i> Выберите новый файл
+              </button>
+              <input type="file" id="edit-book-file" class="file-input" accept=".epub">
+            </div>
+            <div id="edit-file-name" class="file-name">Файл не выбран (текущий файл останется)</div>
+
+            <!-- Ссылка для скачивания текущего файла -->
+            <div id="current-file-info" class="current-file-info" style="margin-top: 10px; display: none;">
+              <label>Текущий файл:</label>
+              <a id="current-file-link" class="btn outline small" target="_blank" style="margin-left: 10px;">
+                <i class="fas fa-download"></i> Скачать текущий файл
+              </a>
+            </div>
+          </div>
         
           <div class="form-group">
             <label for="edit-book-price">Цена</label>
@@ -297,7 +316,7 @@
           <div class="form-group">
             <%- include('partials/dropdown-selector', { id: 'edit-author-select' , containerClass: '' , label: 'Автор' ,
               apiUrl: '/api/authors/search' , displayField: 'nickName' , valueField: 'id' , descriptionField: '' ,
-              inputClass: '' , placeholder: 'Начните вводить имя автора...' , selectedDisplay: '' , selectedValue: '' ,
+              inputClass: '' , placeholder: 'Начните вводить имя автора...' , selectedDisplay: '' , selectedValue: '',
               required: true, method: 'POST' }) %>
           </div>
         
