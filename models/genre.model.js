@@ -52,12 +52,17 @@ module.exports = (sequelize, DataTypes) => {
         },
         description: {
             type: DataTypes.TEXT
+        },
+        createdAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW
         }
     }, {
         sequelize,
         modelName: 'Genre',
         tableName: 'genres',
-        timestamps: false
+        timestamps: true
     });
 
     return Genre;

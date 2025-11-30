@@ -1,5 +1,5 @@
 const { Book, Author, Genre, BookGenre, ActionHistory, sequelize } = require('../models');
-
+const { cleanUpFiles, deleteFile } = require('../config/multer.config');
 
 //TODO: перенести сюда все методы, которые относятся к странице модерации
 exports.updateBook = async (req, res) => {
@@ -13,25 +13,31 @@ exports.updateBook = async (req, res) => {
             publicationMonth, 
             publicationYear, 
             price, 
-            guestAvailable, 
+            isGuestAvailable, 
             authorId, 
             genres 
         } = req.body;
 
+        // Обработка файла, если он был загружен
+        if (!req.file) {
+            throw new Error('Файл книги обязателен');
+        }
+
+        if (!authorId || authorId === 'null') {
+            throw new Error('Автор обязателен');
+        }
+
         // Валидация обязательных полей
-        if (!id) {
-            throw new Error('ID книги обязателен');
+        if (!id || id === 'null') {
+            throw new Error('Системная ошибка: не удалось найти Id книги. Пожалуйста, обратитесь в поддержку');
         }
 
         if (!title) {
             throw new Error('Название книги обязательно');
         }
 
-        if (!authorId) {
-            throw new Error('Автор обязателен');
-        }
-
-        if (!genres || !Array.isArray(genres) || genres.length === 0) {
+        if (!genres || genres === 'null' || !Array.isArray(genres) 
+            || genres.length === 0) {
             throw new Error('Необходимо выбрать хотя бы один жанр');
         }
 
@@ -40,12 +46,7 @@ exports.updateBook = async (req, res) => {
         // Находим книгу
         const book = await Book.findByPk(id, { transaction });
         if (!book) {
-            throw new Error('Книга не найдена');
-        }
-
-        // Проверяем права на редактирование (только создатель или админ)
-        if (book.creatorId !== req.user.id && req.user.role !== 'admin') {
-            throw new Error('Недостаточно прав для редактирования этой книги');
+            throw new Error('Системная ошибка: книга не найдена. Пожалуйста, обратитесь в поддержку ');
         }
 
         // Сохраняем старые значения для лога
@@ -57,22 +58,33 @@ exports.updateBook = async (req, res) => {
             publicationYear: book.publicationYear,
             price: book.price,
             guestAvailable: book.guestAvailable,
-            authorId: book.authorId
+            authorId: book.authorId,
+            isConfirmed: book.isConfirmed,
+            path: book.path
+        };
+
+        // Обработка файла, если он был загружен
+        const bookFile = {
+            path: req.file.path,
+            originalName: req.file.originalname,
+            mimetype: req.file.mimetype
         };
 
         // Обновляем данные книги
-        const updateData = {
+        const bookData = {
             title,
-            description: description || null,
-            publicationDay: publicationDay || null,
-            publicationMonth: publicationMonth || null,
-            publicationYear: publicationYear || null,
+            description: description === 'null' ? null : description,
+            publicationDay: publicationDay === 'null' ? null : publicationDay,
+            publicationMonth: publicationMonth === 'null' ? null : publicationMonth,
+            publicationYear: publicationYear === 'null' ? null : publicationYear,
             authorId: parseInt(authorId),
-            price: price === '' ? null : parseFloat(price),
-            guestAvailable: guestAvailable === true || guestAvailable === 'true'
+            price: price === '' ? null : price,
+            guestAvailable: isGuestAvailable === 'true',
+            path: `/uploads/books/${path.basename(bookFile.path)}`,
+            isConfirmed: false
         };
 
-        await book.update(updateData, { transaction });
+        await book.update(bookData, { transaction });
 
         // Обновляем жанры
         const currentGenres = await BookGenre.findAll({ 
@@ -93,13 +105,26 @@ exports.updateBook = async (req, res) => {
                 },
                 transaction
             });
+
+            // Логирование действия
+            await ActionHistory.logAction(
+                req.user.id,
+                'RemoveBookGenres',
+                `Жанры "${genresToRemove}" у книги удалены. Старое имя книги: "${oldValues.title}". 
+                Новое имя книги: "${bookData.title}"`,
+                null,
+                book.authorId,
+                book.id,
+                null,
+                transaction
+            );
         }
 
         // Жанры для добавления
         const genresToAdd = newGenreIds.filter(id => !currentGenreIds.includes(id));
         if (genresToAdd.length > 0) {
             await Promise.all(
-                genresToAdd.map(genreId => 
+                genresToAdd.map(genreId =>
                     BookGenre.addGenre(id, genreId, req.user.id, transaction)
                 )
             );
@@ -109,8 +134,8 @@ exports.updateBook = async (req, res) => {
         await ActionHistory.logAction(
             req.user.id,
             'UpdateBook',
-            `Книга "${oldValues.title}" обновлена`,
-            JSON.stringify(oldValues),
+            `Книга обновлена. Старые значения: ${JSON.stringify(oldValues)}. Новые значения: ${JSON.stringify(bookData)}`,
+            null,
             book.authorId,
             book.id,
             null,
@@ -137,7 +162,10 @@ exports.updateBook = async (req, res) => {
         res.json(updatedBook);
     } catch (error) {
         if (transaction) await transaction.rollback();
-        console.error('Error updating book:', error);
+        if (req.file) {
+            cleanUpFiles({ bookFile: [req.file] });
+        }
+        console.error('Error updating book: ', error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -156,8 +184,8 @@ exports.updateAuthor = async (req, res) => {
         } = req.body;
 
         // Валидация обязательных полей
-        if (!id) {
-            throw new Error('ID автора обязателен');
+        if (!id || id === 'null') {
+            throw new Error('Системная ошибка: не удалось найти Id автора. Пожалуйста, обратитесь в поддержку');
         }
 
         if (!nickName) {
@@ -169,12 +197,7 @@ exports.updateAuthor = async (req, res) => {
         // Находим автора
         const author = await Author.findByPk(id, { transaction });
         if (!author) {
-            throw new Error('Автор не найден');
-        }
-
-        // Проверяем права на редактирование (только создатель или админ)
-        if (author.creatorId !== req.user.id && req.user.role !== 'admin') {
-            throw new Error('Недостаточно прав для редактирования этого автора');
+            throw new Error('Системная ошибка: не удалось найти автора. Пожалуйста, обратитесь в поддержку');
         }
 
         // Проверяем уникальность псевдонима
@@ -195,7 +218,10 @@ exports.updateAuthor = async (req, res) => {
             surname: author.surname,
             nickName: author.nickName,
             birthDate: author.birthDate,
-            bio: author.bio
+            bio: author.bio,
+            isConfirmed: author.isConfirmed,
+            createdAt: author.createdAt,
+            creatorId: author.creatorId
         };
 
         // Обновляем данные автора
@@ -205,7 +231,8 @@ exports.updateAuthor = async (req, res) => {
             surname: surname || null,
             nickName,
             birthDate: birthDate || null,
-            bio: bio || null
+            bio: bio || null, 
+            isConfirmed: false
         };
 
         await author.update(updateData, { transaction });
@@ -214,8 +241,8 @@ exports.updateAuthor = async (req, res) => {
         await ActionHistory.logAction(
             req.user.id,
             'UpdateAuthor',
-            `Автор "${oldValues.nickName}" обновлен`,
-            JSON.stringify(oldValues),
+            `Автор обновлен. Старые значения: ${JSON.stringify(oldValues)}. Новые значения: ${JSON.stringify(updateData)}`,
+            null,
             author.id,
             null,
             null,
@@ -227,7 +254,7 @@ exports.updateAuthor = async (req, res) => {
         res.json(author);
     } catch (error) {
         if (transaction) await transaction.rollback();
-        console.error('Error updating author:', error);
+        console.error('Error updating author: ', error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -238,8 +265,8 @@ exports.updateGenre = async (req, res) => {
         const { id, name, description } = req.body;
 
         // Валидация обязательных полей
-        if (!id) {
-            throw new Error('ID жанра обязателен');
+        if (!id || id === 'null') {
+            throw new Error('Системная ошибка: ID жанра обязателен. Пожалуйста, обратитесь в поддержку');
         }
 
         if (!name) {
@@ -283,8 +310,8 @@ exports.updateGenre = async (req, res) => {
         await ActionHistory.logAction(
             req.user.id,
             'UpdateGenre',
-            `Жанр "${oldValues.name}" обновлен`,
-            JSON.stringify(oldValues),
+            `Жанр обновлен. Старые значения: ${JSON.stringify(oldValues)}. Новые значения: ${JSON.stringify(updateData)}`,
+            null,
             null,
             null,
             genre.id,
@@ -296,7 +323,7 @@ exports.updateGenre = async (req, res) => {
         res.json(genre);
     } catch (error) {
         if (transaction) await transaction.rollback();
-        console.error('Error updating genre:', error);
+        console.error('Error updating genre: ', error);
         res.status(400).json({ message: error.message });
     }
 };

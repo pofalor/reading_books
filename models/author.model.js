@@ -94,12 +94,12 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id'
             },
             allowNull: false
-        },
+        }
     }, {
         sequelize,
         modelName: 'Author',
         tableName: 'authors',
-        timestamps: false
+        timestamps: true
     });
 
     return Author;
