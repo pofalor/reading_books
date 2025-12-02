@@ -977,7 +977,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         formData.append('description', document.getElementById('edit-book-description').value.trim() || null);
         formData.append('price', document.getElementById('edit-book-price').value);
         formData.append('guestAvailable', document.getElementById('edit-book-guest-available').checked);
-        formData.append('authorId', document.querySelector('#edit-author-select .dropdown-selector-item.selected')?.dataset?.value);
+
+        const authorContainer = document.getElementById('dropdown-selector-edit-author-select');
+        const authorId = authorContainer?.getSelectedValue()?.value; 
+        formData.append('authorId', authorId);
 
         // Добавляем жанры
         const selectedGenres = JSON.parse(document.getElementById('edit-genres-select-value').value).map(item => item.value);
@@ -1144,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Устанавливаем автора
     if (book.Author) {
       const authorContainer = document.getElementById('dropdown-selector-edit-author-select');
-    if (authorContainer) {
+      if (authorContainer) {
         const authorEvent = new CustomEvent('setSelectedValue', {
           detail: {
             value: book.Author.id.toString(),
@@ -1157,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Устанавливаем жанры
     if (book.Genres && book.Genres.length > 0) {
-        const selectedGenres = book.Genres.map(genre => ({
+      const selectedGenres = book.Genres.map(genre => ({
         value: genre.id.toString(),
         display: genre.name
       }));

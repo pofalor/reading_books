@@ -14,7 +14,7 @@ exports.updateBook = async (req, res) => {
             publicationMonth, 
             publicationYear, 
             price, 
-            isGuestAvailable, 
+            guestAvailable, 
             authorId, 
             genres 
         } = req.body;
@@ -84,10 +84,12 @@ exports.updateBook = async (req, res) => {
             publicationYear: publicationYear === 'null' ? null : publicationYear,
             authorId: parseInt(authorId),
             price: price === '' ? null : price,
-            guestAvailable: isGuestAvailable === 'true',
-            path: `/uploads/books/${path.basename(bookFilePath)}`,
+            guestAvailable: guestAvailable === 'true',
             isConfirmed: false
         };
+
+        if(bookFilePath)
+            bookData.path = `/uploads/books/${path.basename(bookFilePath)}`;
 
         await book.update(bookData, { transaction });
 
