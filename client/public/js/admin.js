@@ -23,10 +23,106 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch('/api/admin/getRoles');
             if (response.ok) {
                 allRoles = await response.json();
+                renderRolesTable(allRoles);
             }
         } catch (error) {
-            console.error('Error loading roles:', error);
+            console.error('Error loading roles: ', error);
+            showNoRolesMessage();
         }
+    }
+
+    function renderRolesTable(roles) {
+        const tbody = document.getElementById('roles-table-body');
+        const noRolesMessage = document.getElementById('no-roles');
+        
+        if (!roles || roles.length === 0) {
+            tbody.innerHTML = '';
+            noRolesMessage.style.display = 'block';
+            return;
+        }
+    
+        noRolesMessage.style.display = 'none';
+        
+        tbody.innerHTML = roles.map(role => `
+            <tr>
+                <td>${role.id}</td>
+                <td><strong>${role.name}</strong></td>
+                <td>${role.description || '—'}</td>
+                <td>${role.userCount || 0}</td>
+                <td>${new Date(role.createdAt).toLocaleDateString()}</td>
+                <td>
+                    ${currentUser && currentUser.roles.some(r => r === 'super_admin') ? `
+                        <button class="btn warning edit-role-btn" data-role-id="${role.id}" data-role-name="${role.name}" data-role-description="${role.description || ''}">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </button>
+                        <button class="btn danger small delete-role-btn" data-role-id="${role.id}" data-role-name="${role.name}">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    ` : ''}
+                </td>
+            </tr>
+        `).join('');
+    
+        // Добавляем обработчики для кнопок
+        document.querySelectorAll('.edit-role-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const roleId = e.currentTarget.dataset.roleId;
+                const roleName = e.currentTarget.dataset.roleName;
+                const roleDescription = e.currentTarget.dataset.roleDescription;
+                openEditRoleModal(roleId, roleName, roleDescription);
+            });
+        });
+
+        document.querySelectorAll('.delete-role-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const roleName = e.currentTarget.dataset.roleName;
+                await confirmAndDeleteRole(roleName);
+            });
+        });
+    }
+
+    async function confirmAndDeleteRole(roleName) {
+        if (!roleName) {
+            alert("Пожалуйста, выберите имя роли");
+            return;
+        }
+
+        if (!confirm('Вы уверены, что хотите удалить роль?')) return;
+        
+        try {
+            const response = await fetch('/api/admin/deleteRole', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: roleName })
+            });
+
+            if (response.ok) {
+                alert(`Роль "${roleName}" успешно удалена`);
+                await loadRoles();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Ошибка удаления роли');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении роли');
+        }
+    }
+
+    function showNoRolesMessage() {
+        const tbody = document.getElementById('roles-table-body');
+        const noRolesMessage = document.getElementById('no-roles');
+        tbody.innerHTML = '';
+        noRolesMessage.style.display = 'block';
+    }
+
+    function openEditRoleModal(roleId, roleName, roleDescription) {
+        document.getElementById('edit-role-id').value = roleId;
+        document.getElementById('edit-role-name').value = roleName;
+        document.getElementById('edit-role-description').value = roleDescription;
+        editRoleModal.style.display = 'block';
     }
 
     // Загрузка списка пользователей
@@ -175,10 +271,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    async function loadUserTables() {
+        await loadRoles();
+        await loadUsers(); 
+    }
+
     const addRoleModal = setupModal('add-role-modal', '.close');
-    const deleteRoleModal = setupModal('delete-role-modal', '.close');
     const addUserRoleModal = setupModal('add-user-role-modal', '.close');
     const deleteUserRoleModal = setupModal('delete-user-role-modal', '.close');
+    const editRoleModal = setupModal('edit-role-modal', '.close-edit-modal');
 
     // Открытие модального окна добавления роли пользователю
     async function openAddUserRoleModal(userId) {
@@ -262,44 +363,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Обработка формы удаления роли
-    document.getElementById('delete-role-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const roleName = document.querySelector('.dropdown-selector-input')?.value;
-
-        if (!roleName) {
-            alert("Пожалуйста, выберите имя роли");
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/admin/deleteRole', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: roleName })
-            });
-
-            if (response.ok) {
-                alert(`Роль "${roleName}" успешно удалена`);
-                //Генерируем ивент для дропдауна, чтоб он очистился
-                const dropdown = document.querySelector('#dropdown-selector-delete-role-select');
-                const clearEvent = new Event('clearDropdown');
-                dropdown.dispatchEvent(clearEvent);
-                deleteRoleModal.style.display = 'none';
-                await loadRoles();
-            } else {
-                const error = await response.json();
-                alert(error.message || 'Ошибка удаления роли');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Произошла ошибка при удалении роли');
-        }
-    });
-
     // Обработка формы добавления роли пользователю
     document.getElementById('add-user-role-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -319,7 +382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (response.ok) {
                 alert('Роль пользователю успешно добавлена');
                 addUserRoleModal.style.display = 'none';
-                await loadUsers();
+                await loadUserTables();
             } else {
                 const error = await response.json();
                 alert(error.message || 'Ошибка добавления роли пользователю');
@@ -349,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (response.ok) {
                 alert('Роль пользователя успешно удалена');
                 deleteUserRoleModal.style.display = 'none';
-                await loadUsers();
+                await loadUserTables();
             } else {
                 const error = await response.json();
                 alert(error.message || 'Ошибка удаления роли пользователя');
@@ -357,6 +420,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Error:', error);
             alert('Произошла ошибка при удалении роли пользователя');
+        }
+    });
+
+    // Обработка формы редактирования роли
+    document.getElementById('edit-role-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const roleData = {
+            id: document.getElementById('edit-role-id').value,
+            name: document.getElementById('edit-role-name').value,
+            description: document.getElementById('edit-role-description').value
+        };
+
+        if(!roleData?.name){
+            alert("Пожалуйста, заполните имя роли");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/updateRole', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(roleData)
+            });
+
+            if (response.ok) {
+                alert('Роль успешно обновлена');
+                editRoleModal.style.display = 'none';
+                await loadUserTables();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Ошибка обновления роли');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при обновлении роли');
         }
     });
 
@@ -371,11 +472,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         addRoleModal.style.display = 'block';
     });
 
-    document.getElementById('delete-role-btn').addEventListener('click', () => {
-        // Очищаем поля при открытии модального окна
-        deleteRoleModal.style.display = 'block';
-    });
-
     document.getElementById('reset-filter')?.addEventListener('click', () => {
         document.getElementById('start-date').value = '';
         document.getElementById('end-date').value = '';
@@ -386,7 +482,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Инициализация
-    await loadRoles();
-    await loadUsers();
+    await loadUserTables();
     await loadStats();
 });

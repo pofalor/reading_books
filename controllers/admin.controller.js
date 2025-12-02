@@ -96,6 +96,55 @@ exports.getRoleById = async (req, res) => {
     }
 };
 
+exports.updateRole = async (req, res) => {
+    let transaction;
+    try {
+        const { id, name, description } = req.body;
+        const currentUserId = req.user.id;
+        
+        transaction = await sequelize.transaction();
+
+        // Проверяем существование роли
+        const role = await Role.findByPk(id, { transaction });
+        if (!role) {
+            return res.status(404).json({ message: 'Системная ошибка: роль не найдена. Пожалуйста, обратитесь в поддержку' });
+        }
+        
+        // Проверяем, не существует ли уже роли с таким именем (кроме текущей)
+        const existingRole = await Role.findOne({ where: { name }, transaction });
+        if (existingRole && existingRole.id !== parseInt(id)) {
+            return res.status(400).json({ message: 'Роль с таким именем уже существует' });
+        }
+        
+        // Обновляем роль
+        const oldName = role.name;
+        const oldDescr = role.description;
+        role.name = name;
+        role.description = description;
+        await role.save({transaction});
+        
+        // Логируем действие
+        await sequelize.models.ActionHistory.logAction(
+            currentUserId,
+            'UpdateRole',
+            `Обновлена роль: ${oldName} → ${name}, ${oldDescr} → ${description}`,
+            null, 
+            null,
+            null, 
+            null,
+            transaction
+        );
+        
+        await transaction.commit();
+
+        res.json({ success: true, role });
+    } catch (error) {
+        if (transaction) await transaction.rollback();
+        console.error('Error updating role: ', error);
+        res.status(400).json({ message: error.message || 'Ошибка обновления роли' });
+    }
+};
+
 exports.getStats = async (req, res) => {
     try {
         const { limit, beginDate, endDate } = req.body;

@@ -43,7 +43,8 @@ module.exports = (sequelize, DataTypes) => {
                 'UpdateBook',
                 'RemoveBookGenres',
                 'UpdateAuthor',
-                'UpdateGenre'),
+                'UpdateGenre', 
+                'UpdateRole'),
             allowNull: false
         },
         description: {

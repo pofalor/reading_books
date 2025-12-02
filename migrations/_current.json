@@ -69,6 +69,16 @@
                 "description": {
                     "field": "description",
                     "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
                 }
             },
             "indexes": []
@@ -460,6 +470,16 @@
                     },
                     "field": "status",
                     "seqType": "Sequelize.ENUM('COMPLETED', 'FAILED', 'PENDING')"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
                 }
             },
             "indexes": []
@@ -476,7 +496,7 @@
                 "actionType": {
                     "allowNull": false,
                     "field": "actionType",
-                    "seqType": "Sequelize.ENUM('AddAuthor', 'AddBook', 'DeleteAuthor', 'DeleteBook', 'AddRole', 'DeleteRole', 'AddRoleToUser', 'RemoveRoleFromUser', 'ApproveBook', 'ApproveAuthor', 'AddGenre', 'DeleteGenre', 'AddBookGenre', 'AddUserBook', 'RemoveUserBook', 'BeginReading', 'UpdateProfile', 'UpdateBook', 'RemoveBookGenres', 'UpdateAuthor', 'UpdateGenre')"
+                    "seqType": "Sequelize.ENUM('AddAuthor', 'AddBook', 'DeleteAuthor', 'DeleteBook', 'AddRole', 'DeleteRole', 'AddRoleToUser', 'RemoveRoleFromUser', 'ApproveBook', 'ApproveAuthor', 'AddGenre', 'DeleteGenre', 'AddBookGenre', 'AddUserBook', 'RemoveUserBook', 'BeginReading', 'UpdateProfile', 'UpdateBook', 'RemoveBookGenres', 'UpdateAuthor', 'UpdateGenre', 'UpdateRole')"
                 },
                 "description": {
                     "allowNull": false,
@@ -554,5 +574,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 5
+    "revision": 7
 }
