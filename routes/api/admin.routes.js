@@ -8,10 +8,11 @@ router.get('/getRoles', authenticate, requireRole('super_admin', 'admin'), admin
 router.get('/getUserRoles', authenticate, requireRole('super_admin', 'admin'), adminController.getUserRoles);
 router.post('/addRole', authenticate, requireRole('super_admin'), adminController.addRole);
 router.post('/deleteRole', authenticate, requireRole('super_admin'), adminController.deleteRole);
+router.put('/updateRole', authenticate, requireRole('super_admin'), adminController.updateRole);
 router.post('/addUserRole', authenticate, requireRole('super_admin', 'admin'), adminController.addUserRole);
 router.post('/removeUserRole', authenticate, requireRole('super_admin', 'admin'), adminController.removeUserRole);
 router.get('/getRoleById', authenticate, requireRole('super_admin'), adminController.getRoleById);
 router.post('/getStats', authenticate, requireRole('super_admin', 'admin'), adminController.getStats);
-router.put('/updateRole', authenticate, requireRole('super_admin', 'admin'), adminController.updateRole);
+router.put('/updatePurchaseStatus', authenticate, requireRole('super_admin', 'admin'), adminController.updatePurchaseStatus);
 
 module.exports = router;

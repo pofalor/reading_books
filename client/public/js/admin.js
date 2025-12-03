@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (currentUser && currentUser.roles.some(r => r === 'super_admin')) {
                 document.getElementById('super-admin-buttons').style.display = 'block';
             }
+            else{
+                document.getElementById('roles-table-actions').style.display = 'none';
+            }
         }
     } catch (error) {
         console.error('Error fetching current user:', error);
@@ -243,22 +246,177 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         tbody.innerHTML = purchases.map(purchase => `
-        <tr>
+        <tr data-purchaseid="${purchase.id}" data-originalstatus="${purchase.status}">
             <td>${purchase.id}</td>
             <td>${purchase.Book.title}</td>
             <td>${purchase.User.email}</td>
             <td>${purchase.amount} ₽</td>
             <td>${new Date(purchase.date).toLocaleDateString()}</td>
             <td>
-                <span class="status-badge ${purchase.status.toLowerCase()}">
-                    ${getTransStatus(purchase.status)}
-                </span>
+                <div class="status-display">
+                    <span class="status-badge ${purchase.status.toLowerCase()}">
+                        ${getTransStatus(purchase.status)}
+                    </span>
+                 </div>
+                <div class="status-edit-container" style="display: none;">
+                    <select class="status-select">
+                        <option value="PENDING" ${purchase.status === 'PENDING' ? 'selected' : ''}>В процессе</option>
+                        <option value="COMPLETED" ${purchase.status === 'COMPLETED' ? 'selected' : ''}>Завершено</option>
+                        <option value="FAILED" ${purchase.status === 'FAILED' ? 'selected' : ''}>Отклонено</option>
+                    </select>
+                </div>
+            </td>
+            <td>
+                <!-- Кнопки действий -->
+                <div class="action-buttons">
+                    <button class="btn warning edit-status-btn" title="Изменить статус">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <div class="save-cancel-buttons" style="display: none;">
+                        <button class="btn primary save-status-btn" title="Сохранить изменения">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn outline cancel-status-btn" title="Отменить">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
             </td>
         </tr>`).join('');
 
         table.style.display = 'block';
         noDataMessage.style.display = 'none';
+
+        setupStatusEditHandlers();
     }
+
+    function setupStatusEditHandlers() {
+        const tableBody = document.getElementById('purchases-table-body');
+        
+        // Обработчик кнопки редактирования
+        tableBody.querySelectorAll('.edit-status-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const row = e.target.closest('tr');
+                enterEditMode(row);
+            });
+        });
+
+        // Обработчик кнопки сохранения
+        tableBody.querySelectorAll('.save-status-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const row = e.target.closest('tr');
+                await saveStatusChange(row);
+            });
+        });
+
+        // Обработчик кнопки отмены
+        tableBody.querySelectorAll('.cancel-status-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const row = e.target.closest('tr');
+                exitEditMode(row, true);
+            });
+        });
+    
+        // Отмена при нажатии Esc
+        tableBody.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const editingRow = tableBody.querySelector('.editing-status');
+                if (editingRow) {
+                    exitEditMode(editingRow, true);
+                }
+            }
+        });
+    }
+
+    // Вход в режим редактирования
+    function enterEditMode(row) {
+        // Выходим из режима редактирования в других строках
+        document.querySelectorAll('.editing-status').forEach(r => {
+            if (r !== row) exitEditMode(r, true);
+        });
+
+        // Добавляем класс для стилизации
+        row.classList.add('editing-status');
+
+        // Показываем/скрываем элементы
+        row.querySelector('.status-display').style.display = 'none';
+        row.querySelector('.status-edit-container').style.display = 'block';
+        row.querySelector('.edit-status-btn').style.display = 'none';
+        row.querySelector('.save-cancel-buttons').style.display = 'block';
+    }
+
+    // Выход из режима редактирования
+    function exitEditMode(row, reset = false) {
+        row.classList.remove('editing-status');
+
+        // Показываем/скрываем элементы
+        row.querySelector('.status-display').style.display = 'block';
+        row.querySelector('.status-edit-container').style.display = 'none';
+        row.querySelector('.edit-status-btn').style.display = 'block';
+        row.querySelector('.save-cancel-buttons').style.display = 'none';
+
+        // Сбрасываем значение, если нужно
+        if (reset) {
+            const originalStatus = row.dataset.originalstatus;
+            const select = row.querySelector('.status-select');
+            select.value = originalStatus;
+        }
+    }
+
+    // Сохранение изменения статуса
+    async function saveStatusChange(row) {
+        const purchaseId = row.dataset.purchaseid;
+        const select = row.querySelector('.status-select');
+        const newStatus = select.value;
+        const originalStatus = row.dataset.originalstatus;
+
+        if (newStatus === originalStatus) {
+            exitEditMode(row);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/updatePurchaseStatus', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    purchaseId,
+                    status: newStatus
+                })
+            });
+
+            if (response.ok) {
+                // Обновляем отображение
+                const statusBadge = row.querySelector('.status-badge');
+                const statusText = row.querySelector('.status-badge');
+
+                // Обновляем классы и текст
+                statusBadge.className = `status-badge ${newStatus.toLowerCase()}`;
+                statusText.textContent = getTransStatus(newStatus);
+
+                // Обновляем оригинальный статус
+                row.dataset.originalStatus = newStatus;
+
+                // Выходим из режима редактирования
+                exitEditMode(row);
+
+                // Показываем уведомление
+                alert(`Статус покупки #${purchaseId} изменен с "${getTransStatus(originalStatus)}" на "${getTransStatus(newStatus)}"`);
+
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Ошибка обновления статуса');
+                exitEditMode(row, true); // Сбрасываем к исходному
+            }
+        } catch (error) {
+            console.error('Error updating status: ', error);
+            alert('Произошла ошибка при обновлении статуса');
+            exitEditMode(row, true);
+        }
+    }
+
 
     function getTransStatus(status) {
         switch (status) {
