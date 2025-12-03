@@ -38,6 +38,7 @@
                                 <th>Сумма</th>
                                 <th>Дата</th>
                                 <th>Статус</th>
+                                <th>Действия</th> 
                             </tr>
                         </thead>
                         <tbody id="purchases-table-body">
@@ -63,7 +64,6 @@
                 <!-- Кнопки для супер-админа -->
                 <div id="super-admin-buttons" class="admin-actions" style="display: none;">
                     <button id="add-role-btn" class="btn primary">Добавить роль</button>
-                    <button id="delete-role-btn" class="btn danger">Удалить роль</button>
                 </div>
 
                 <div class="table">
@@ -85,6 +85,32 @@
                 </div>
             </div>
 
+            <h1>Управление ролями</h1>
+
+            <div class="card">
+                <div class="table">
+                    <table class="w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Описание</th>
+                                <th>Количество пользователей</th>
+                                <th>Дата создания</th>
+                                <th id="roles-table-actions">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roles-table-body">
+                            <!-- Список ролей будет загружен через JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-roles" class="no-data-message" style="display: none;">
+                    <i class="fas fa-user-tag"></i>
+                    <p>Роли не найдены</p>
+                </div>
+            </div>
+
 
             <!-- Модальное окно добавления роли -->
             <div id="add-role-modal" class="modal">
@@ -101,22 +127,6 @@
                             <textarea id="role-description"></textarea>
                         </div>
                         <button type="submit" class="btn primary">Добавить</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Модальное окно удаления роли -->
-            <div id="delete-role-modal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2>Удалить роль</h2>
-                    <form id="delete-role-form">
-                        <%- include('partials/dropdown-selector', { id: 'delete-role-select' , containerClass: '' ,
-                            label: 'Выберите роль для удаления' , apiUrl: '/api/admin/getRoles' , displayField: 'name' ,
-                            valueField: 'id' , descriptionField: 'description' , inputClass: '' ,
-                            placeholder: 'Начните вводить название роли...' , selectedDisplay: '' , selectedValue: '' ,
-                            required: true, method: 'GET' }) %>
-                            <button type="submit" class="btn danger">Удалить</button>
                     </form>
                 </div>
             </div>
@@ -153,6 +163,28 @@
                             </select>
                         </div>
                         <button type="submit" class="btn danger">Удалить</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Модальное окно редактирования роли -->
+            <div id="edit-role-modal" class="modal">
+                <div class="modal-content">
+                    <h2>Редактировать роль</h2>
+                    <form id="edit-role-form">
+                        <input type="hidden" id="edit-role-id">
+                        <div class="form-group">
+                            <label for="edit-role-name">Название роли*</label>
+                            <input type="text" id="edit-role-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-role-description">Описание</label>
+                            <textarea id="edit-role-description"></textarea>
+                        </div>
+                        <div class="form-footer" style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="button" class="btn outline close-edit-modal">Отмена</button>
+                            <button type="submit" class="btn primary">Сохранить изменения</button>
+                        </div>
                     </form>
                 </div>
             </div>

@@ -42,7 +42,7 @@ exports.getAllBooks = async (req, res) => {
                 {
                     model: Genre,
                     through: { attributes: [] }, // Исключаем промежуточную таблицу
-                    attributes: ['name']
+                    attributes: ['id', 'name']
                 }
             ],
             limit: limit,

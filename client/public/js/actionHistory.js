@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <tr>
                 <td>${action.id}</td>
                 <td>${action.actionType}</td>
-                <td>${action.description}</td>
+                <td style="max-width: 400px; word-wrap: break-word;">${action.description}</td>
                 <td>${action.Actor ? `${action.Actor.firstName} ${action.Actor.lastName} (${action.Actor.email})` : '-'}</td>
                 <td>${action.User ? `${action.User.firstName} ${action.User.lastName} (${action.User.email})` : '-'}</td>
                 <td>${action.Author ? getAuthorName(action.Author) : '-'}</td>

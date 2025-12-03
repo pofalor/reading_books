@@ -11,7 +11,20 @@ module.exports = (sequelize, DataTypes) => {
 
         // Добавить в класс Role
         static async getAllRoles() {
-            return this.findAll();
+            return this.findAll({
+                include: [{
+                    model: sequelize.models.User,
+                    attributes: [],
+                    through: { attributes: [] }
+                }],
+                attributes: {
+                    include: [
+                        [sequelize.fn('COUNT', sequelize.col('Users.id')), 'userCount']
+                    ]
+                },
+                group: ['Role.id'],
+                order: [['createdAt', 'DESC']]
+            });
         }
 
         static async addRole(name, description, currentUserId) {
@@ -75,7 +88,7 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'Role',
         tableName: 'roles',
-        timestamps: false
+        timestamps: true
     });
 
     return Role;

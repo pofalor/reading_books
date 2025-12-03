@@ -14,31 +14,17 @@ function initDropdownSelector(container) {
     const displayField = container.dataset.displayField;
     const method = container.dataset.method;
 
+    //публичный метод для получения значения
+    container.getSelectedValue = () => {
+        return {
+            value: hiddenInput.value,
+            display: input.value
+        };
+    };
+
     // Обработчики событий 
     ['input', 'focus'].forEach(type => {
-        input.addEventListener(type, async (e) => {
-            const searchTerm = e.target.value?.trim()?.toLowerCase();
-            const body = { search: searchTerm, limit: 100 };
-            try {
-                const response = await fetch(apiUrl, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: method === 'POST' ? JSON.stringify({ body }) : undefined
-                });
-                if (response.ok) {
-                    const items = await response.json();
-                    const filtered = items.filter(item =>
-                        (item[displayField]?.toLowerCase().includes(searchTerm) || !searchTerm));
-
-                    renderItems(filtered);
-                }
-            } catch (error) {
-                console.error('Dropdown error:', error);
-                showError('Ошибка загрузки данных');
-            }
-        });
+        input.addEventListener(type, async () => loadItems(true));
     });
 
     // Обработчик выбора элемента
@@ -61,35 +47,70 @@ function initDropdownSelector(container) {
         });
     });
 
+    // Обработчик кастомного события для установки значения
+    container.addEventListener('setSelectedValue', async (e) => {
+        //сначала загружаем элементы, потом выбираем элемент из загруженных
+        //сделано, чтобы не нарушать основную логику селектора 
+        await loadItems(false);
+        setSelectedValue(e.detail.value, e.detail.display);
+    });
+
+    async function loadItems(needShowDropdown) {
+        const searchTerm = input.value?.trim()?.toLowerCase();
+        const body = { search: searchTerm, limit: 100 };
+        try {
+            const response = await fetch(apiUrl, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: method === 'POST' ? JSON.stringify({ body }) : undefined
+            });
+            if (response.ok) {
+                const items = await response.json();
+                const filtered = items.filter(item =>
+                    (item[displayField]?.toLowerCase().includes(searchTerm) || !searchTerm));
+                renderItems(filtered, needShowDropdown);
+            }
+        } catch (error) {
+            console.error('Dropdown error:', error);
+            showError('Ошибка загрузки данных');
+        }
+    }
+
     function handleOutsideClick(e) {
         if (!container.contains(e.target)) {
             dropdown.style.display = 'none';
         }
     }
 
-    function renderItems(items) {
+    function renderItems(items, needShowDropdown) {
         if (items.length > 0) {
             dropdown.innerHTML = items.map(item => `
-        <div class="dropdown-selector-item" 
-             data-value="${item[valueField]}" 
-             data-display="${item[displayField]}">
-          ${item[displayField]} 
-          ${item[descriptionField] ? `<small>${item[descriptionField]}</small>` : ''}
-        </div>
-      `).join('');
-            dropdown.style.display = 'block';
+            <div class="dropdown-selector-item" 
+                 data-value="${item[valueField]}" 
+                 data-display="${item[displayField]}">
+              ${item[displayField]} 
+              ${item[descriptionField] ? `<small>${item[descriptionField]}</small>` : ''}
+            </div>`).join('');
         } else {
             showNoResults();
         }
+        if(needShowDropdown)
+            dropdown.style.display = 'block';
     }
 
     function handleSelect(e) {
         const item = e.target.closest('.dropdown-selector-item');
         if (!item || item.classList.contains('no-results')) return;
 
+        setSelectedValue(item.dataset.value, item.dataset.display);
+    }
+
+    function setSelectedValue(value, display) {
         // Установка выбранного значения
-        input.value = item.dataset.display;
-        hiddenInput.value = item.dataset.value;
+        input.value = display;
+        hiddenInput.value = value;
 
         // Закрытие dropdown
         dropdown.style.display = 'none';
@@ -98,7 +119,15 @@ function initDropdownSelector(container) {
         container.querySelectorAll('.dropdown-selector-item').forEach(el => {
             el.classList.remove('selected');
         });
-        item.classList.add('selected');
+
+        // Находим и подсвечиваем соответствующий элемент в dropdown
+        const items = container.querySelectorAll('.dropdown-selector-item');
+        const selectedItem = Array.from(items).find(item => 
+            item.dataset.value === value && item.dataset.display === display
+        );
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
+        }
 
         // Генерация события изменения
         const event = new Event('change', { bubbles: true });
@@ -143,7 +172,6 @@ function initDropdownSelector(container) {
 
     function showNoResults() {
         dropdown.innerHTML = '<div class="dropdown-selector-item no-results">Элементы не найдены</div>';
-        dropdown.style.display = 'block';
     }
 
     function showError(message) {

@@ -96,7 +96,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         title: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
         },
         isConfirmed: {
             type: DataTypes.BOOLEAN,
@@ -177,7 +177,7 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'Book',
         tableName: 'books',
-        timestamps: false,
+        timestamps: true,
         validate: {
             dependentFields() {
                 if (this.publicationDay !== null && (this.publicationMonth === null || this.publicationYear === null)) {
