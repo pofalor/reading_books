@@ -405,6 +405,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Показываем уведомление
                 alert(`Статус покупки #${purchaseId} изменен с "${getTransStatus(originalStatus)}" на "${getTransStatus(newStatus)}"`);
 
+                await loadStats();
+
             } else {
                 const error = await response.json();
                 alert(error.message || 'Ошибка обновления статуса');
