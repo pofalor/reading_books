@@ -1,4 +1,18 @@
-require('dotenv').config();
+const { requireEnv } = require('./config/env');
+
+// Проверяем окружение до подключения остальных модулей: models/index.js
+// создаёт подключение к БД уже на этапе require, а JWT_SECRET без этой
+// проверки выстрелил бы только на первом логине.
+try {
+    requireEnv(
+        'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST',
+        'JWT_SECRET', 'BOOK_UPLOAD_PATH'
+    );
+} catch (err) {
+    console.error(err.message);
+    process.exit(1);
+}
+
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');

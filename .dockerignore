@@ -1,0 +1,16 @@
+# Ставится внутри образа через npm ci
+node_modules
+npm-debug.log
+
+# Не должно попадать в образ
+.env
+.git
+.gitignore
+
+# Пользовательские загрузки живут в volume, а не в образе
+uploads
+
+# Не нужно для работы приложения
+docs
+build
+.DS_Store

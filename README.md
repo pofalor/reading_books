@@ -25,7 +25,7 @@
 | **Клиентская часть** | HTML, CSS, JavaScript, jQuery, EJS, AJAX |
 | **Серверная часть** | Node.js, Express, NPM |
 | **База данных** | MySQL, Sequelize (ORM) |
-| **Инструменты** | Git, GitHub, Visual Studio Code |
+| **Инструменты** | Git, GitHub, Visual Studio Code, Docker |
 | **Формат файлов** | `.epub` |
 
 ---
@@ -95,38 +95,90 @@
 
 ## Установка и запуск
 
-### Предварительные требования
+Проект можно запустить двумя способами: в Docker (MySQL поднимается сама)
+или локально на установленных Node.js и MySQL.
+
+### Запуск в Docker
+
+Требуется Docker с плагином Compose. Отдельно ставить Node.js и MySQL не нужно.
+
+1. **Подготовить переменные окружения:**
+   ```bash
+   cp .env.example .env
+   ```
+   Для Docker достаточно задать `DB_PASSWORD` и `JWT_SECRET` — остальное
+   подставит `docker-compose.yml`.
+
+2. **Запустить:**
+   ```bash
+   docker compose up --build
+   ```
+   Приложение стартует только после того, как MySQL пройдёт healthcheck,
+   и само создаёт таблицы через `sequelize.sync()` — отдельный прогон
+   миграций для первого запуска не нужен.
+
+3. **Открыть:** http://localhost:3000
+   Порт на хосте меняется переменной `PORT` в `.env`.
+
+4. **Создать роли и назначить суперадминистратора** — один раз, после того
+   как зарегистрирован первый пользователь (скрипт выдаёт роль пользователю с `id = 1`):
+   ```bash
+   docker compose exec -T db sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" book_app_db' < sql_scripts/add_super_admin.sql
+   ```
+
+Остановить — `docker compose down`, остановить и удалить данные БД вместе
+с загруженными книгами — `docker compose down -v`. Пока volume'ы не удалены,
+книги, обложки и содержимое базы переживают пересборку образа.
+
+### Локальный запуск
+
+#### Предварительные требования
 - Node.js (версия 16 или выше)
 - MySQL
 - npm
 
-### Инструкция
+#### Инструкция
 
 1. **Клонировать репозиторий:**
    ```bash
    git clone https://github.com/yourusername/e-library.git
    cd e-library
+   ```
 
 2. **Установить зависимости:**
-    ```bash
+   ```bash
    npm install
+   ```
 
 3. **Настроить переменные окружения:**
+
+   Скопируйте шаблон и заполните значения:
+   ```bash
+   cp .env.example .env
+   ```
+
    ```env
    DB_HOST=localhost
    DB_USER=your_user
-   DB_PASS=db_pass
+   DB_PASSWORD=db_pass
    DB_NAME=library_db
+   JWT_SECRET=сгенерируйте_через_openssl_rand_hex_32
+   BOOK_UPLOAD_PATH=uploads/books
    PORT=3000
-   JWT_SECRET=your_jwt_secret_key
+   ```
+
+   Все переменные, кроме `PORT`, обязательны — без них сервер не стартует.
+   Файл `.env` в репозиторий не коммитится.
 
 4. **Запустить базу данных и применить миграции:**
    ```bash
    npx sequelize db:migrate
+   ```
 
 5. **Запустить сервер:**
    ```bash
    npm start
+   ```
 
 6. **Открыть приложение:**
 Перейдите в браузере по адресу: http://localhost:3000
