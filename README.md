@@ -106,27 +106,42 @@
    ```bash
    git clone https://github.com/yourusername/e-library.git
    cd e-library
+   ```
 
 2. **Установить зависимости:**
-    ```bash
+   ```bash
    npm install
+   ```
 
 3. **Настроить переменные окружения:**
+
+   Скопируйте шаблон и заполните значения:
+   ```bash
+   cp .env.example .env
+   ```
+
    ```env
    DB_HOST=localhost
    DB_USER=your_user
-   DB_PASS=db_pass
+   DB_PASSWORD=db_pass
    DB_NAME=library_db
+   JWT_SECRET=сгенерируйте_через_openssl_rand_hex_32
+   BOOK_UPLOAD_PATH=uploads/books
    PORT=3000
-   JWT_SECRET=your_jwt_secret_key
+   ```
+
+   Все переменные, кроме `PORT`, обязательны — без них сервер не стартует.
+   Файл `.env` в репозиторий не коммитится.
 
 4. **Запустить базу данных и применить миграции:**
    ```bash
    npx sequelize db:migrate
+   ```
 
 5. **Запустить сервер:**
    ```bash
    npm start
+   ```
 
 6. **Открыть приложение:**
 Перейдите в браузере по адресу: http://localhost:3000

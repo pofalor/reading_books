@@ -1,0 +1,9 @@
+const path = require('path');
+
+// Указываем sequelize-cli на config.js вместо config.json по умолчанию,
+// чтобы параметры подключения читались из переменных окружения.
+module.exports = {
+    config: path.resolve('config', 'config.js'),
+    'models-path': path.resolve('models'),
+    'migrations-path': path.resolve('migrations')
+};

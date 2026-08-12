@@ -1,11 +1,16 @@
 const { Sequelize, DataTypes, Op } = require('sequelize');
+const { requireEnv } = require('../config/env');
+
+// Без значений по умолчанию: иначе при незаданном окружении приложение
+// молча подключалось бы под учётными данными из исходников.
+requireEnv('DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST');
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME || 'book_app_db',
-    process.env.DB_USER || 'root',
-    process.env.DB_PASSWORD || 'admin',
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
     {
-        host: process.env.DB_HOST || 'localhost',
+        host: process.env.DB_HOST,
         dialect: 'mysql',
         logging: false
     }
