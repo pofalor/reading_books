@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      # Приложение ходит в БД под root — внутри сети compose она наружу не торчит.
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?задайте DB_PASSWORD в .env}
+      MYSQL_DATABASE: ${DB_NAME:-book_app_db}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      # Приложение стартует только после того, как MySQL реально начнёт отвечать,
+      # иначе первый же коннект упадёт на ещё не поднявшейся базе.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Перекрывает значения из .env: внутри compose база доступна
+      # по имени сервиса, а не на localhost.
+      DB_HOST: db
+      DB_USER: root
+      DB_NAME: ${DB_NAME:-book_app_db}
+      BOOK_UPLOAD_PATH: uploads/books
+      PORT: 3000
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      # Загруженные книги и обложки переживают пересборку образа.
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  uploads:
