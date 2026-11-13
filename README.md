@@ -127,7 +127,16 @@
 4. **Создать роли и назначить суперадминистратора** — один раз, после того
    как зарегистрирован первый пользователь (скрипт выдаёт роль пользователю с `id = 1`):
    ```bash
-   docker compose exec -T db sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" book_app_db' < sql_scripts/add_super_admin.sql
+   docker compose exec -T db sh -c 'mysql --default-character-set=utf8mb4 -u root -p"$MYSQL_ROOT_PASSWORD" book_app_db' < sql_scripts/add_super_admin.sql
+   ```
+   Если описания ролей в админке отображаются «кракозябрами» (`ÐŸÐ¾Ð»...`),
+   значит скрипт уже прогоняли без указания кодировки. Починить
+   существующие строки можно так:
+   ```bash
+   docker compose exec -T db sh -c 'mysql --default-character-set=utf8mb4 -u root -p"$MYSQL_ROOT_PASSWORD" book_app_db' <<'SQL'
+   UPDATE roles SET description = CONVERT(CAST(CONVERT(description USING latin1) AS BINARY) USING utf8mb4)
+   WHERE description LIKE 'Ð%';
+   SQL
    ```
 
 5. **Обновить существующую базу.** `sequelize.sync()` создаёт недостающие
