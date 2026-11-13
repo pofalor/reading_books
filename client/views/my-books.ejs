@@ -22,7 +22,7 @@
                 <% books.forEach(book => { %>
                     <div class="book-card clickable-card"" data-id="<%= book.id %>">
                         <div class="book-card-header">
-                            <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                            <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>" onerror="this.onerror=null;this.src='/images/default-book.jpg'">
                             <span class="book-status <%= book.status === 'InProgress' ? 'in-progress' : 'on-shelf' %>">
                                 <%= book.status === 'InProgress' ? 'Читаю' : 'На полке' %>
                             </span>

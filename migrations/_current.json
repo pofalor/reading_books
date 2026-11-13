@@ -237,6 +237,11 @@
                     "field": "path",
                     "seqType": "Sequelize.STRING"
                 },
+                "coverPath": {
+                    "allowNull": true,
+                    "field": "coverPath",
+                    "seqType": "Sequelize.STRING"
+                },
                 "authorId": {
                     "references": {
                         "model": "authors",
@@ -574,5 +579,5 @@
     "path": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current.json",
     "backupPath": "C:\\Users\\danii\\OneDrive\\Документы\\КАИ_ДЗ\\web\\курсач\\project\\reading_books\\migrations\\_current_bak.json",
     "exists": true,
-    "revision": 8
+    "revision": 9
 }

@@ -18,6 +18,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const { sequelize } = require('./models');
 const { attachUserToRequest } = require('./middleware/auth.middleware');
+const { COVER_UPLOAD_DIR } = require('./config/multer.config');
 
 // Настройка Express
 const app = express();
@@ -29,6 +30,15 @@ app.use(attachUserToRequest);
 
 // Путь к статическим файлам (CSS, JS, изображения)
 app.use(express.static(path.join(__dirname, 'client', 'public')));
+
+// Обложки книг. Наружу раздаётся только uploads/covers: файлы самих книг
+// лежат в uploads/books и отдаются через /api/books/download с проверкой прав.
+// Имена файлов — uuid и при замене обложки меняются, поэтому кэш можно держать долго.
+app.use('/uploads/covers', express.static(COVER_UPLOAD_DIR, {
+    index: false,
+    maxAge: '30d',
+    immutable: true
+}));
 
 // Путь к EJS шаблонам (рендерятся сервером)
 app.set('views', [path.join(__dirname, 'client', 'views'), path.join(__dirname, 'client', 'views', 'errors')]);

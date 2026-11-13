@@ -15,6 +15,7 @@ exports.getMyBooksPage = async (req, res) => {
                     { model: Author },
                     { model: Genre, through: { attributes: [] } }
                 ],
+                attributes: { exclude: ['path'] },
                 where: { isConfirmed: true }
             }],
             order: [

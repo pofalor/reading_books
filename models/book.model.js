@@ -143,6 +143,19 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
+        // Путь к загруженной обложке вида /uploads/covers/<файл>; null — обложки нет
+        coverPath: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        // Адрес обложки для шаблонов и API. Без обложки — null,
+        // и шаблон подставляет /images/default-book.jpg.
+        coverUrl: {
+            type: DataTypes.VIRTUAL(DataTypes.STRING, ['coverPath']),
+            get() {
+                return this.getDataValue('coverPath') || null;
+            }
+        },
         authorId: {
             type: DataTypes.INTEGER,
             references: {

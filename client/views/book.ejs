@@ -13,7 +13,7 @@
         data-user='<%- JSON.stringify(locals.user) %>'>
         <div class="book-header">
             <div class="book-cover">
-                <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>" onerror="this.onerror=null;this.src='/images/default-book.jpg'">
             </div>
             <div class="book-info">
                 <h1><%= book.title %></h1>

@@ -8,14 +8,20 @@
 .book-cover {
     flex: 0 0 300px;
     max-width: 100%;
+    /* Не растягиваемся по высоте блока с информацией о книге */
+    align-self: flex-start;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: hidden;
 }
 
+/* Обложка всегда в книжной пропорции 2:3 — загруженная картинка любого
+   формата и стандартная заглушка обрезаются, а не растягиваются */
 .book-cover img {
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
     display: block;
 }
 

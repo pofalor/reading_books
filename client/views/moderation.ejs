@@ -129,6 +129,23 @@
           </div>
 
           <div class="form-group">
+            <label for="book-cover">Обложка (JPEG, PNG или WebP, до 5 МБ)</label>
+            <div class="cover-upload">
+              <img id="book-cover-preview" class="cover-preview" src="/images/default-book.jpg" alt="Превью обложки">
+              <div class="cover-upload-controls">
+                <div class="file-input-container">
+                  <button type="button" class="file-input-button">
+                    <i class="fas fa-image"></i> Выберите обложку
+                  </button>
+                  <input type="file" id="book-cover" class="file-input" accept="image/jpeg,image/png,image/webp">
+                </div>
+                <div id="book-cover-name" class="file-name"></div>
+                <button type="button" id="book-cover-remove" class="btn outline small" hidden></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
             <label for="book-price">Цена</label>
             <input type="number" id="book-price" min="0" step="1">
           </div>
@@ -300,6 +317,23 @@
               <a id="current-file-link" class="btn outline small" target="_blank" style="margin-left: 10px;">
                 <i class="fas fa-download"></i> Скачать текущий файл
               </a>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-book-cover">Обложка (JPEG, PNG или WebP, до 5 МБ)</label>
+            <div class="cover-upload">
+              <img id="edit-book-cover-preview" class="cover-preview" src="/images/default-book.jpg" alt="Превью обложки">
+              <div class="cover-upload-controls">
+                <div class="file-input-container">
+                  <button type="button" class="file-input-button">
+                    <i class="fas fa-image"></i> Выберите новую обложку
+                  </button>
+                  <input type="file" id="edit-book-cover" class="file-input" accept="image/jpeg,image/png,image/webp">
+                </div>
+                <div id="edit-book-cover-name" class="file-name"></div>
+                <button type="button" id="edit-book-cover-remove" class="btn outline small" hidden></button>
+              </div>
             </div>
           </div>
         

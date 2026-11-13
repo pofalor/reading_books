@@ -27,7 +27,7 @@
                     <% if (featuredBooks && featuredBooks.length> 0) { %>
                         <% featuredBooks.forEach(book=> { %>
                             <div class="book-card" data-id="<%= book.id %>">
-                                <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>">
+                                <img src="<%= book.coverUrl || '/images/default-book.jpg' %>" alt="<%= book.title %>" onerror="this.onerror=null;this.src='/images/default-book.jpg'">
                                 <h3>
                                     <%= book.title %>
                                 </h3>

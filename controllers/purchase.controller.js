@@ -11,7 +11,7 @@ exports.getPurchasePage = async (req, res) => {
                 }
             ],
             attributes: {
-                exclude: ['updatedAt']
+                exclude: ['updatedAt', 'path']
             },
         });
 
