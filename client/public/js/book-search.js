@@ -113,7 +113,7 @@ class BookSearch {
 
         this.booksGrid.innerHTML = books.map(book => `
             <div class="book-card" data-id="${book.id}">
-                <img src="${book.coverUrl || '/images/default-book.jpg'}" alt="${book.title}">
+                <img src="${book.coverUrl || '/images/default-book.jpg'}" alt="${book.title}" onerror="this.onerror=null;this.src='/images/default-book.jpg'">
                 <div class="book-card-content">
                     <h3>${book.title}</h3>
                     <p>${book.Author ? getAuthorName(book.Author) : 'Автор неизвестен'}</p>

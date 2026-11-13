@@ -58,6 +58,8 @@ exports.searchBooks = async (req, res) => {
         const books = await Book.findAll({
             where,
             include,
+            // path — путь к epub на сервере, наружу его не отдаём
+            attributes: { exclude: ['path', 'updatedAt'] },
             distinct: true,
             limit: limit,
             order: [['createdAt', 'DESC']]

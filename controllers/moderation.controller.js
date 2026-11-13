@@ -1,6 +1,6 @@
 const path = require('path');
 const { Book, Author, Genre, BookGenre, ActionHistory, sequelize } = require('../models');
-const { cleanUpFiles, deleteFile } = require('../config/multer.config');
+const { cleanUpFiles, deleteFile, toCoverPath, coverFsPath } = require('../config/multer.config');
 
 //TODO: перенести сюда все методы, которые относятся к странице модерации
 exports.updateBook = async (req, res) => {
@@ -16,8 +16,11 @@ exports.updateBook = async (req, res) => {
             price, 
             guestAvailable, 
             authorId, 
-            genres 
+            genres,
+            removeCover
         } = req.body;
+        const bookFile = req.files?.file?.[0];
+        const coverFile = req.files?.cover?.[0];
 
         if (!authorId || authorId === 'null') {
             throw new Error('Автор обязателен');
@@ -32,8 +35,9 @@ exports.updateBook = async (req, res) => {
             throw new Error('Название книги обязательно');
         }
 
-        if (!genres || genres === 'null' || !Array.isArray(genres) 
-            || genres.length === 0) {
+        // Один выбранный жанр multer отдаёт строкой, несколько — массивом
+        const genreList = [].concat(genres ?? []).filter(g => g && g !== 'null');
+        if (genreList.length === 0) {
             throw new Error('Необходимо выбрать хотя бы один жанр');
         }
 
@@ -56,24 +60,9 @@ exports.updateBook = async (req, res) => {
             guestAvailable: book.guestAvailable,
             authorId: book.authorId,
             isConfirmed: book.isConfirmed,
-            path: book.path
+            path: book.path,
+            coverPath: book.coverPath
         };
-
-        // Обработка нового файла, если он был загружен
-        let bookFilePath = null;
-        if (req.file) {
-            bookFilePath = req.file.path;
-            // Удаляем старый файл, если он существует
-            if (book.path) {
-                const filePath = path.join(__dirname, '..', book.path);
-                try {
-                    deleteFile(filePath);
-                } catch (error) {
-                    console.warn('Не удалось удалить старый файл: ', error.message);
-                    // Продолжаем выполнение, даже если не удалось удалить старый файл
-                }
-            }
-        }
 
         // Обновляем данные книги
         const bookData = {
@@ -88,8 +77,20 @@ exports.updateBook = async (req, res) => {
             isConfirmed: false
         };
 
-        if(bookFilePath)
-            bookData.path = `/uploads/books/${path.basename(bookFilePath)}`;
+        // Заменённые файлы удаляем только после коммита: если транзакция
+        // откатится, книга должна остаться со своими прежними файлами.
+        const replacedFiles = [];
+
+        if (bookFile) {
+            bookData.path = `/uploads/books/${bookFile.filename}`;
+            if (book.path) replacedFiles.push(path.join(__dirname, '..', book.path));
+        }
+
+        // Новая обложка заменяет старую; removeCover без файла — вернуть стандартную
+        if (coverFile || removeCover === 'true') {
+            bookData.coverPath = coverFile ? toCoverPath(coverFile) : null;
+            if (book.coverPath) replacedFiles.push(coverFsPath(book.coverPath));
+        }
 
         await book.update(bookData, { transaction });
 
@@ -100,7 +101,7 @@ exports.updateBook = async (req, res) => {
         });
         
         const currentGenreIds = currentGenres.map(g => g.genreId);
-        const newGenreIds = genres.map(g => parseInt(g));
+        const newGenreIds = genreList.map(g => parseInt(g));
 
         // Жанры для удаления
         const genresToRemove = currentGenreIds.filter(id => !newGenreIds.includes(id));
@@ -150,6 +151,7 @@ exports.updateBook = async (req, res) => {
         );
 
         await transaction.commit();
+        replacedFiles.forEach(deleteFile);
 
         // Получаем обновленную книгу с связанными данными
         const updatedBook = await Book.findByPk(id, {
@@ -168,9 +170,10 @@ exports.updateBook = async (req, res) => {
 
         res.json(updatedBook);
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        if (req.file) {
-            cleanUpFiles({ bookFile: [req.file] });
+        if (transaction && !transaction.finished) await transaction.rollback();
+        // Изменения не сохранились — новые файлы не нужны
+        if (transaction?.finished !== 'commit') {
+            cleanUpFiles(req.files);
         }
         console.error('Error updating book: ', error);
         res.status(400).json({ message: error.message });

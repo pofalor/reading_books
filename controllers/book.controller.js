@@ -1,6 +1,6 @@
 const path = require('path');
 const { Book, Author, Genre, BookGenre, ActionHistory, sequelize } = require('../models');
-const { cleanUpFiles, deleteFile } = require('../config/multer.config');
+const { cleanUpFiles, deleteFile, toCoverPath, coverFsPath } = require('../config/multer.config');
 const fs = require('fs');
 
 exports.getFeaturedBooks = async (req, res) => {
@@ -66,20 +66,14 @@ exports.createBook = async (req, res) => {
     let transaction;
     try {
         const { title, description, publicationDay, publicationMonth, publicationYear, price, isGuestAvailable, authorId, genres } = req.body;
+        const bookFile = req.files?.file?.[0];
+        const coverFile = req.files?.cover?.[0];
 
-        // Обработка файла, если он был загружен
-        if (!req.file) {
+        if (!bookFile) {
             throw new Error('Файл книги обязателен');
         }
 
         transaction = await sequelize.transaction();
-
-        // Обработка файла, если он был загружен
-        const bookFile = {
-            path: req.file.path,
-            originalName: req.file.originalname,
-            mimetype: req.file.mimetype
-        };
 
         const bookData = {
             title,
@@ -91,7 +85,8 @@ exports.createBook = async (req, res) => {
             price: price === '' ? null : price,
             guestAvailable: isGuestAvailable === 'true',
             creatorId: req.user.id,
-            path: `/uploads/books/${path.basename(bookFile.path)}`
+            path: `/uploads/books/${bookFile.filename}`,
+            coverPath: coverFile ? toCoverPath(coverFile) : null
         };
 
         const book = await Book.create(bookData, { transaction });
@@ -120,10 +115,10 @@ exports.createBook = async (req, res) => {
 
         res.status(201).json(book);
     } catch (error) {
-        if (transaction) await transaction.rollback();
-        // Очистка загруженных файлов в случае ошибки
-        if (req.file) {
-            cleanUpFiles({ bookFile: [req.file] });
+        if (transaction && !transaction.finished) await transaction.rollback();
+        // Книга не сохранилась — загруженные epub и обложка больше не нужны
+        if (transaction?.finished !== 'commit') {
+            cleanUpFiles(req.files);
         }
         res.status(400).json({ message: error.message });
     }
@@ -183,13 +178,17 @@ exports.deleteBook = async (req, res) => {
             transaction
         );
 
-        const filePath = path.join(__dirname, '..', book.path);
-        deleteFile(filePath);
         await book.destroy({ transaction });
         await transaction.commit();
+
+        // Файлы удаляем только после коммита: если удаление из БД не прошло,
+        // книга не должна остаться без epub и обложки.
+        deleteFile(path.join(__dirname, '..', book.path));
+        deleteFile(coverFsPath(book.coverPath));
+
         res.json({ message: 'Книга удалена успешно' });
     } catch (error) {
-        if (transaction) await transaction.rollback();
+        if (transaction && !transaction.finished) await transaction.rollback();
         res.status(500).json({ message: error.message });
     }
 };

@@ -1,5 +1,6 @@
 import { setupModal } from './shared/modal.js';
 import { getAuthorFullName, getAuthorName, formattedPublicationDate } from './shared/utlis/entity.utils.js';
+import { createCoverPicker, DEFAULT_COVER } from './shared/cover-picker.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Состояние приложения
@@ -11,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     editingEntity: null
   };
   let currentUser = null;
+  let editCoverPicker = null;
 
   // Инициализация страницы
   try {
@@ -262,7 +264,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     return `
             <tr>
-                <td>${escapeHtml(book.title)}</td>
+                <td>
+                  <div class="book-title-cell">
+                    <img class="book-thumb" src="${escapeHtml(book.coverUrl || DEFAULT_COVER)}" alt=""
+                      onerror="this.onerror=null;this.src='${DEFAULT_COVER}'">
+                    <span>${escapeHtml(book.title)}</span>
+                  </div>
+                </td>
                 <td>${escapeHtml(getAuthorName(book.Author))}</td>
                 <td style="color: ${book.isConfirmed ? "green" : "blue"}">${book.isConfirmed ? 'Подтверждена' : 'На модерации'}</td>
                 <td>${new Date(book.createdAt).toLocaleDateString()}</td>
@@ -480,6 +488,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
+    const coverPicker = createCoverPicker('book');
+
     // Обработчик для кнопки добавления нового автора
     setupAuthorModal('add-new-author', false);
 
@@ -505,6 +515,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (fileInput.files.length > 0) {
         formData.append('file', fileInput.files[0]);
       }
+      coverPicker.appendTo(formData);
 
       // Добавляем жанры
       const selectedGenres = JSON.parse(document.getElementById('genres-select-value').value).map(item => item.value);
@@ -557,6 +568,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           await loadAllBooks();
           updateBooksUI();
           fileNameDisplay.textContent = 'Файл не выбран';
+          coverPicker.reset();
         } else {
           const error = await response.json();
           alert(error.message || 'Ошибка добавления книги');
@@ -950,6 +962,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const form = document.getElementById('edit-book-form');
       const editBookFileInput = document.getElementById('edit-book-file');
       const editFileNameDisplay = document.getElementById('edit-file-name');
+      editCoverPicker = createCoverPicker('edit-book');
 
       editBookFileInput.addEventListener('change', () => {
         if (editBookFileInput.files.length > 0) {
@@ -993,6 +1006,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (fileInput.files.length > 0) {
           formData.append('file', fileInput.files[0]);
         }
+        editCoverPicker.appendTo(formData);
 
         // Валидация
         if (!formData.get('title')) {
@@ -1143,6 +1157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Сбрасываем поле файла
     document.getElementById('edit-book-file').value = '';
     document.getElementById('edit-file-name').textContent = 'Файл не выбран (текущий файл останется)';
+    editCoverPicker?.reset(book.coverUrl);
 
     // Устанавливаем автора
     if (book.Author) {
