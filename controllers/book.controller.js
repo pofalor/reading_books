@@ -18,6 +18,9 @@ exports.getAllBooks = async (req, res) => {
         const { body } = req.body;
         const limit = parseInt(body.limit) || 10;
         const search = body.search.toString().toLowerCase();
+        // Подзапрос по жанрам собран через literal, поэтому строку поиска
+        // экранирует драйвер: иначе кавычка в запросе ломает/подменяет SQL.
+        const genreNamePattern = sequelize.escape('%' + search + '%');
         const currentUserId = req.user.id; // Получаем ID текущего пользователя
         const books = await Book.findAll({
             where: sequelize.or(
@@ -30,7 +33,7 @@ exports.getAllBooks = async (req, res) => {
                         SELECT 1 FROM book_genres
                         JOIN genres ON genres.id = book_genres.genreId
                         WHERE book_genres.bookId = Book.id
-                        AND LOWER(genres.name) LIKE '%${search}%'
+                        AND LOWER(genres.name) LIKE ${genreNamePattern}
                     )`)
             ),
             include: [

@@ -44,8 +44,16 @@ exports.searchBooks = async (req, res) => {
         });
         // Фильтр по жанрам - добавляем отдельное условие для фильтрации книг
         if (genres) {
-            const genreIds = genres.split(',').map(id => parseInt(id));
-            
+            // Нечисловые id отбрасываем: parseInt вернул бы NaN, и подзапрос
+            // упал бы с ошибкой SQL вместо пустого результата.
+            const genreIds = String(genres).split(',')
+                .map(id => parseInt(id, 10))
+                .filter(Number.isInteger);
+
+            if (genreIds.length === 0) {
+                return res.json([]);
+            }
+
             // Добавляем подзапрос для фильтрации книг по жанрам
             where.id = {
                 [Op.in]: sequelize.literal(`(
